@@ -1,0 +1,14 @@
+services:
+  results:
+    build: .
+    restart: unless-stopped
+    environment:
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-principal}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set a strong ADMIN_PASSWORD in .env before first start}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - results-data:/app/data
+volumes:
+  results-data:

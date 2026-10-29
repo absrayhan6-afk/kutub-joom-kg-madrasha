@@ -1,0 +1,20 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const nodes = new Map();
+const context = {sessionStorage:{getItem:()=>null},window:{addEventListener(){}},document:{body:{dataset:{page:'test'}},getElementById(id){if(!nodes.has(id))nodes.set(id,{hidden:false,style:{},className:'',textContent:'',innerHTML:''});return nodes.get(id);}},console};
+vm.createContext(context);
+let source = fs.readFileSync('ui.js','utf8').replace("if(document.body.dataset.page==='public')publicPage();else staffPage();",'');
+vm.runInContext(source,context);
+const row={name:'<img src=x onerror=alert(1)>',className:'<script>bad()</script>',section:'A',examName:'Annual',year:2026,oldRoll:1,newRoll:1,rank:1,passed:true,total:80,maximum:100,average:80,percentage:80,gpa:5,grade:'A+',marks:[{subject:'<svg onload=bad()>',marks:80,maximum:100,passMark:33,grade:'A+',gp:5}]};
+context.row=row;
+const markup=vm.runInContext('markupResult(row)',context);
+assert.ok(markup.includes('&lt;img src=x onerror=alert(1)&gt;'));
+assert.ok(markup.includes('&lt;script&gt;bad()&lt;/script&gt;'));
+assert.ok(markup.includes('&lt;svg onload=bad()&gt;'));
+assert.equal((markup.match(/<img /g)||[]).length,1);
+context.attr='" onfocus="bad()';
+assert.ok(!vm.runInContext('opt(attr,attr)',context).includes('value="" onfocus='));
+assert.ok(!source.includes('localStorage'));
+for(const page of ['index.html','app.html']){const html=fs.readFileSync(page,'utf8');assert.ok(html.includes('name="viewport"'));assert.ok(html.includes('src="ui.js"'));assert.ok(html.includes('aria-live="polite"'));}
+console.log('PASS: marksheet HTML/attribute escaping, no localStorage result trust, responsive and accessible page hooks.');

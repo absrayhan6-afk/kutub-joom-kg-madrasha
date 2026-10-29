@@ -1,0 +1,1 @@
+{"private":true,"scripts":{"test":"python -m unittest discover -s tests -v && node --check ui.js && node tests/test_ui.cjs"}}
