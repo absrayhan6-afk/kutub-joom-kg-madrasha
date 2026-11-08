@@ -10,7 +10,7 @@
   // মোবাইল মেনু
   const menuBtn = $('#menuBtn'), nav = $('#mainNav');
   menuBtn.addEventListener('click', () => { const o = nav.classList.toggle('open'); menuBtn.setAttribute('aria-expanded', o); });
-  $$('#mainNav a').forEach((a) => a.addEventListener('click', () => {
+  $$('#mainNav a[data-nav]').forEach((a) => a.addEventListener('click', () => {
     $$('#mainNav a').forEach((x) => x.classList.toggle('active', x === a));
     nav.classList.remove('open'); menuBtn.setAttribute('aria-expanded', 'false');
   }));
