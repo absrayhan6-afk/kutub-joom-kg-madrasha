@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>স্টাফ লগইন | কুতুবজোম মাদ্রাসা</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0b4d2c">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/site.css">
+<link rel="stylesheet" href="css/marksheet.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body">
+<!--ADMIN-START-->
+<div id="demoBarA" class="demo-bar" hidden>ডেমো মোড: নমুনা ডাটা। লগইন: User ID <b>principal</b>, Password <b>demo1234</b> (শিক্ষক: <b>teacher</b> / <b>demo1234</b>)</div>
+
+<!-- লগইন পেজ -->
+<section id="loginView" class="login-view" hidden>
+  <div class="login-photo" data-bg="campus" style="background-image:url('assets/campus.jpg')"></div>
+  <nav class="login-nav" aria-label="মেনু">
+    <a href="index.html#home" class="active"><svg viewBox="0 0 24 24"><path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/></svg>হোম</a>
+    <a href="index.html#notice"><svg viewBox="0 0 24 24"><path d="M3 10v4a1 1 0 0 0 1 1h2l4 5h2V4h-2L6 9H4a1 1 0 0 0-1 1z"/></svg>নোটিশ</a>
+    <a href="index.html#admission"><svg viewBox="0 0 24 24"><path d="M4 4h7a2 2 0 0 1 2 2v14a3 3 0 0 0-3-3H4zm16 0h-5a2 2 0 0 0-2 2v14a3 3 0 0 1 3-3h4z"/></svg>ভর্তি তথ্য</a>
+    <a href="index.html#contact"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z"/></svg>যোগাযোগ</a>
+  </nav>
+  <div class="login-row">
+    <div class="login-brand">
+      <img data-img="logo" src="assets/logo.webp" alt="লোগো" class="login-logo" width="200" height="183">
+      <div class="login-name"><h1 data-set="name">কুতুবজোম ইসলামিয়া কে.জি এন্ড প্রি-ক্যাডেট মাদ্রাসা</h1><p data-set="nameEn"></p><p class="login-loc"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg><span data-set="address"></span></p></div>
+      <div class="login-slogan"><b><span class="q-open" data-set="slogan1"></span><em class="q-close" data-set="slogan2"></em></b><span>শিক্ষা, শৃঙ্খলা ও উচ্চ চরিত্রের সমন্বয়</span></div>
+    </div>
+    <form id="loginForm" class="login-card" novalidate>
+      <img data-img="logo" src="assets/logo.webp" alt="" class="login-card-logo" width="120" height="110">
+      <h2 id="loginTitle">Staff Login</h2>
+      <p id="loginSub">Principal অথবা শিক্ষক হিসেবে লগইন করুন</p>
+      <label class="in-ico" for="lName" id="lNameWrap" hidden><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5z"/></svg><input id="lName" placeholder="আপনার নাম" autocomplete="name"></label>
+      <label class="in-ico" for="lUser"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5z"/></svg><input id="lUser" placeholder="User ID লিখুন" autocomplete="username" required></label>
+      <label class="in-ico" for="lPass"><svg viewBox="0 0 24 24"><path d="M6 10V8a6 6 0 1 1 12 0v2h1v12H5V10zm2 0h8V8a4 4 0 0 0-8 0z"/></svg><input id="lPass" type="password" placeholder="Password লিখুন" autocomplete="current-password" required><button type="button" class="eye" id="eyeBtn" aria-label="পাসওয়ার্ড দেখুন"><svg viewBox="0 0 24 24"><path d="M12 5C6 5 2 12 2 12s4 7 10 7 10-7 10-7-4-7-10-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg></button></label>
+      <p id="loginMsg" class="form-msg" role="alert" hidden></p>
+      <button class="btn-login" id="loginBtn" type="submit"><svg viewBox="0 0 24 24"><path d="M10 17l1.4-1.4-2.6-2.6H20v-2H8.8l2.6-2.6L10 7l-5 5zM4 5h8V3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8v-2H4z"/></svg><span>Login</span></button>
+      <a href="index.html" class="back-home">← অভিভাবকদের রেজাল্ট পেজ</a>
+    </form>
+  </div>
+</section>
+
+<!-- অ্যাডমিন প্যানেল -->
+<section id="appView" class="app" hidden>
+  <aside id="side" class="side">
+    <div class="side-brand"><img data-img="logo" src="assets/logo.webp" alt="" width="56" height="51"><div><b data-set="name">কুতুবজোম ইসলামিয়া কে.জি এন্ড প্রি-ক্যাডেট মাদ্রাসা</b><small data-set="address"></small></div></div>
+    <nav id="sideNav" class="side-nav" aria-label="অ্যাডমিন মেনু"></nav>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <button id="sideBtn" class="side-btn" aria-label="মেনু খুলুন"><span></span><span></span><span></span></button>
+      <h1 id="pageTitle">ড্যাশবোর্ড</h1>
+      <div class="who" id="whoBox">
+        <button id="whoBtn" class="who-btn" aria-haspopup="true" aria-expanded="false"><img data-img="devPhoto" src="assets/developer.webp" alt="" width="40" height="40" id="whoPhoto"><span id="whoName">Principal</span><svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5z"/></svg></button>
+        <div class="who-menu" id="whoMenu" hidden>
+          <button type="button" id="pwBtn">পাসওয়ার্ড পরিবর্তন</button>
+          <a href="index.html" target="_blank" rel="noopener">পাবলিক রেজাল্ট পেজ ↗</a>
+          <button type="button" id="logoutBtn2">লগ আউট</button>
+        </div>
+      </div>
+    </header>
+    <div id="view" class="view"></div>
+  </div>
+</section>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<dialog id="dlg" class="dlg"><form method="dialog" id="dlgForm"></form></dialog>
+<div id="printArea" class="print-area"></div>
+<!--ADMIN-END-->
+
+<script src="js/config.js"></script>
+<script src="js/calc.js"></script>
+<script src="js/store.js"></script>
+<script src="js/marksheet.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

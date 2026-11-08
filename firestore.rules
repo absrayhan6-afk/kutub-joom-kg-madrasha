@@ -1,0 +1,67 @@
+rules_version = '2';
+// ডাটাবেসের নিরাপত্তা নিয়ম
+// - অভিভাবক (লগইন ছাড়া): শুধু প্রকাশিত ফলাফল (সঠিক রোল + রেজিস্ট্রেশন জানলে), নোটিশ ও সাধারণ তথ্য দেখতে পারবেন
+// - শিক্ষক: নিজের শ্রেণির নম্বর এন্ট্রি, প্রকাশের আগ পর্যন্ত
+// - প্রিন্সিপাল: সব কিছু
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function userPath() { return /databases/$(database)/documents/users/$(request.auth.uid); }
+    function setupPath() { return /databases/$(database)/documents/public/setup; }
+    function me() { return get(userPath()).data; }
+    function isStaff() { return signedIn() && exists(userPath()) && me().active == true; }
+    function isPrincipal() { return isStaff() && me().role == 'principal'; }
+    // প্রথমবার সেটআপ: এখনো কোনো প্রিন্সিপাল নেই, আর একই সাথে নিজের প্রিন্সিপাল প্রোফাইল তৈরি হচ্ছে
+    function isFirstSetup() {
+      return signedIn() && !exists(setupPath()) && existsAfter(userPath())
+        && getAfter(userPath()).data.role == 'principal';
+    }
+
+    match /public/{docId} {
+      allow read: if true;
+      allow write: if isPrincipal() || isFirstSetup();
+    }
+
+    match /results/{id} {
+      allow get: if true;          // ডকুমেন্ট আইডিতে রোল ও রেজিস্ট্রেশন থাকে
+      allow list: if isPrincipal(); // সবার তালিকা কেউ দেখতে পারবে না
+      allow write: if isPrincipal();
+    }
+
+    match /notices/{id} {
+      allow read: if true;
+      allow write: if isPrincipal();
+    }
+
+    match /users/{uid} {
+      allow read: if isStaff() || (signedIn() && request.auth.uid == uid);
+      allow create: if isPrincipal()
+        || (signedIn() && request.auth.uid == uid && request.resource.data.role == 'principal'
+            && !exists(setupPath()) && existsAfter(setupPath()));
+      allow update, delete: if isPrincipal();
+    }
+
+    match /students/{id} {
+      allow read: if isStaff();
+      allow write: if isPrincipal();
+    }
+
+    match /subjects/{id} {
+      allow read: if isStaff();
+      allow write: if isPrincipal();
+    }
+
+    match /marks/{id} {
+      allow read: if isStaff();
+      allow create, update: if isPrincipal()
+        || (isStaff() && request.resource.data.classId in me().classIds
+            && request.resource.data.published == false
+            && (resource == null || resource.data.published == false));
+      allow delete: if isPrincipal();
+    }
+
+    match /fees/{id} {
+      allow read, write: if isPrincipal();
+    }
+  }
+}
