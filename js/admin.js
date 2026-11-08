@@ -96,7 +96,7 @@
     { k: 'fees', t: 'হিসাব', i: 'fees' },
     { k: 'notices', t: 'নোটিশ ব্যবস্থাপনা', i: 'notice' },
     { k: 'admission', t: 'ভর্তি বিজ্ঞপ্তি', i: 'admission' },
-    { k: 'settings', t: 'সেটিংস', i: 'settings' }
+    { k: 'config', t: 'সেটিংস', i: 'settings' }
   ];
   let current = 'dashboard';
 
@@ -625,7 +625,7 @@
   };
 
   // ---------- সেটিংস ----------
-  VIEWS.settings = async (v) => {
+  VIEWS.config = async (v) => {
     const s = settings;
     const f = (id, label, val, extra) => `<label class="fld"><span>${label}</span><input id="${id}" value="${esc(val || '')}" ${extra || ''}></label>`;
     const imgRow = (k, label, max, round) => `<div class="img-row"><div class="img-thumb${round ? ' round' : ''}" id="th_${k}" style="background-image:url('${esc(images[k] || ({ logo: 'assets/logo.webp', campus: 'assets/campus.jpg', devPhoto: 'assets/developer.webp' })[k])}')"></div><div class="fld grow"><span>${label}</span><input type="file" accept="image/*" id="fi_${k}" data-max="${max}"></div><button class="btn btn-sm btn-ghost" type="button" data-orig="${k}">আসল ছবি</button></div>`;
@@ -642,7 +642,7 @@
       const k = inp.id.slice(3);
       try { const url = await readImage(inp.files[0], Number(inp.dataset.max), k === 'campus' ? 'image/jpeg' : 'image/webp'); if (!url) return; await store.saveImages({ [k]: url }); images[k] = url; $('#th_' + k).style.backgroundImage = `url('${url}')`; applyBrand(); toast('ছবি সংরক্ষণ হয়েছে'); } catch (e) { fail(e); }
     });
-    $$('[data-orig]', v).forEach((b) => b.onclick = async () => { const k = b.dataset.orig; try { await store.saveImages({ [k]: '' }); images[k] = ''; toast('আসল ছবি ফিরিয়ে আনা হয়েছে'); go('settings'); } catch (e) { fail(e); } });
+    $$('[data-orig]', v).forEach((b) => b.onclick = async () => { const k = b.dataset.orig; try { await store.saveImages({ [k]: '' }); images[k] = ''; toast('আসল ছবি ফিরিয়ে আনা হয়েছে'); go('config'); } catch (e) { fail(e); } });
     $('#stPw').onclick = changePw; $('#stBackup').onclick = backup;
     if ($('#stReset')) $('#stReset').onclick = async () => { if (await confirmBox('ডেমো রিসেট', 'সব নমুনা ডাটা প্রথম অবস্থায় ফিরে যাবে।', 'রিসেট করুন')) { await store.resetDemo(); location.reload(); } };
     $('#stSave').onclick = async () => {
@@ -662,7 +662,7 @@
     if (d.nw !== d.nw2) return toast('দুইবার লেখা নতুন পাসওয়ার্ড মিলছে না।', true);
     try { await store.changePassword(d.cur, d.nw); toast('পাসওয়ার্ড পরিবর্তন হয়েছে'); } catch (e) { fail(e); }
   }
-  async function logout() { await store.logout(); location.hash = ''; }
+  async function logout() { await store.logout(); try { history.replaceState(null, '', '#admin'); } catch (e) { /* ignore */ } }
 
   let setupMode = false;
   async function showLogin() {
