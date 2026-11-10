@@ -1,3 +1,5 @@
+/* সুতন্নি ফন্ট: কম্পিউটারে ইনস্টল থাকলে সেটি, না থাকলে assets/fonts/SutonnyOMJ.ttf (রাখা থাকলে) */
+@font-face { font-family: 'SutonnyOMJ'; src: local('SutonnyOMJ'), local('Sutonny OMJ'), url('../assets/fonts/SutonnyOMJ.woff2') format('woff2'), url('../assets/fonts/SutonnyOMJ.ttf') format('truetype'); font-display: swap; }
 /* কুতুবজোম মাদ্রাসা — পাবলিক সাইট
    লেআউট: সবুজ-সোনালি ব্র্যান্ড, ক্যাম্পাসের ছবির উপর রেজাল্ট কার্ড, নিচে বৈশিষ্ট্য ও ডেভেলপার ফুটার */
 :root {
@@ -17,15 +19,17 @@
   --danger: #c0392b;
   --blue: #1f6fd6;
   --navy: #0c3c78;
-  --font-display: 'Baloo Da 2', 'Hind Siliguri', 'Noto Sans Bengali', system-ui, sans-serif;
-  --font-body: 'Hind Siliguri', 'Noto Sans Bengali', system-ui, sans-serif;
+  /* বাংলা: সুতন্নি (SutonnyOMJ, ইউনিকোড সংস্করণ)। কম্পিউটারে না থাকলে কাছাকাছি দেখতে Noto Serif Bengali */
+  --font-display: 'SutonnyOMJ', 'Noto Serif Bengali', 'Hind Siliguri', serif;
+  --font-body: 'SutonnyOMJ', 'Noto Serif Bengali', 'Hind Siliguri', serif;
+  --font-en: 'Hind Siliguri', 'Segoe UI', Arial, sans-serif;
   --radius: 18px;
   --shadow: 0 10px 30px rgba(7, 61, 36, .12);
   color-scheme: light;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.6; }
 img { max-width: 100%; display: block; }
 a { color: var(--g700); }
 svg { fill: currentColor; }

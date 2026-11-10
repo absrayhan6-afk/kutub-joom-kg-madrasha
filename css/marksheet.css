@@ -3,14 +3,14 @@
   --ms-g: #0b4d2c; --ms-g2: #0f6b3a; --ms-line: #b9d8c3; --ms-bg: #f3faf5;
   max-width: 900px; margin-inline: auto; background: linear-gradient(180deg, #ffffff 0%, #f1f9f3 100%);
   border: 3px solid var(--ms-g2); border-radius: 22px; padding: 22px 22px 0; color: #12301f;
-  font-family: 'Hind Siliguri', 'Noto Sans Bengali', system-ui, sans-serif; position: relative; overflow: hidden;
+  font-family: 'Hind Siliguri', 'Segoe UI', Arial, sans-serif; position: relative; overflow: hidden;
   box-shadow: 0 16px 40px rgba(7, 61, 36, .15);
 }
 .marksheet::after { content: ""; display: block; height: 46px; margin: 18px -22px 0; background: linear-gradient(175deg, transparent 0 35%, #e2b923 35% 42%, var(--ms-g2) 42% 70%, var(--ms-g) 70%); }
 .ms-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 18px; align-items: center; }
 .ms-logo { width: 112px; height: auto; }
-.ms-name h2 { margin: 0; font-family: 'Baloo Da 2', 'Hind Siliguri', sans-serif; color: var(--ms-g); font-size: clamp(22px, 3.2vw, 34px); line-height: 1.15; font-weight: 800; text-wrap: balance; }
-.ms-en { margin: 4px 0 0; font-weight: 700; letter-spacing: .02em; font-size: 14px; }
+.ms-name h2 { margin: 0; letter-spacing: .01em; font-family: 'Hind Siliguri', 'Segoe UI', Arial, sans-serif; color: var(--ms-g); font-size: clamp(22px, 3.2vw, 34px); line-height: 1.15; font-weight: 800; text-wrap: balance; }
+.ms-en { margin: 2px 0 0; font-weight: 600; font-size: 14px; }
 .ms-addr { margin: 4px 0 0; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 15px; }
 .ms-addr svg { width: 16px; height: 16px; fill: #e53935; }
 .ms-meta { margin: 0; display: grid; grid-template-columns: auto auto; gap: 4px 12px; border: 1.5px solid var(--ms-line); border-radius: 14px; padding: 12px 16px; background: #fff; font-size: 15px; }
@@ -19,14 +19,14 @@
 .ms-ribbon { display: flex; align-items: center; gap: 14px; margin: 14px 0; }
 .ms-ribbon::before, .ms-ribbon::after { content: ""; flex: 1; height: 3px; background: linear-gradient(90deg, transparent, var(--ms-g2) 30%, #e2b923); border-radius: 2px; }
 .ms-ribbon::after { transform: scaleX(-1); }
-.ms-ribbon span { background: linear-gradient(180deg, var(--ms-g2), var(--ms-g)); color: #fff; font-family: 'Baloo Da 2', 'Hind Siliguri', sans-serif; font-weight: 800; font-size: 24px; padding: 4px 28px; border-radius: 99px; border: 3px solid #e2b923; white-space: nowrap; }
+.ms-ribbon span { background: linear-gradient(180deg, var(--ms-g2), var(--ms-g)); color: #fff; font-family: 'Hind Siliguri', 'Segoe UI', Arial, sans-serif; font-weight: 800; font-size: 24px; padding: 4px 28px; border-radius: 99px; border: 3px solid #e2b923; white-space: nowrap; }
 .ms-info { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 16px; border: 1.5px solid var(--ms-line); border-radius: 16px; padding: 14px 18px; background: #fff; }
 .ms-grid { display: grid; grid-template-columns: auto 14px minmax(0, 1fr); gap: 3px 6px; align-content: center; font-size: 17px; padding-left: clamp(0px, 6vw, 70px); }
 .ms-k { font-weight: 700; } .ms-c { text-align: center; } .ms-v { font-weight: 600; overflow-wrap: anywhere; }
 .ms-grade { border-radius: 16px; background: linear-gradient(180deg, #fff7d6, #ffe9a6); border: 2px solid #f2c94c; text-align: center; padding: 10px 8px; display: flex; flex-direction: column; justify-content: center; }
-.ms-grade > span { font-family: 'Baloo Da 2', 'Hind Siliguri', sans-serif; color: var(--ms-g); font-weight: 800; font-size: 26px; line-height: 1.2; }
+.ms-grade > span { font-family: 'Hind Siliguri', 'Segoe UI', Arial, sans-serif; color: var(--ms-g); font-weight: 800; font-size: 26px; line-height: 1.2; }
 .ms-grade-row { display: flex; justify-content: center; align-items: center; gap: 6px; }
-.ms-grade b { font-family: 'Baloo Da 2', system-ui, sans-serif; font-size: 72px; line-height: 1; color: #f06a0f; font-weight: 800; }
+.ms-grade b { font-family: 'Hind Siliguri', 'Segoe UI', Arial, sans-serif; font-size: 72px; line-height: 1; color: #f06a0f; font-weight: 800; }
 .ms-grade.is-fail { background: linear-gradient(180deg, #fff1ef, #ffd9d4); border-color: #f1a99f; }
 .ms-grade.is-fail b { color: #c0392b; }
 .laurel { width: 30px; height: 70px; color: #c99a12; fill: #c99a12; }
@@ -34,7 +34,7 @@
 .ms-tiles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
 .ms-tile { border-radius: 14px; border: 1.5px solid; padding: 8px 6px; text-align: center; display: flex; flex-direction: column; }
 .ms-tile span { font-weight: 700; font-size: 16px; color: var(--ms-g); }
-.ms-tile b { font-family: 'Baloo Da 2', system-ui, sans-serif; font-size: 34px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.ms-tile b { font-family: 'Hind Siliguri', 'Segoe UI', Arial, sans-serif; font-size: 34px; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .ms-tile small { font-size: 16px; color: #5a6f63; }
 .t-blue { background: #e7f2fd; border-color: #a9cdf3; } .t-purple { background: #f1e9fb; border-color: #cdb3ee; }
 .t-green { background: #e6f6ea; border-color: #9fd6ae; } .t-orange { background: #fff0e4; border-color: #f6c49d; }
@@ -47,7 +47,7 @@
 .ms-table td.ms-f { color: #c0392b; font-weight: 700; }
 .ms-table tr:nth-child(even) td { background: var(--ms-bg); }
 .ms-msg { display: flex; gap: 16px; align-items: center; margin-top: 16px; border: 1.5px solid #9fd6ae; background: #eaf7ee; border-radius: 16px; padding: 12px 18px; }
-.ms-msg h3 { margin: 0; font-family: 'Baloo Da 2', 'Hind Siliguri', sans-serif; color: var(--ms-g); font-size: 28px; line-height: 1.2; }
+.ms-msg h3 { margin: 0; font-family: 'Hind Siliguri', 'Segoe UI', Arial, sans-serif; color: var(--ms-g); font-size: 28px; line-height: 1.2; }
 .ms-msg p { margin: 0; font-weight: 600; color: var(--ms-g); font-size: 17px; }
 .ms-msg-ico { width: 46px; height: 46px; border-radius: 50%; background: #1fa34a; color: #fff; display: grid; place-items: center; flex: none; font-weight: 800; font-size: 26px; }
 .ms-msg-ico svg { width: 30px; height: 30px; fill: #fff; }

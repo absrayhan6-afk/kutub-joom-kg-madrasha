@@ -28,11 +28,25 @@ const st = [{ id: 1, roll: '1' }, { id: 2, roll: '2' }, { id: 3, roll: '3' }, { 
 const r = C.classResults(st, subs, { 1: { a: 85, b: 45 }, 2: { a: 78, b: 30 }, 3: { a: 100, b: 5 }, 4: { a: 85, b: 45 } });
 assert.deepStrictEqual(r.map((x) => [x.student.id, x.rank, x.newRoll]), [[1, 1, 1], [4, 1, 2], [2, 3, 3], [3, 4, 4]]);
 
-// হিসাব: তিন পর্বে বাকি
-const fee = C.studentFees({ admission: 500, monthly: 150, exam_first: 100, exam_second: 100, exam_annual: 100 }, { admission: 500, m1: 150, m2: 150, exam_first: 100 });
+// হিসাব: তিন পর্বে বাকি (খালি ঘর = বাকি)
+const items = C.defaultFeeItems({ admission: 500, monthly: 150, exam_first: 100, exam_second: 100, exam_annual: 100 });
+const fee = C.studentFees(items, { admission: 500, m1: 150, m2: 150, exam_first: 100 });
 assert.deepStrictEqual(fee.periods.map((p) => p.balance), [300, 700, 700]);
 assert.strictEqual(fee.balance, 1700);
-// বেতন মাফ
-assert.strictEqual(C.studentFees({ admission: 0, monthly: 150 }, {}, { monthly: 0 }).balance, 0);
+// ছাড়: ফ্রি, অর্ধেক, শতাংশ, নির্দিষ্ট বেতন
+assert.strictEqual(C.studentFees(items, {}, { type: 'free', scope: 'monthly' }).due, 500 + 300);
+assert.strictEqual(C.studentFees(items, {}, { type: 'half', scope: 'monthly' }).due, 500 + 900 + 300);
+assert.strictEqual(C.studentFees(items, {}, { type: 'free', scope: 'all' }).due, 0);
+assert.strictEqual(C.studentFees(items, {}, { type: 'percent', percent: 20, scope: 'monthly' }).due, 500 + 1440 + 300);
+assert.strictEqual(C.studentFees(items, {}, { type: 'amount', amount: 100, scope: 'monthly' }).due, 500 + 1200 + 300);
+// মাস অন্য হিসাবে সরানো যায়: ৪ মাসের জায়গায় ৬ মাস
+const moved = items.map((it) => (it.key === 'm5' || it.key === 'm6') ? Object.assign({}, it, { period: 'first' }) : it);
+assert.strictEqual(C.studentFees(moved, {}).periods[0].due, 500 + 900 + 100);
+// পুরনো ডাটা নতুন ধাঁচে
+const norm = C.normalizeFees({ structure: { monthly: 150 }, overrides: { s1: { monthly: 0 } } });
+assert.strictEqual(norm.items.length, 16); assert.strictEqual(norm.discounts.s1.amount, 0);
+// সংখ্যা ইংরেজিতে
+assert.strictEqual(C.toBn(2026), '2026'); assert.strictEqual(C.toEn('২০২৬'), '2026');
+assert.strictEqual(C.passMarkFor(50), 16.5);
 
 console.log('All calculation tests passed');

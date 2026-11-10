@@ -9,14 +9,14 @@
 <link rel="icon" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="css/site.css">
 <link rel="stylesheet" href="css/marksheet.css">
 <link rel="stylesheet" href="css/admin.css">
 </head>
 <body class="admin-body">
 <!--ADMIN-START-->
-<div id="demoBarA" class="demo-bar" hidden>ডেমো মোড: নমুনা ডাটা। লগইন: User ID <b>principal</b>, Password <b>demo1234</b> (শিক্ষক: <b>teacher</b> / <b>demo1234</b>)</div>
+<div id="demoBarA" class="demo-bar" hidden>ডেমো মোড: নমুনা ডাটা। লগইন: User ID <b>principal</b>, Password <b>demo1234</b> (শিক্ষক: <b>teacher</b>, অফিস: <b>office</b>, পাসওয়ার্ড একই)</div>
 
 <!-- লগইন পেজ -->
 <section id="loginView" class="login-view" hidden>
@@ -36,7 +36,7 @@
     <form id="loginForm" class="login-card" novalidate>
       <img data-img="logo" src="assets/logo.webp" alt="" class="login-card-logo" width="120" height="110">
       <h2 id="loginTitle">Staff Login</h2>
-      <p id="loginSub">Principal অথবা শিক্ষক হিসেবে লগইন করুন</p>
+      <p id="loginSub">প্রিন্সিপাল, শিক্ষক অথবা অফিস কর্মচারী হিসেবে লগইন করুন</p>
       <label class="in-ico" for="lName" id="lNameWrap" hidden><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5z"/></svg><input id="lName" placeholder="আপনার নাম" autocomplete="name"></label>
       <label class="in-ico" for="lUser"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5z"/></svg><input id="lUser" placeholder="User ID লিখুন" autocomplete="username" required></label>
       <label class="in-ico" for="lPass"><svg viewBox="0 0 24 24"><path d="M6 10V8a6 6 0 1 1 12 0v2h1v12H5V10zm2 0h8V8a4 4 0 0 0-8 0z"/></svg><input id="lPass" type="password" placeholder="Password লিখুন" autocomplete="current-password" required><button type="button" class="eye" id="eyeBtn" aria-label="পাসওয়ার্ড দেখুন"><svg viewBox="0 0 24 24"><path d="M12 5C6 5 2 12 2 12s4 7 10 7 10-7 10-7-4-7-10-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg></button></label>
@@ -58,7 +58,7 @@
       <button id="sideBtn" class="side-btn" aria-label="মেনু খুলুন"><span></span><span></span><span></span></button>
       <h1 id="pageTitle">ড্যাশবোর্ড</h1>
       <div class="who" id="whoBox">
-        <button id="whoBtn" class="who-btn" aria-haspopup="true" aria-expanded="false"><img data-img="devPhoto" src="assets/developer.webp" alt="" width="40" height="40" id="whoPhoto"><span id="whoName">Principal</span><svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5z"/></svg></button>
+        <button id="whoBtn" class="who-btn" aria-haspopup="true" aria-expanded="false"><span id="whoAvatar"></span><span class="who-text"><b id="whoName">Principal</b><small id="whoRole"></small></span><svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5z"/></svg></button>
         <div class="who-menu" id="whoMenu" hidden>
           <button type="button" id="pwBtn">পাসওয়ার্ড পরিবর্তন</button>
           <a href="index.html" target="_blank" rel="noopener">পাবলিক রেজাল্ট পেজ ↗</a>
@@ -79,6 +79,7 @@
 <script src="js/calc.js"></script>
 <script src="js/store.js"></script>
 <script src="js/marksheet.js"></script>
+<script src="js/idcard.js"></script>
 <script src="js/admin.js"></script>
 </body>
 </html>

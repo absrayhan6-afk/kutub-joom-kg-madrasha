@@ -26,15 +26,15 @@ index, admin = read('index.html'), read('admin.html')
 site_html = fix_links(part(index, 'SITE-START', 'SITE-END'))
 admin_html = fix_links(part(admin, 'ADMIN-START', 'ADMIN-END'))
 css = '\n'.join(read(f'css/{n}.css') for n in ('site', 'marksheet', 'admin'))
-js = '\n;\n'.join(fix_links(read(f'js/{n}.js')) for n in ('config', 'calc', 'store', 'marksheet', 'public', 'admin'))
-router = """(function(){var A=['admin','dashboard','students','classes','teachers','marks','publish','archive','fees','notices','admission','config'];
+js = '\n;\n'.join(fix_links(read(f'js/{n}.js')) for n in ('config', 'calc', 'store', 'marksheet', 'idcard', 'public', 'admin'))
+router = """(function(){var A=['admin','dashboard','students','classes','teachers','marks','publish','archive','fees','notices','admission','config','idcards'];
 function r(){var h=location.hash.slice(1),adm=A.indexOf(h)>=0;document.getElementById('sitePart').hidden=adm;document.getElementById('adminPart').hidden=!adm;document.body.classList.toggle('admin-body',adm);}
 window.addEventListener('hashchange',function(){r();window.scrollTo(0,0);});r();})();"""
 
 out = f"""<title>কুতুবজোম মাদ্রাসা ওয়েবসাইট</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap">
 <style>{css}</style>
 <div id="sitePart">{site_html}</div>
 <div id="adminPart" hidden>{admin_html}</div>
@@ -42,7 +42,7 @@ out = f"""<title>কুতুবজোম মাদ্রাসা ওয়ে�
 <script>{js}</script>
 """
 mime = {'.webp': 'image/webp', '.jpg': 'image/jpeg', '.png': 'image/png'}
-for f in (ROOT / 'assets').iterdir():
+for f in (p for p in (ROOT / 'assets').iterdir() if p.is_file() and p.suffix in mime):
     uri = f'data:{mime[f.suffix]};base64,' + base64.b64encode(f.read_bytes()).decode()
     out = out.replace(f'assets/{f.name}', uri)
 pathlib.Path(sys.argv[1]).write_text(out, encoding='utf-8')

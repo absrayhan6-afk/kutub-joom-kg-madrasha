@@ -60,7 +60,10 @@
 .side-btn span { display: block; height: 3px; background: #fff; border-radius: 2px; }
 .who { position: relative; }
 .who-btn { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); background: #fff; border-radius: 16px; padding: 6px 12px 6px 6px; cursor: pointer; font-weight: 700; color: var(--g900); font-size: 17px; }
-.who-btn img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: var(--g50); }
+.who-text { display: flex; flex-direction: column; line-height: 1.15; text-align: left; }
+.who-text small { font-weight: 500; color: var(--ink-soft); font-size: 13px; }
+.avatar { border-radius: 50%; object-fit: cover; display: inline-grid; place-items: center; flex: none; vertical-align: middle; background: var(--g50); }
+.avatar-empty { background: var(--g100); color: var(--g800); font-weight: 800; font-size: 18px; }
 .who-btn svg { width: 22px; height: 22px; }
 .who-menu { position: absolute; right: 0; top: calc(100% + 6px); background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); min-width: 220px; z-index: 30; display: flex; flex-direction: column; padding: 6px; }
 .who-menu button, .who-menu a { border: 0; background: transparent; text-align: left; padding: 10px 12px; border-radius: 10px; font-weight: 600; color: var(--g900); cursor: pointer; text-decoration: none; font-size: 15px; }
@@ -94,7 +97,6 @@
 .tbl tbody tr:hover td { background: #f8fcf9; }
 .tbl td.left, .tbl th.left { text-align: left; }
 .tbl td.left { white-space: nowrap; }
-.who-btn.no-photo span { display: inline !important; }
 .tbl input.cell { width: 72px; padding: 7px 8px; border: 1.5px solid #cfdcd3; border-radius: 10px; text-align: center; font-variant-numeric: tabular-nums; }
 .tbl input.cell:focus { outline: none; border-color: var(--g600); box-shadow: 0 0 0 3px var(--g100); }
 .tbl input.cell.bad { border-color: var(--danger); background: #fdecea; }
@@ -186,7 +188,7 @@
   .side-btn { display: flex; }
   .topbar { padding-left: max(16px, env(safe-area-inset-left, 0px)); }
   .view { padding-left: max(16px, env(safe-area-inset-left, 0px)); }
-  .who-btn span { display: none; }
+  .who-text { display: none; }
   .login-row { grid-template-columns: minmax(0, 1fr); }
   .login-nav { align-self: stretch; justify-content: center; }
   .grid-3 { grid-template-columns: minmax(0, 1fr); }
@@ -207,3 +209,28 @@
   .print-area .marksheet { break-after: page; margin-bottom: 0; }
   .print-area .slip { break-inside: avoid; margin-bottom: 10mm; }
 }
+
+/* ===== নতুন অংশ ===== */
+.cell-sel { padding: 7px 8px; border: 1.5px solid #cfdcd3; border-radius: 10px; background: #fff; }
+.fee-due-empty { background: #fff7f5; }
+.slip-head { display: flex; gap: 12px; align-items: center; justify-content: center; margin-bottom: 6px; }
+.slip-head h3, .slip-head .slip-sub { text-align: left; margin: 0; }
+.archive-hero { background: linear-gradient(120deg, #fffbea, #fff3c8); border-color: #f1d98a; display: grid; gap: 12px; }
+.archive-hero h2 { margin-bottom: 4px; }
+.archive-hero p { margin: 0 0 8px; max-width: 75ch; }
+.file-btn { cursor: pointer; }
+.file-btn input { display: none; }
+/* আইডি কার্ড */
+.id-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; margin-top: 12px; }
+.id-item { display: flex; flex-direction: column; gap: 8px; align-items: center; border: 1px solid var(--line); border-radius: 16px; padding: 12px; background: #fafcfb; min-width: 0; }
+.id-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+.id-svg { width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.18); background: #fff; }
+.id-meta { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; min-height: 22px; }
+.id-item .row-actions .btn svg { width: 16px; height: 16px; }
+.cam-box { position: relative; background: #111; border-radius: 14px; overflow: hidden; aspect-ratio: 4 / 3; max-width: 100%; }
+.cam-box video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block; }
+.cam-guide { position: absolute; left: 50%; top: 50%; width: 46%; aspect-ratio: 1; transform: translate(-50%, -50%); border: 3px dashed rgba(255,255,255,.85); border-radius: 50%; pointer-events: none; }
+.id-print { display: grid; grid-template-columns: repeat(3, 54mm); gap: 6mm 8mm; justify-content: center; }
+.id-print-card .id-svg { width: 54mm; height: 85.6mm; box-shadow: none; border-radius: 0; }
+@media print { .id-print-card { break-inside: avoid; } }
+.year-card > svg { width: 30px; height: 30px; fill: var(--g800); }
