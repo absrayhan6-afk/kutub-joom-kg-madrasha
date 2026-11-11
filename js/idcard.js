@@ -1,10 +1,16 @@
 // শিক্ষার্থীর আইডি কার্ড (মাদ্রাসার দেওয়া ফরম্যাট অনুযায়ী): সামনে ও পেছনে দুই দিক।
-// মাপ CR80 (54 × 85.6 mm), সব লেখা ইংরেজিতে। আইডি নম্বর = রেজিস্ট্রেশন নম্বর।
+// মাপ 2.13 × 3.39 in (54.1 × 86.1 mm), চারপাশে 0.125 in bleed। সব লেখা ইংরেজিতে। আইডি নম্বর = রেজিস্ট্রেশন নম্বর।
 // SVG (মিলিমিটারে) — ব্রাউজারে দেখা, প্রিন্ট ও Adobe Illustrator-এ এডিট করা যায়।
 (function (global) {
   'use strict';
-  const W = 54, H = 85.6;
-  const NAVY = '#2b2e7c', BLUE = '#3f88c9', TEAL = '#7fcfdb', INK = '#1f2357';
+  // নকশা আঁকা হয় 54 × 85.6 একক ধরে, তারপর আসল মাপে বড় করা হয়
+  const BW = 54, BH = 85.6;
+  const W = 2.13 * 25.4, H = 3.39 * 25.4, BLEED = 0.125 * 25.4;
+  const SX = W / BW, SY = H / BH;
+  const DEF = { navy: '#2b2e7c', blue: '#3f88c9', teal: '#7fcfdb', ink: '#1f2357', schoolSize: 0, addrLine: '', nameSize: 0, infoSize: 2.55, footer: 'STUDENT', signLabel: 'Headmaster Signature', qr: 'student', qrCustom: '', schoolLines: '' };
+  let NAVY, BLUE, TEAL, INK, CFG = DEF;
+  function useCfg(c) { CFG = Object.assign({}, DEF, c || {}); NAVY = CFG.navy; BLUE = CFG.blue; TEAL = CFG.teal; INK = CFG.ink; }
+  useCfg();
   const F_HEAD = "'Arial Black', 'Arial Bold', Arial, sans-serif";
   const F_NAME = "Impact, 'Arial Narrow Bold', 'Arial Narrow', Arial, sans-serif";
   const F_BODY = "Georgia, 'Times New Roman', serif";
@@ -51,25 +57,31 @@
     <path d="M0 72.5L54 81.5V85.6H0Z" fill="${NAVY}"/>
     <path d="M7.5 85.6C8.6 79.6 12.6 75.8 20 75.6L54 79.6V85.6Z" fill="${TEAL}"/>
     <path d="M11.2 85.6C12.4 81.4 15.6 78.6 21.2 78.4L54 82.2V85.6Z" fill="${BLUE}"/>`;
-  const frame = (cid, inner) => `<defs><clipPath id="${cid}k"><rect width="${W}" height="${H}" rx="2.6"/></clipPath></defs><g clip-path="url(#${cid}k)"><rect width="${W}" height="${H}" fill="#ffffff"/>${inner}</g>`;
+  // পটভূমি: স্ক্রিনে গোল কোনা; প্রিন্ট ফাইলে bleed পর্যন্ত বিস্তৃত
+  let BLEED_MODE = false;
+  const frame = (cid, inner) => BLEED_MODE
+    ? `<g id="Background" transform="translate(${n2(-BLEED / SX)} ${n2(-BLEED / SY)}) scale(${n2((BW + 2 * BLEED / SX) / BW)} ${n2((BH + 2 * BLEED / SY) / BH)})"><rect width="${BW}" height="${BH}" fill="#ffffff"/>${inner}</g>`
+    : `<defs><clipPath id="${cid}k"><rect width="${BW}" height="${BH}" rx="2.6"/></clipPath></defs><g id="Background" clip-path="url(#${cid}k)"><rect width="${BW}" height="${BH}" fill="#ffffff"/>${inner}</g>`;
 
   // ===== সামনের দিক =====
   // d = {name, id, father, cls, roll, phone, address, year, photo, logo, school, schoolAddress, ...}
   function front(d) {
     const cid = 'f' + (++seq);
-    const school = wrap(String(d.school || '').toUpperCase(), 24, 2);
-    const shortAddr = String(d.schoolAddress || '').split(',').map((t) => t.trim()).filter(Boolean).slice(-2).join(', ');
+    const school = CFG.schoolLines ? CFG.schoolLines.split('\n').map((t) => t.trim()).filter(Boolean).slice(0, 3) : wrap(String(d.school || '').toUpperCase(), 24, 2);
+    const shortAddr = CFG.addrLine || String(d.schoolAddress || '').split(',').map((t) => t.trim()).filter(Boolean).slice(-2).join(', ');
     const name = wrap(d.name, 22, 2);
-    const nameSize = name.length > 1 ? 3.2 : (String(d.name).length > 18 ? 3.4 : 3.9);
+    const nameSize = Number(CFG.nameSize) || (name.length > 1 ? 3.2 : (String(d.name).length > 18 ? 3.4 : 3.9));
+    const fsz = Number(CFG.infoSize) || 2.55;
+    const schoolSize = Number(CFG.schoolSize) || (school.some((t) => t.length > 20) ? 3.05 : 3.35);
     const addr = wrap(d.address, 22, 2);
     const rows = [['ID Number', d.id], ["Father's name", d.father], ['Roll', d.roll], ['Class', d.cls], ['Mobile', d.phone]];
     let y = 46.6 + (name.length - 1) * 3.6;
-    const row = (l, val, yy, first) => `${l ? `<text x="8.6" y="${n2(yy)}" font-size="2.55" fill="${INK}">${x(l)}</text>` : ''}${first ? `<text x="24.6" y="${n2(yy)}" font-size="2.8" font-weight="700" fill="${INK}">:</text>` : ''}<text x="26.4" y="${n2(yy)}" font-size="2.55" fill="${INK}">${x(val || '')}</text>`;
+    const row = (l, val, yy, first) => `${l ? `<text x="8.6" y="${n2(yy)}" font-size="${fsz}" fill="${INK}">${x(l)}</text>` : ''}${first ? `<text x="24.6" y="${n2(yy)}" font-size="${n2(fsz + 0.25)}" font-weight="700" fill="${INK}">:</text>` : ''}<text x="26.4" y="${n2(yy)}" font-size="${fsz}" fill="${INK}">${x(val || '')}</text>`;
     let rowsSvg = rows.map((r) => { const s = row(r[0], r[1], y, true); y += 3.45; return s; }).join('');
     rowsSvg += addr.length ? addr.map((l, i) => row(i === 0 ? 'Address' : '', l, y + i * 3, i === 0)).join('') : row('Address', '', y, true);
     return frame(cid, `${topShapes()}${bottomShapes()}`) + `
-  <g font-family="${F_HEAD}" font-weight="900" fill="#ffffff" text-anchor="middle">${school.map((l, i) => `<text x="27" y="${n2(5.4 + i * 4.1)}" font-size="${school.some((t) => t.length > 20) ? 3.05 : 3.35}" letter-spacing="0.12">${x(l)}</text>`).join('')}</g>
-  <text x="27" y="${n2(5.4 + school.length * 4.1 + 0.2)}" font-family="${F_BODY}" font-size="2.35" fill="#ffffff" text-anchor="middle">${x(shortAddr)}</text>
+  <g font-family="${F_HEAD}" font-weight="900" fill="#ffffff" text-anchor="middle">${school.map((l, i) => `<text x="27" y="${n2(5.4 + i * (schoolSize + 0.75))}" font-size="${schoolSize}" letter-spacing="0.12">${x(l)}</text>`).join('')}</g>
+  <text x="27" y="${n2(5.4 + school.length * (schoolSize + 0.75) + 0.2)}" font-family="${F_BODY}" font-size="2.35" fill="#ffffff" text-anchor="middle">${x(shortAddr)}</text>
   <defs><clipPath id="${cid}p"><circle cx="27" cy="27.6" r="9.4"/></clipPath></defs>
   <path d="M27 16.2A11.4 11.4 0 1 1 15.7 29.3C15.3 25 14.6 20 13.4 16.6C17.6 16.4 22.4 16.2 27 16.2Z" fill="${NAVY}"/>
   <circle cx="27" cy="27.6" r="9.9" fill="#ffffff"/>
@@ -77,7 +89,7 @@
     : `<g clip-path="url(#${cid}p)"><rect x="17" y="17" width="20" height="21" fill="#e8edf5"/><circle cx="27" cy="25.2" r="3.6" fill="#b9c3d6"/><path d="M19.8 37.4c0-4.6 3.2-7.4 7.2-7.4s7.2 2.8 7.2 7.4z" fill="#b9c3d6"/></g>`}
   <g font-family="${F_NAME}" font-weight="700" fill="#111111" text-anchor="middle">${name.map((l, i) => `<text x="27" y="${n2(42.6 + i * 3.6)}" font-size="${nameSize}">${x(l)}</text>`).join('')}</g>
   <g font-family="${F_BODY}">${rowsSvg}</g>
-  <text x="31.5" y="84.1" font-family="${F_HEAD}" font-weight="900" font-size="2.9" fill="#ffffff" text-anchor="middle" letter-spacing="0.1">STUDENT</text>`;
+  <text x="31.5" y="84.1" font-family="${F_HEAD}" font-weight="900" font-size="2.9" fill="#ffffff" text-anchor="middle" letter-spacing="0.1">${x(CFG.footer)}</text>`;
   }
 
   // ===== পেছনের দিক =====
@@ -107,20 +119,38 @@
   ${d.logo ? `<image xlink:href="${x(d.logo)}" x="16.4" y="11.2" width="19.6" height="18" preserveAspectRatio="xMidYMid meet"/>` : ''}
   <line x1="17" y1="${n2(lineTop)}" x2="17" y2="${n2(lineBot)}" stroke="${NAVY}" stroke-width="0.55"/>
   <g font-family="${F_BODY}">${rows}</g>
-  ${qrSvg(d.qr || '', 20.3, y - 1.2, 13.4)}
+  ${CFG.qr === 'none' ? '' : qrSvg(CFG.qr === 'custom' ? (CFG.qrCustom || '') : CFG.qr === 'website' ? (d.website || '') : (d.qr || ''), 20.3, y - 1.2, 13.4)}
   ${d.sign ? `<image xlink:href="${x(d.sign)}" x="36.6" y="${n2(y + 5.6)}" width="13.8" height="4.6" preserveAspectRatio="xMidYMid meet"/>` : ''}
   <line x1="35.6" y1="${n2(y + 10.6)}" x2="51.6" y2="${n2(y + 10.6)}" stroke="#111111" stroke-width="0.3"/>
-  <text x="43.6" y="${n2(y + 13)}" font-family="${F_BODY}" font-size="1.95" fill="#111111" text-anchor="middle">Headmaster Signature</text>`;
+  <text x="43.6" y="${n2(y + 13)}" font-family="${F_BODY}" font-size="1.95" fill="#111111" text-anchor="middle">${x(CFG.signLabel)}</text>`;
   }
 
-  const svgOpen = (cls, label) => `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${W} ${H}" width="${W * 4}" height="${H * 4}" role="img" aria-label="${x(label)}">`;
-  function previewSvg(d, side) {
-    return svgOpen('id-svg', (side === 'back' ? 'Back of ID card: ' : 'ID card: ') + d.name) + (side === 'back' ? back(d) : front(d)) + '</svg>';
+  // একটি দিক আসল মাপে (mm)
+  const side = (d, which) => `<g transform="scale(${n2(SX)} ${n2(SY)})">${which === 'back' ? back(d) : front(d)}</g>`;
+  const svgOpen = (cls, label) => `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${n2(W)} ${n2(H)}" width="${n2(W * 4)}" height="${n2(H * 4)}" role="img" aria-label="${x(label)}">`;
+  function previewSvg(d, which, cfg) {
+    useCfg(cfg); BLEED_MODE = false;
+    return svgOpen('id-svg', (which === 'back' ? 'Back of ID card: ' : 'ID card: ') + d.name) + side(d, which) + '</svg>';
+  }
+
+  // একজন শিক্ষার্থীর প্রিন্ট ফাইল: সামনে ও পেছন পাশাপাশি, প্রতিটি 2.13 × 3.39 in + 0.125 in bleed।
+  // প্রতিটি দিক আলাদা লেয়ার/গ্রুপ (Front, Back → Background, Content, Trim)।
+  function studentSvg(d, cfg) {
+    useCfg(cfg); BLEED_MODE = true;
+    const bw = W + 2 * BLEED, bh = H + 2 * BLEED, gap = 12.7;
+    const one = (which, ox) => `<g id="${which === 'back' ? 'Back' : 'Front'}" transform="translate(${n2(ox + BLEED)} ${n2(BLEED)})">
+  <g id="Artboard_${which === 'back' ? 2 : 1}_Bleed"><rect x="${n2(-BLEED)}" y="${n2(-BLEED)}" width="${n2(bw)}" height="${n2(bh)}" fill="none" stroke="#ff0000" stroke-width="0.1"/></g>
+  <g id="Content">${side(d, which)}</g>
+  <g id="Trim"><rect x="0" y="0" width="${n2(W)}" height="${n2(H)}" fill="none" stroke="#00b7eb" stroke-width="0.12"/></g></g>`;
+    const out = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${n2(bw * 2 + gap)}mm" height="${n2(bh)}mm" viewBox="0 0 ${n2(bw * 2 + gap)} ${n2(bh)}">\n<title>${x(d.name + ' — ID ' + d.id)}</title>\n${one('front', 0)}\n${one('back', bw + gap)}\n</svg>`;
+    BLEED_MODE = false;
+    return out;
   }
 
   // A4 পাতায় সাজানো (প্রতি পাতায় 9টি কার্ড)। প্রতিটি সামনের পাতার পরে তার পেছনের পাতা,
   // কলাম উল্টো ক্রমে — দুই পিঠে প্রিন্ট করলে সামনে-পেছন মিলে যায়। সব পাতা একটি ফাইলে।
-  function sheetSvg(list, title) {
+  function sheetSvg(list, title, cfg) {
+    useCfg(cfg); BLEED_MODE = false;
     const PW = 210, PH = 297, cols = 3, rowsN = 3, gx = 8, gy = 6, PG = 12;
     const mx = (PW - (cols * W + (cols - 1) * gx)) / 2, my = (PH - (rowsN * H + (rowsN - 1) * gy)) / 2;
     const per = cols * rowsN, sheets = Math.max(1, Math.ceil(list.length / per));
@@ -129,13 +159,13 @@
     let body = '';
     for (let p = 0; p < sheets; p++) {
       const chunk = list.slice(p * per, (p + 1) * per);
-      ['Front', 'Back'].forEach((side, k) => {
+      ['Front', 'Back'].forEach((sd, k) => {
         const oy = (p * 2 + k) * (PH + PG);
-        body += `<g id="Page_${p + 1}_${side}"><rect x="0" y="${oy}" width="${PW}" height="${PH}" fill="#ffffff" stroke="#cccccc" stroke-width="0.2"/>`;
+        body += `<g id="Page_${p + 1}_${sd}"><rect x="0" y="${oy}" width="${PW}" height="${PH}" fill="#ffffff" stroke="#cccccc" stroke-width="0.2"/>`;
         chunk.forEach((d, i) => {
           const col = k ? cols - 1 - (i % cols) : i % cols;
           const cx = mx + col * (W + gx), cy = oy + my + Math.floor(i / cols) * (H + gy);
-          body += `<g id="${id(d, side)}" transform="translate(${n2(cx)} ${n2(cy)})">${k ? back(d) : front(d)}</g>`;
+          body += `<g id="${id(d, sd)}" transform="translate(${n2(cx)} ${n2(cy)})">${side(d, k ? 'back' : 'front')}</g>`;
         });
         body += '</g>';
       });
@@ -200,5 +230,5 @@
     return cv.toDataURL('image/jpeg', 0.88);
   }
 
-  global.IdCard = { W, H, front, back, previewSvg, sheetSvg, portrait, toPng, whiteBackground, fileToUrl, ensureQR };
+  global.IdCard = { W, H, DEF, previewSvg, sheetSvg, studentSvg, portrait, toPng, whiteBackground, fileToUrl, ensureQR };
 })(window);

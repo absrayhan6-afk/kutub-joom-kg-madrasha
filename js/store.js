@@ -10,7 +10,7 @@
   const resultId = (y, e, c, roll, reg) => `${y}_${e}_${c}_${C.toEn(roll)}_${C.toEn(reg).replace(/[^0-9A-Za-z-]/g, '')}`;
   const ROLES = { principal: 'প্রিন্সিপাল', teacher: 'শিক্ষক', office: 'অফিস / কম্পিউটার' };
   // অফিস কর্মচারী আইডি কার্ডের জন্য শুধু এই তথ্যগুলো বদলাতে পারবেন
-  const CARD_FIELDS = ['nameEn', 'fatherEn', 'address', 'phone', 'blood'];
+  const CARD_FIELDS = ['nameEn', 'fatherEn', 'address', 'phone', 'blood', 'card'];
 
   const DEFAULT_CLASSES = [
     ['নার্সারি', 'Nursery'], ['কে.জি', 'KG'], ['প্রথম শ্রেণি', 'Class One'], ['দ্বিতীয় শ্রেণি', 'Class Two'], ['তৃতীয় শ্রেণি', 'Class Three'],
@@ -40,14 +40,36 @@
     devQuote: 'একটি আধুনিক শিক্ষা ব্যবস্থার জন্য প্রযুক্তির সঠিক ব্যবহার অপরিহার্য',
     activeYear: String(new Date().getFullYear()),
     archivedYears: [],
+    regStart: '1001',
+    // ভর্তি ব্যানার (হোম পেজ)
+    bTagline: 'ইসলাম শিক্ষা, নৈতিকতা ও আধুনিকতার সমন্বয়ে',
+    bName1: 'কুতুবজোম ইসলামীয়া',
+    bName2: 'কে.জি এন্ড প্রি-ক্যাডেট মাদ্রাসা',
+    bRibbon: 'নার্সারি থেকে দাখিল অষ্টম',
+    bBadge: 'ভর্তি চলছে',
+    bc1: 'কুরআন-হাদীসের আলোকে আদর্শ শিক্ষা', bc2: 'নৈতিক ও দক্ষ শিক্ষক মন্ডলী', bc3: 'শিশুদের জন্য নিরাপদ পরিবেশ', bc4: 'আধুনিক শিক্ষা ও ইসলামী মুল্যবোধ',
+    bStrip: 'আপনার সন্তানের উজ্জ্বল ভবিষ্যতের জন্য আজই ভর্তি করুন',
+    bPill: 'শিক্ষাই গড়বে সুন্দর আগামী',
+    bShowBadge: true,
+    formFooter: 'আলোর পথে, ইসলামের পথে...',
+    // আইডি কার্ডের ডিজাইন (আইডি কার্ড → কার্ড এডিট)
+    card: {},
     admissionTitle: 'ভর্তি বিজ্ঞপ্তি 2027',
     admissionBody: 'কুরআন শিক্ষা • হাদিস ও ইসলামিক শিক্ষা • কম্পিউটার শিক্ষা • ইংরেজি ভাষা শিক্ষা • বাংলা ও সাধারণ শিক্ষা • আধুনিক পাঠদান পদ্ধতি',
     admissionDeadline: '31 জানুয়ারি 2027',
     admissionOpen: true
   };
 
+  // ভর্তি আবেদনের কোড (যেমন KJ27-7Q4M9C) — সহজে পড়া যায় এমন অক্ষর
+  function appCode() {
+    const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let r = '';
+    const rnd = (global.crypto && global.crypto.getRandomValues) ? global.crypto.getRandomValues(new Uint32Array(6)) : Array.from({ length: 6 }, () => Math.floor(Math.random() * 1e9));
+    for (let i = 0; i < 6; i++) r += A[rnd[i] % A.length];
+    return 'KJ' + String(new Date().getFullYear()).slice(2) + '-' + r;
+  }
+
   // প্রকাশের সময় অভিভাবকদের জন্য ফলাফলের স্থায়ী কপি (মার্কশিট ইংরেজিতে দেখায়)
-  function snapshot(r, exam, year, cls) {
+  function snapshot(r, exam, year, cls, att) {
     cls = cls || {};
     const st = r.student;
     return {
@@ -56,13 +78,13 @@
       className: cls.name || '', classNameEn: cls.nameEn || cls.name || '', exam, year: String(year),
       rows: r.rows.map((x) => ({ name: x.name, nameEn: x.nameEn || '', full: x.full, mark: x.mark, grade: x.grade, gp: x.gp })),
       total: r.total, full: r.full, average: r.average, percentage: r.percentage, gpa: r.gpa, grade: r.grade, passed: r.passed,
-      rank: r.rank, publishedAt: Date.now()
+      rank: r.rank, status: r.status, fails: r.fails, attendance: att || null, publishedAt: Date.now()
     };
   }
 
   // ================= ডেমো (ব্রাউজার) স্টোর =================
   function demoStore() {
-    const KEY = 'kjm-demo-v2';
+    const KEY = 'kjm-demo-v3';
     let db;
     const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { /* স্টোরেজ বন্ধ বা পূর্ণ থাকলে শুধু মেমরিতে থাকবে */ } };
     try { db = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { db = null; }
@@ -116,7 +138,7 @@
       onAuth(cb) { listeners.push(cb); setTimeout(() => cb(session), 0); },
       async changePassword(cur, next) { need(); const u = db.users.find((x) => x.id === session.id); if (!u || u.password !== cur) throw new Error('বর্তমান পাসওয়ার্ড সঠিক নয়।'); u.password = next; save(); },
       async getMarks(y, e, c) { need('principal', 'teacher'); return clone(db.marks[marksId(y, e, c)] || { entries: {}, published: false }); },
-      async saveMarks(y, e, c, entries) { canClass(c); const id = marksId(y, e, c); const cur = db.marks[id] || {}; if (cur.published) throw new Error('ফলাফল প্রকাশিত। নম্বর বদলাতে আগে প্রকাশ বাতিল করুন।'); db.marks[id] = { year: String(y), exam: e, classId: c, entries: clone(entries), published: false, updatedAt: Date.now() }; save(); },
+      async saveMarks(y, e, c, entries, extra) { canClass(c); const id = marksId(y, e, c); const cur = db.marks[id] || {}; if (cur.published) throw new Error('ফলাফল প্রকাশিত। নম্বর বদলাতে আগে প্রকাশ বাতিল করুন।'); db.marks[id] = Object.assign({ year: String(y), exam: e, classId: c, entries: clone(entries), published: false, updatedAt: Date.now() }, clone(extra || {})); save(); },
       async publish(y, e, c, results) {
         need('principal'); const id = marksId(y, e, c);
         db.marks[id] = Object.assign(db.marks[id] || { year: String(y), exam: e, classId: c, entries: {} }, { published: true, publishedAt: Date.now() });
@@ -134,6 +156,18 @@
       async listNotices() { return clone((db.notices || []).slice().sort((a, b) => (b.pinned - a.pinned) || (b.date > a.date ? 1 : -1))); },
       async saveNotice(n) { need('principal'); n = Object.assign({ id: uid() }, n); const i = db.notices.findIndex((x) => x.id === n.id); if (i >= 0) db.notices[i] = n; else db.notices.push(n); save(); return n; },
       async deleteNotice(id) { need('principal'); db.notices = db.notices.filter((n) => n.id !== id); save(); },
+      async allocateRegs(n) {
+        need('principal');
+        if (!db.regNext) { const max = db.students.reduce((m, x) => Math.max(m, Number(C.toEn(x.reg)) || 0), 0); db.regNext = Math.max(Number(C.toEn((db.settings || {}).regStart || DEFAULT_SETTINGS.regStart)) || 1001, max + 1); }
+        const out = []; for (let i = 0; i < n; i++) out.push(String(db.regNext++)); save(); return out;
+      },
+      async getRoutine(y, e) { need('principal'); return clone((db.routines || {})[`${y}_${e}`] || null); },
+      async saveRoutine(y, e, r) { need('principal'); db.routines = db.routines || {}; db.routines[`${y}_${e}`] = clone(r); save(); },
+      async submitApplication(a) { const code = appCode(); db.applications = db.applications || {}; db.applications[code] = clone(Object.assign({}, a, { code, status: 'new', submittedAt: Date.now() })); save(); return code; },
+      async listApplications() { need('principal'); return clone(Object.values(db.applications || {}).sort((a, b) => b.submittedAt - a.submittedAt)); },
+      async getApplication(code) { need('principal'); return clone((db.applications || {})[String(code).trim().toUpperCase()] || null); },
+      async updateApplication(code, f) { need('principal'); const a = (db.applications || {})[code]; if (a) { Object.assign(a, f); save(); } },
+      async deleteApplication(code) { need('principal'); delete (db.applications || {})[code]; save(); },
       async getFees(y, c) { need('principal'); return C.normalizeFees(clone(db.fees[`${y}_${c}`] || {})); },
       async saveFees(y, c, data) { need('principal'); db.fees[`${y}_${c}`] = clone(Object.assign({}, data, { year: String(y), classId: c })); save(); },
       async exportAll() { need('principal'); const d = clone(db); d.users = d.users.map(pub); return d; },
@@ -157,7 +191,7 @@
       ['মারজান হোসেন', 'Marjan Hossain', 'জাফর আলম', 'Jafar Alam'], ['সুমাইয়া ইসলাম', 'Sumaiya Islam', 'শফিকুল ইসলাম', 'Shafiqul Islam'],
       ['ফাহিম মাহমুদ', 'Fahim Mahmud', 'আব্দুল করিম', 'Abdul Karim'], ['যায়েদ বিন হাসান', 'Zayed Bin Hasan', 'হাসান মাহমুদ', 'Hasan Mahmud']
     ];
-    const students = people.map((n, i) => ({ id: 'st' + (i + 1), year, classId: 'c1', name: n[0], nameEn: n[1], father: n[2], fatherEn: n[3], roll: String(i + 1), reg: String(26101 + i), phone: '0181000000' + i, address: "Kutubjoom, Maheshkhali" }));
+    const students = people.map((n, i) => ({ id: 'st' + (i + 1), year, classId: 'c1', name: n[0], nameEn: n[1], father: n[2], fatherEn: n[3], roll: String(i + 1), reg: String(1001 + i), phone: '0181000000' + i, address: "Kutubjoom, Maheshkhali" }));
     const pattern = [[92, 95, 88, 96, 90, 94], [85, 90, 78, 92, 88, 95], [80, 86, 74, 88, 82, 90], [75, 80, 68, 85, 77, 84], [70, 78, 62, 80, 72, 76], [66, 72, 58, 75, 70, 68], [55, 60, 45, 66, 58, 52], [48, 52, 30, 60, 45, 40]];
     const marks = {}; const results = {}; const published = {};
     const cls = DEFAULT_CLASSES[0];
@@ -166,9 +200,10 @@
       students.forEach((s, i) => { entries[s.id] = {}; subjects.filter((x) => x.classId === 'c1').forEach((sub, j) => { entries[s.id][sub.id] = Math.min(100, pattern[i][j] + (k === 1 ? 2 : k === 2 ? 3 : 0) - ((i + j) % 3)); }); });
       const id = marksId(year, ex, 'c1');
       const isPub = ex !== 'annual';
-      marks[id] = { year, exam: ex, classId: 'c1', entries, published: isPub };
+      const attendanceMap = {}; students.forEach((s, i) => { attendanceMap[s.id] = 90 - (i % 5) * 2; });
+      marks[id] = { year, exam: ex, classId: 'c1', entries, published: isPub, totalDays: 90, attendance: attendanceMap };
       if (isPub) {
-        C.classResults(students, subjects.filter((x) => x.classId === 'c1'), entries).forEach((r) => { const snap = snapshot(r, ex, year, cls); results[resultId(year, ex, 'c1', snap.roll, snap.reg)] = snap; });
+        C.classResults(students, subjects.filter((x) => x.classId === 'c1'), entries).forEach((r) => { const snap = snapshot(r, ex, year, cls, C.attendance(90, attendanceMap[r.student.id])); results[resultId(year, ex, 'c1', snap.roll, snap.reg)] = snap; });
         published[id] = Date.now();
       }
     });
@@ -181,13 +216,44 @@
         { id: 'u2', name: 'মাওলানা আব্দুল করিম', userId: 'teacher', password: 'demo1234', role: 'teacher', phone: '01700000001', photo: '', classIds: ['c1'], active: true },
         { id: 'u3', name: 'মোহাম্মদ রাশেদ', userId: 'office', password: 'demo1234', role: 'office', phone: '01700000002', photo: '', classIds: [], active: true }
       ],
-      marks, results, published,
+      marks, results, published, regNext: 1001 + students.length, routines: { [`${year}_second`]: sampleRoutine(year) }, applications: {},
       notices: [
         { id: 'n1', title: 'বার্ষিক পরীক্ষার সময়সূচি প্রকাশ', body: 'বার্ষিক পরীক্ষা ' + year + ' এর সময়সূচি অফিস থেকে সংগ্রহ করুন। পরীক্ষার আগে সকল বকেয়া পরিশোধ করতে হবে।', date: year + '-11-01', pinned: true },
         { id: 'n2', title: 'ভর্তি বিজ্ঞপ্তি 2027', body: 'নার্সারি থেকে অষ্টম শ্রেণি পর্যন্ত ভর্তি চলছে। ভর্তির শেষ সময় 31 জানুয়ারি 2027।', date: year + '-10-15', pinned: false },
         { id: 'n3', title: 'দ্বিতীয় সাময়িক পরীক্ষার ফলাফল প্রকাশিত', body: 'ওয়েবসাইটে রোল ও রেজিস্ট্রেশন নম্বর দিয়ে ফলাফল দেখা যাচ্ছে।', date: year + '-09-25', pinned: false }
       ],
       fees: { [`${year}_c1`]: { year, classId: 'c1', items: C.defaultFeeItems({ admission: 500, monthly: 150, exam_first: 100, exam_second: 100, exam_annual: 100 }), payments, discounts: { st7: { type: 'half', scope: 'monthly' } } } }
+    };
+  }
+
+  // মাদ্রাসার দ্বিতীয় সাময়িক পরীক্ষার রুটিন (নমুনা, সব কিছু এডিট করা যায়)
+  function sampleRoutine(year) {
+    const y2 = String(year).slice(2);
+    const R = [
+      ['29/08/' + y2 + ' (শনিবার)', 'আরবী লেখা|বাংলা|আরবী লেখা|আরবী লেখা|আরবী লেখা|কুরআন|কুরআন|কুরআন|কুরআন|কুরআন'],
+      ['30/08/' + y2 + ' (রবিবার)', '|||কালিমা মাসায়েল|আদ.সালাত ও মাসনূনাহ|আকাইদ ও ফিকাহ|ইংরেজী 1ম|বাংলা 1ম|বা: বি: প|আক্বাইদ - ফিক্হ'],
+      ['31/08/' + y2 + ' (সোমবার)', 'হাদীস শরিফ মৌখিক|হাদীস শরিফ মৌখিক|ইংরেজী|ইংরেজী|ইংরেজী|ইংরেজী 1ম|আকাইদ|আকাইদ|আরবী 1ম|বিজ্ঞান'],
+      ['01/09/' + y2 + ' (মঙ্গলবার)', '||তাজভীদ ও মাখরাজ মৌখিক|আদ.সালাত ও মাসনূনাহ্|কালিমা ও মাসায়েল মৌখিক|আরবী|বা: বিশ্ব: পরিচয়|বা: বিশ্ব: পরিচয়|বাংলা 1ম|বাংলা 1ম'],
+      ['02/09/' + y2 + ' (বুধবার)', 'ইংরেজী|আরবী লেখা||||ইংরেজী 2য়|বাংলা 2য়|বাংলা 2য়|বাংলা 2য়|বাংলা 2য়'],
+      ['03/09/' + y2 + ' (বৃহ:বার)', '||হাদীস শরিফ মৌখিক|||বা: বিশ্ব: পরিচয়|সাধারণ জ্ঞান|আইসিটি|আইসিটি|আইসিটি'],
+      ['05/09/' + y2 + ' (শনিবার)', '|||পরিবেশ পরিচিতি|প:প: সমাজ ও বিজ্ঞান /সা:জ্ঞান|আরবী 2য়|গণিত|গণিত|গণিত|গণিত'],
+      ['06/09/' + y2 + ' (রবিবার)', 'কালিমা ও মাসায়েল মৌখিক|কালিমা ও মাসায়েল মৌখিক|কালিমা ও মাসায়েল মৌখিক|হাদিস শরিফ মৌখিক|হাদিস শরিফ ও আসমাউল হুসনা মৌখিক|বিজ্ঞান|আরবী 2য়|বিজ্ঞান|বিজ্ঞান|আরবী 1ম'],
+      ['07/09/' + y2 + ' (সোমবার)', '|||কুরআন মাজিদ মৌখিক|কুরআন মাজিদ মৌখিক|বাংলা 2য়|আরবী 1ম|আরবী 2য়|আরবী 2য়|আরবী 2য়'],
+      ['08/09/' + y2 + ' (মঙ্গলবার)', 'বাংলা|ইংরেজী|গণিত|গণিত|গণিত|গণিত|ইংরেজী 2য়|ইংরেজী 2য়|ইংরেজী 2য়|ইংরেজী 2য়'],
+      ['09/09/' + y2 + ' (বুধবার)', '|||||সাধারণ জ্ঞান|বিজ্ঞান|ইংরেজী 1ম|আকাইদ|ইংরেজী 1ম'],
+      ['10/09/' + y2 + ' (বৃহ:বার)', 'গণিত|গণিত|বাংলা|বাংলা|বাংলা|বাংলা|বাংলা|আরবী 1ম|ইংরেজী 1ম|বা: বি: প:']
+    ];
+    return {
+      title: 'দ্বিতীয় সাময়িক পরীক্ষা - ' + year + ' খ্রিঃ',
+      shifts: [
+        { name: 'প্রথম শিফ্ট', time: '(সকাল 08:00 - 10:00 পর্যন্ত)', classIds: ['c1', 'c2', 'c3'] },
+        { name: 'দ্বিতীয় শিফ্ট', time: '(সকাল 10:30 - 01:00 পর্যন্ত)', classIds: ['c4', 'c5', 'c6'] },
+        { name: 'তৃতীয় শিফ্ট', time: '(বেলা 01:30 - 04:30 পর্যন্ত)', classIds: ['c7', 'c8', 'c9', 'c10'] }
+      ],
+      rows: R.map((r) => { const cells = {}; r[1].split('|').forEach((t, i) => { if (t) cells['c' + (i + 1)] = t; }); return { date: r[0], cells }; }),
+      letter: 'মুহতরাম,\nআসসালামু আলাইকুম ওয়ারাহমাতুল্লাহ।\nআনন্দের সাথে জানানো যাচ্ছে যে, আগামী 29/08/' + year + ' খ্রি. তারিখ হতে কুতুবজোম ইসলামিয়া কে.জি এন্ড প্রি ক্যাডেট মাদ্রাসা\'র 2য় সাময়িক পরীক্ষা আরম্ভ হতে যাচ্ছে।\nএমতাবস্থায় আপনার ছেলে/মেয়ে উপরেল্লিখিত পরীক্ষার যাবতীয় ফি পরিশোধ করে প্রবেশ পত্র সংগ্রহ করার জন্য অনুরোধক্রমে করা হলো।',
+      resultDate: '25/09/' + year + ' ইং',
+      feePeriod: 'second'
     };
   }
 
@@ -313,10 +379,10 @@
         await authMod.updatePassword(u, next);
       }),
       getMarks: wrap(async (y, e, c) => { need('principal', 'teacher'); return data(await getDoc(doc(db, 'marks', marksId(y, e, c)))) || { entries: {}, published: false }; }),
-      saveMarks: wrap(async (y, e, c, entries) => {
+      saveMarks: wrap(async (y, e, c, entries, extra) => {
         need('principal', 'teacher'); const ref = doc(db, 'marks', marksId(y, e, c)); const cur = data(await getDoc(ref));
         if (cur && cur.published) throw new Error('ফলাফল প্রকাশিত। নম্বর বদলাতে আগে প্রকাশ বাতিল করুন।');
-        await setDoc(ref, { year: String(y), exam: e, classId: c, entries, published: false, updatedAt: Date.now() });
+        await setDoc(ref, Object.assign({ year: String(y), exam: e, classId: c, entries, published: false, updatedAt: Date.now() }, extra || {}));
       }),
       publish: wrap(async (y, e, c, results) => {
         need('principal'); const id = marksId(y, e, c);
@@ -342,11 +408,34 @@
       listNotices: wrap(async () => (await all(collection(db, 'notices'))).sort((a, b) => ((b.pinned ? 1 : 0) - (a.pinned ? 1 : 0)) || (b.date > a.date ? 1 : -1))),
       saveNotice: wrap(async (n) => { need('principal'); n = Object.assign({ id: uid() }, n); await setDoc(doc(db, 'notices', n.id), n); return n; }),
       deleteNotice: wrap(async (id) => { need('principal'); await deleteDoc(doc(db, 'notices', id)); }),
+      allocateRegs: wrap(async (n) => {
+        need('principal');
+        const ref = doc(db, 'meta', 'counters');
+        return fs.runTransaction(db, async (tx) => {
+          const cur = data(await tx.get(ref)) || {};
+          let next = Number(cur.regNext) || 0;
+          if (!next) {
+            const st = await getDoc(doc(db, 'public', 'settings')); const sset = data(st) || {};
+            const max = (await all(collection(db, 'students'))).reduce((m, x) => Math.max(m, Number(C.toEn(x.reg)) || 0), 0);
+            next = Math.max(Number(C.toEn(sset.regStart || DEFAULT_SETTINGS.regStart)) || 1001, max + 1);
+          }
+          const out = []; for (let i = 0; i < n; i++) out.push(String(next++));
+          tx.set(ref, { regNext: next }, { merge: true });
+          return out;
+        });
+      }),
+      getRoutine: wrap(async (y, e) => { need('principal'); return data(await getDoc(doc(db, 'routines', `${y}_${e}`))); }),
+      saveRoutine: wrap(async (y, e, r) => { need('principal'); await setDoc(doc(db, 'routines', `${y}_${e}`), r); }),
+      submitApplication: wrap(async (a) => { const code = appCode(); await setDoc(doc(db, 'applications', code), Object.assign({}, a, { code, status: 'new', submittedAt: Date.now() })); return code; }),
+      listApplications: wrap(async () => { need('principal'); return (await all(collection(db, 'applications'))).sort((a, b) => b.submittedAt - a.submittedAt); }),
+      getApplication: wrap(async (code) => { need('principal'); return data(await getDoc(doc(db, 'applications', String(code).trim().toUpperCase()))); }),
+      updateApplication: wrap(async (code, f) => { need('principal'); await updateDoc(doc(db, 'applications', code), f); }),
+      deleteApplication: wrap(async (code) => { need('principal'); await deleteDoc(doc(db, 'applications', code)); }),
       getFees: wrap(async (y, c) => { need('principal'); return C.normalizeFees(data(await getDoc(doc(db, 'fees', `${y}_${c}`))) || {}); }),
       saveFees: wrap(async (y, c, d) => { need('principal'); await setDoc(doc(db, 'fees', `${y}_${c}`), Object.assign({}, d, { year: String(y), classId: c })); }),
       exportAll: wrap(async () => {
         need('principal'); const out = {};
-        for (const name of ['subjects', 'students', 'users', 'marks', 'notices', 'fees']) out[name] = await all(collection(db, name));
+        for (const name of ['subjects', 'students', 'users', 'marks', 'notices', 'fees', 'routines', 'applications']) out[name] = await all(collection(db, name));
         out.settings = data(await getDoc(doc(db, 'public', 'settings')));
         out.catalog = data(await getDoc(doc(db, 'public', 'catalog')));
         return out;
@@ -363,5 +452,5 @@
     }
     return storePromise;
   };
-  global.StoreUtil = { snapshot, marksId, resultId, DEFAULT_SETTINGS, DEFAULT_CLASSES, ROLES, CARD_FIELDS };
+  global.StoreUtil = { snapshot, marksId, resultId, DEFAULT_SETTINGS, DEFAULT_CLASSES, ROLES, CARD_FIELDS, sampleRoutine };
 })(window);

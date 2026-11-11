@@ -1,0 +1,95 @@
+/* ভর্তি ফরম (A4) ও ভর্তি ব্যানার */
+.pdf-host { position: fixed; left: -12000px; top: 0; width: 794px; background: #fff; }
+.adm-form {
+  --af-g: #0b5d2e; --af-g2: #138a43; --af-blue: #1c2f9a; --af-gold: #e6b422;
+  position: relative; width: 794px; min-height: 1123px; box-sizing: border-box; margin: 0 auto; background: #fff; color: #111;
+  padding: 26px 40px 70px; overflow: hidden; text-align: left; font-family: 'SutonnyOMJ', 'Noto Serif Bengali', 'Hind Siliguri', serif; font-size: 17px;
+  border: 3px solid var(--af-g2); border-radius: 22px;
+}
+.adm-form::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 26px; background: linear-gradient(90deg, var(--af-g), var(--af-g2), var(--af-g)); }
+.af-leaf { display: none; }
+.af-head { position: relative; display: grid; grid-template-columns: 120px 1fr 120px; gap: 10px; align-items: center; padding-top: 18px; }
+.af-logo { width: 118px; height: auto; }
+.af-title { text-align: center; }
+.af-tag { display: inline-block; margin: 0; background: #e9f6ea; border: 2px solid var(--af-g2); color: var(--af-g); border-radius: 99px; padding: 2px 16px; font-weight: 700; font-size: 15px; }
+.af-title h1 { margin: 4px 0 0; color: var(--af-g); font-size: 44px; line-height: 1.05; font-weight: 800; }
+.af-title h2 { margin: 2px 0 6px; color: var(--af-blue); font-size: 28px; line-height: 1.1; font-weight: 800; }
+.af-pill { display: inline-block; background: linear-gradient(180deg, var(--af-g2), var(--af-g)); color: #fff; border: 3px solid var(--af-gold); border-radius: 99px; padding: 2px 46px; font-size: 34px; font-weight: 800; }
+.af-photo { width: 116px; height: 140px; border: 2px solid var(--af-g2); border-radius: 12px; display: grid; place-items: center; text-align: center; color: var(--af-g); font-weight: 700; overflow: hidden; background: #fff; }
+.af-photo img { width: 100%; height: 100%; object-fit: cover; }
+.af-meta { display: flex; justify-content: space-between; gap: 10px; margin: 10px 0 4px; font-size: 15px; border-bottom: 1px dashed #9bc9a4; padding-bottom: 6px; }
+.af-water { position: absolute; left: 50%; top: 52%; width: 380px; transform: translate(-50%, -50%); opacity: .07; pointer-events: none; }
+.af-sec { display: inline-flex; align-items: center; gap: 8px; margin: 14px 0 6px; background: linear-gradient(180deg, var(--af-g2), var(--af-g)); color: #fff; border-radius: 99px; padding: 3px 18px 3px 10px; font-weight: 800; font-size: 19px; }
+.af-sec svg { width: 22px; height: 22px; fill: #fff; }
+.af-row { position: relative; display: flex; align-items: flex-end; gap: 6px; padding: 5px 0 2px 8px; }
+.af-l { flex: none; min-width: 190px; }
+.af-c { flex: none; }
+.af-v { text-align: left; flex: 1; min-width: 0; border-bottom: 1.5px dotted #333; padding: 0 6px 1px; font-weight: 600; color: #0d2a6b; min-height: 1.4em; }
+.af-tall .af-v { min-height: 2.6em; }
+.af-short { flex: 0 1 260px; }
+.af-gender { margin-left: auto; padding-left: 16px; white-space: nowrap; }
+.af-box { display: inline-grid; place-items: center; width: 20px; height: 20px; border: 1.5px solid #333; border-radius: 4px; vertical-align: middle; font-weight: 800; color: var(--af-g); margin: 0 10px 0 4px; }
+.af-decl { margin: 6px 0 0 40px; font-weight: 600; }
+.af-foot-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-top: 18px; padding-left: 40px; }
+.af-sign { display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 700; }
+.af-sign-box { width: 220px; height: 54px; border: 2px solid var(--af-g2); border-radius: 10px; }
+.af-principal img { height: 54px; max-width: 200px; object-fit: contain; }
+.af-principal .af-sign-box { width: 160px; }
+.af-footer { position: absolute; left: 0; right: 0; bottom: 0; height: 52px; display: grid; place-items: center; color: #fff; font-style: italic; font-weight: 700; font-size: 22px; background: linear-gradient(180deg, var(--af-g2), var(--af-g)); box-shadow: 0 -5px 0 var(--af-gold); }
+.af-scale { width: 100%; overflow-x: auto; }
+
+/* ===== ভর্তি ব্যানার (হোম পেজ) ===== */
+.adm-banner { position: relative; isolation: isolate; overflow: hidden; border-radius: 22px; min-height: 420px; padding: 18px 22px 0; box-shadow: var(--shadow, 0 10px 30px rgba(0,0,0,.15)); background: #dff1ff; display: grid; grid-template-rows: auto 1fr auto; }
+.ab-bg { position: absolute; inset: 0; z-index: -2; background-size: cover; background-position: center; }
+.adm-banner::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,.15) 45%, rgba(255,255,255,0) 70%); }
+.ab-top { display: grid; grid-template-columns: 120px minmax(0, 1fr) 120px; gap: 10px; align-items: start; }
+.ab-logo { width: 116px; height: auto; filter: drop-shadow(0 4px 8px rgba(0,0,0,.25)); }
+.ab-titles { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.ab-tag { background: linear-gradient(180deg, #179346, #0b6a2f); color: #fff; border: 2px solid #f1c232; border-radius: 99px; padding: 3px 20px; font-weight: 700; font-size: clamp(13px, 1.6vw, 17px); }
+.adm-banner .ab-name1 { margin: 0; color: #0d7a2f; font-weight: 800; font-size: clamp(30px, 5.6vw, 62px); line-height: 1.05; text-shadow: 0 2px 0 #fff, 0 3px 10px rgba(255,255,255,.8); }
+.adm-banner .ab-name2 { margin: 0; color: #1c2f9a; font-weight: 800; font-size: clamp(20px, 3.4vw, 38px); line-height: 1.1; text-shadow: 0 2px 0 #fff, 0 3px 10px rgba(255,255,255,.8); }
+.ab-mid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 46%); gap: 14px; align-items: end; }
+.ab-kids { align-self: end; max-height: 260px; width: auto; max-width: 100%; }
+.ab-right { display: flex; flex-direction: column; align-items: center; gap: 10px; padding-bottom: 10px; }
+.ab-ribbon { background: linear-gradient(180deg, #ffe066, #f4c20d); color: #0b3d1d; font-weight: 800; font-size: clamp(15px, 2vw, 22px); padding: 4px 24px; transform: rotate(-3deg); border-radius: 6px; box-shadow: 0 3px 0 #c99a00; }
+.ab-badge { background: linear-gradient(180deg, #ef3b2d, #c4161c); color: #fff; font-weight: 800; font-size: clamp(36px, 6vw, 72px); line-height: 1.1; padding: 4px 34px; border-radius: 22px; border: 4px solid #fff; transform: rotate(-3deg); box-shadow: 0 8px 20px rgba(196,22,28,.35); }
+.ab-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; width: 100%; }
+.ab-card { background: rgba(255,255,255,.95); border: 2px solid #9ad3a6; border-radius: 12px; padding: 6px; text-align: center; font-weight: 700; color: #0b3d1d; font-size: 14px; line-height: 1.25; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.ab-card svg { width: 26px; height: 26px; fill: #0d7a2f; }
+.ab-bottom { margin: 0 -22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: linear-gradient(180deg, #13883f, #0b5d2e); color: #fff; padding: 10px 22px; box-shadow: 0 -4px 0 #f1c232; }
+.ab-strip { font-weight: 700; font-size: clamp(15px, 2vw, 22px); }
+.ab-pill { background: linear-gradient(180deg, #ffe066, #f4c20d); color: #0b3d1d; font-weight: 800; border-radius: 99px; padding: 4px 18px; }
+.ab-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.ab-btn { background: #fff; color: #0b5d2e; border: 0; border-radius: 12px; padding: 10px 20px; font-weight: 800; text-decoration: none; cursor: pointer; font-size: 17px; }
+.ab-btn.primary { background: #f4c20d; color: #0b3d1d; }
+@media (max-width: 860px) {
+  .ab-top { grid-template-columns: 70px minmax(0, 1fr); }
+  .ab-top > :last-child { display: none; }
+  .ab-logo { width: 68px; }
+  .ab-mid { grid-template-columns: minmax(0, 1fr); }
+  .ab-kids { display: none; }
+  .ab-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ===== অনলাইন আবেদন ফর্ম ===== */
+.apply-card { background: #fff; border: 1px solid var(--line, #d5e6da); border-radius: 18px; padding: 20px; box-shadow: var(--shadow, 0 10px 30px rgba(0,0,0,.1)); }
+.apply-card h3 { margin: 18px 0 8px; color: #0b5d2e; font-size: 20px; display: flex; align-items: center; gap: 8px; }
+.apply-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+.apply-grid .full { grid-column: 1 / -1; }
+.apply-fld { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.apply-fld > span { font-weight: 700; color: #0b3d1d; font-size: 16px; }
+.apply-fld input, .apply-fld select, .apply-fld textarea { padding: 10px 12px; border: 1.5px solid #cfdcd3; border-radius: 12px; font: inherit; background: #fff; color: #12301f; min-width: 0; }
+.apply-fld textarea { min-height: 70px; resize: vertical; }
+.apply-fld input:focus, .apply-fld select:focus, .apply-fld textarea:focus { outline: none; border-color: #168247; box-shadow: 0 0 0 3px #dff0e4; }
+.apply-fld .req { color: #c0392b; }
+.apply-radio { display: flex; gap: 18px; align-items: center; padding-top: 8px; }
+.apply-photo { display: flex; gap: 14px; align-items: center; }
+.apply-photo .ph { width: 90px; height: 108px; border: 2px dashed #9bc9a4; border-radius: 12px; display: grid; place-items: center; color: #4b6457; font-size: 13px; text-align: center; background: #f6fbf7 center / cover no-repeat; }
+.apply-done { text-align: center; padding: 26px 16px; }
+.apply-done .tick { width: 84px; height: 84px; border-radius: 50%; background: #1fa34a; display: grid; place-items: center; margin: 0 auto 10px; }
+.apply-done .tick svg { width: 54px; height: 54px; fill: #fff; }
+.apply-code { display: inline-block; font-family: 'Hind Siliguri', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: .08em; background: #fff6d8; border: 2px dashed #e6b422; border-radius: 12px; padding: 6px 18px; margin: 8px 0; user-select: all; }
+@media (max-width: 640px) { .apply-grid { grid-template-columns: minmax(0, 1fr); } }
+@media print {
+  .adm-form { border-radius: 0; break-after: page; }
+}

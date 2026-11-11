@@ -49,7 +49,7 @@ service cloud.firestore {
       allow write: if isPrincipal();
       // অফিস কর্মচারী শুধু আইডি কার্ডের তথ্য বদলাতে পারবেন
       allow update: if isOffice()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nameEn', 'fatherEn', 'address', 'phone', 'blood']);
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nameEn', 'fatherEn', 'address', 'phone', 'blood', 'card']);
     }
 
     match /photos/{id} {
@@ -69,6 +69,30 @@ service cloud.firestore {
             && request.resource.data.published == false
             && (resource == null || resource.data.published == false));
       allow delete: if isPrincipal();
+    }
+
+    // রেজিস্ট্রেশন নম্বরের কাউন্টার
+    match /meta/{id} {
+      allow read, write: if isPrincipal();
+    }
+
+    match /routines/{id} {
+      allow read, write: if isPrincipal();
+    }
+
+    // অনলাইন ভর্তি আবেদন: যে কেউ জমা দিতে পারবে (শুধু নতুন), দেখবেন শুধু প্রিন্সিপাল
+    match /applications/{code} {
+      allow create: if request.resource.data.status == 'new'
+        && request.resource.data.code == code
+        && code.size() < 20
+        && request.resource.data.keys().hasOnly(['code', 'status', 'submittedAt', 'nameBn', 'nameEn', 'dob', 'nationality', 'religion', 'gender', 'mobile', 'address', 'father', 'fatherJob', 'mother', 'motherJob', 'guardianMobile', 'prevSchool', 'currentClass', 'applyClassId', 'applyClass', 'health', 'other', 'photo', 'year'])
+        && request.resource.data.nameBn is string && request.resource.data.nameBn.size() > 0 && request.resource.data.nameBn.size() < 120
+        && request.resource.data.guardianMobile is string && request.resource.data.guardianMobile.size() < 20
+        && (!('photo' in request.resource.data) || (request.resource.data.photo is string && request.resource.data.photo.size() < 250000))
+        && (!('address' in request.resource.data) || request.resource.data.address.size() < 400)
+        && (!('other' in request.resource.data) || request.resource.data.other.size() < 600)
+        && (!('health' in request.resource.data) || request.resource.data.health.size() < 400);
+      allow read, update, delete: if isPrincipal();
     }
 
     match /fees/{id} {

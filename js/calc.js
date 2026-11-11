@@ -52,43 +52,65 @@
     return 'F';
   }
 
+  // ফলাফলের অবস্থা: pass = সব বিষয়ে উত্তীর্ণ, special = 1–2 বিষয়ে অকৃতকার্য (বিশেষ বিবেচনা),
+  // fail = 3 বা বেশি বিষয়ে অকৃতকার্য (রোল/মেধাক্রম নেই), incomplete = নম্বর বাকি
+  const STATUS = {
+    pass: { bn: 'উত্তীর্ণ', en: 'PASS' },
+    special: { bn: 'বিশেষ বিবেচনা', en: 'SPECIAL CONSIDERATION' },
+    fail: { bn: 'অকৃতকার্য', en: 'FAIL' },
+    incomplete: { bn: 'নম্বর বাকি', en: 'INCOMPLETE' }
+  };
+  const SPECIAL_MAX_FAILS = 2;
+
   // একজন শিক্ষার্থীর ফলাফল। marks = {subjectId: value}
   function studentResult(subjects, marks) {
     const rows = [];
-    let total = 0, full = 0, gpSum = 0, passed = true, missing = 0;
+    let total = 0, full = 0, gpSum = 0, fails = 0, missing = 0;
     subjects.forEach((s) => {
       const base = { id: s.id, name: s.name, nameEn: s.nameEn || '', full: s.full, pass: s.pass };
       const m = num(marks ? marks[s.id] : null);
       if (m === null || Number.isNaN(m)) { missing++; rows.push(Object.assign(base, { mark: null, grade: '—', gp: 0 })); return; }
       const g = subjectGrade(m, s.full, s.pass);
-      if (g.grade === 'F') passed = false;
+      if (g.grade === 'F') fails++;
       total += m; full += s.full; gpSum += g.gp;
       rows.push(Object.assign(base, { mark: m, grade: g.grade, gp: g.gp }));
     });
-    const count = subjects.length || 1;
-    const gpa = passed ? gpSum / count : 0;
+    const status = missing ? 'incomplete' : fails === 0 ? 'pass' : fails <= SPECIAL_MAX_FAILS ? 'special' : 'fail';
+    const passed = status === 'pass';
+    const gpa = passed ? gpSum / (subjects.length || 1) : 0;
     return {
-      rows, total, full, missing,
+      rows, total, full, missing, fails, status, passed,
+      promoted: status === 'pass' || status === 'special',
       average: subjects.length ? total / subjects.length : 0,
       percentage: full ? (total / full) * 100 : 0,
-      gpa, passed: passed && missing === 0,
-      grade: gpaGrade(gpa, passed && missing === 0)
+      gpa, grade: gpaGrade(gpa, passed)
     };
   }
 
-  // শ্রেণির সবার ফলাফল + মেধাক্রম। newRoll শুধু প্রমোশনের সময় নতুন রোল বসাতে ব্যবহার হয়।
+  // শ্রেণির সবার ফলাফল + মেধাক্রম।
+  // আগে সব উত্তীর্ণ (নম্বর অনুযায়ী), তারপর বিশেষ বিবেচনা (যত নম্বরই পাক, সবার শেষে)।
+  // অকৃতকার্য ও নম্বর-বাকি শিক্ষার্থীর মেধাক্রম ও নতুন রোল নেই।
+  const ORDER = { pass: 0, special: 1, fail: 2, incomplete: 3 };
   function classResults(students, subjects, entries) {
     const list = students.map((st) => Object.assign({ student: st }, studentResult(subjects, (entries || {})[st.id])));
     const sorted = list.slice().sort((a, b) =>
-      (b.passed - a.passed) || (b.total - a.total) || (b.gpa - a.gpa) || (num(a.student.roll) - num(b.student.roll)));
-    let prev = null;
-    sorted.forEach((r, i) => {
-      if (prev && prev.passed === r.passed && prev.total === r.total && prev.gpa === r.gpa) r.rank = prev.rank;
-      else r.rank = i + 1;
-      r.newRoll = i + 1;
+      (ORDER[a.status] - ORDER[b.status]) || (b.total - a.total) || (b.gpa - a.gpa) || (num(a.student.roll) - num(b.student.roll)));
+    let prev = null, n = 0;
+    sorted.forEach((r) => {
+      if (!r.promoted) { r.rank = null; r.newRoll = null; return; }
+      n++;
+      r.rank = (prev && prev.status === r.status && prev.total === r.total && prev.gpa === r.gpa) ? prev.rank : n;
+      r.newRoll = n;
       prev = r;
     });
     return sorted;
+  }
+
+  // উপস্থিতি: মোট কার্যদিবস ও উপস্থিত দিন থেকে অনুপস্থিত
+  function attendance(total, present) {
+    const t = num(total), p = num(present);
+    if (!(t > 0) || p === null || Number.isNaN(p)) return null;
+    return { total: t, present: Math.min(p, t), absent: Math.max(0, t - p) };
   }
 
   // ===== হিসাব =====
@@ -159,5 +181,5 @@
     return { periods, due, paid: got, balance: Math.max(0, due - got) };
   }
 
-  global.Calc = { EXAMS, examName, examEn, GRADES, toEn, toBn, num, fix2, passMarkFor, subjectGrade, studentResult, classResults, MONTHS, FEE_PERIODS, periodName, defaultFeeItems, normalizeFees, DISCOUNTS, itemDue, discountLabel, studentFees };
+  global.Calc = { EXAMS, examName, examEn, GRADES, STATUS, attendance, toEn, toBn, num, fix2, passMarkFor, subjectGrade, studentResult, classResults, MONTHS, FEE_PERIODS, periodName, defaultFeeItems, normalizeFees, DISCOUNTS, itemDue, discountLabel, studentFees };
 })(typeof window !== 'undefined' ? window : globalThis);

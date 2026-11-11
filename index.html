@@ -18,13 +18,14 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="css/site.css">
 <link rel="stylesheet" href="css/marksheet.css">
+<link rel="stylesheet" href="css/forms.css">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"School","name":"কুতুবজোম ইসলামিয়া কে.জি এন্ড প্রি-ক্যাডেট মাদ্রাসা","alternateName":"Kutub Joom Islamia KG & Pre-Cadet Madrasha","foundingDate":"2007","address":{"@type":"PostalAddress","addressLocality":"Moheshkhali","addressRegion":"Cox's Bazar","addressCountry":"BD"},"telephone":"+8801833857316","sameAs":["https://www.facebook.com/kutubJoomIslamia2007"]}
 </script>
 </head>
 <body>
 <!--SITE-START-->
-<div id="demoBar" class="demo-bar" hidden>ডেমো মোড: এখানে নমুনা ডাটা দেখানো হচ্ছে। নমুনা রেজাল্ট দেখতে: ক্লাস <b>নার্সারি</b>, পরীক্ষা <b>প্রথম সাময়িক</b>, রোল <b>1</b>, রেজিস্ট্রেশন <b>26101</b>, সাল <b>২০২৬</b>।</div>
+<div id="demoBar" class="demo-bar" hidden>ডেমো মোড: এখানে নমুনা ডাটা দেখানো হচ্ছে। নমুনা রেজাল্ট দেখতে: ক্লাস <b>নার্সারি</b>, পরীক্ষা <b>প্রথম সাময়িক</b>, রোল <b>1</b>, রেজিস্ট্রেশন <b>1001</b>, সাল <b>2026</b>।</div>
 
 <header class="site-head">
   <div class="wrap head-row">
@@ -40,7 +41,7 @@
       <a href="#home" data-nav="home" class="active"><svg viewBox="0 0 24 24"><path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/></svg>হোম</a>
       <a href="#result" data-nav="result"><svg viewBox="0 0 24 24"><path d="M7 4V2h10v2h4v4a5 5 0 0 1-4.6 5A6 6 0 0 1 13 16.9V19h4v3H7v-3h4v-2.1A6 6 0 0 1 7.6 13 5 5 0 0 1 3 8V4zm0 2H5v2a3 3 0 0 0 2 2.8zm12 0h-2v4.8A3 3 0 0 0 19 8z"/></svg>ফলাফল দেখুন</a>
       <a href="#notice" data-nav="notice"><svg viewBox="0 0 24 24"><path d="M3 10v4a1 1 0 0 0 1 1h2l4 5h2V4h-2L6 9H4a1 1 0 0 0-1 1zm13.5 2A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>নোটিশ</a>
-      <a href="#admission" data-nav="admission"><svg viewBox="0 0 24 24"><path d="M4 4h7a2 2 0 0 1 2 2v14a3 3 0 0 0-3-3H4zm16 0h-5a2 2 0 0 0-2 2v14a3 3 0 0 1 3-3h4z"/></svg>ভর্তি তথ্য</a>
+      <a href="#admission" data-nav="admission"><svg viewBox="0 0 24 24"><path d="M4 4h7a2 2 0 0 1 2 2v14a3 3 0 0 0-3-3H4zm16 0h-5a2 2 0 0 0-2 2v14a3 3 0 0 1 3-3h4z"/></svg>ভর্তি</a>
       <a href="#contact" data-nav="contact"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z"/></svg>যোগাযোগ</a>
       <a href="admin.html" class="nav-login"><svg viewBox="0 0 24 24"><path d="M6 10V8a6 6 0 1 1 12 0v2h1v12H5V10zm2 0h8V8a4 4 0 0 0-8 0z"/></svg>স্টাফ লগইন</a>
     </nav>
@@ -72,6 +73,7 @@
         </div>
         <p id="formMsg" class="form-msg" role="alert" hidden></p>
         <button class="btn-search" id="searchBtn" type="submit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3a7 7 0 0 1 5.6 11.2l5.6 5.6-1.4 1.4-5.6-5.6A7 7 0 1 1 10 3zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/></svg>ফলাফল দেখুন</button>
+        <a class="rc-apply" href="#apply" data-open-apply>নতুন ভর্তি? অনলাইনে আবেদন করুন →</a>
       </form>
     </div>
   </section>
@@ -91,14 +93,67 @@
   </section>
 
   <section id="admission" class="wrap block">
-    <div class="admission" id="admissionBox">
-      <div>
-        <h2 data-set="admissionTitle">ভর্তি বিজ্ঞপ্তি</h2>
-        <p data-set="admissionBody"></p>
-        <p class="adm-deadline">ভর্তির শেষ সময়: <b data-set="admissionDeadline"></b></p>
+    <div class="adm-banner" id="admissionBox">
+      <div class="ab-bg" data-bg="bannerBg" data-bg-fallback="campus" style="background-image:url('assets/campus.jpg')"></div>
+      <div class="ab-top">
+        <img class="ab-logo" data-img="logo" src="assets/logo.webp" alt="মাদ্রাসার লোগো" width="116" height="106">
+        <div class="ab-titles"><span class="ab-tag" data-set="bTagline">ইসলাম শিক্ষা, নৈতিকতা ও আধুনিকতার সমন্বয়ে</span><h2 class="ab-name1" data-set="bName1">কুতুবজোম ইসলামীয়া</h2><p class="ab-name2" data-set="bName2">কে.জি এন্ড প্রি-ক্যাডেট মাদ্রাসা</p></div>
+        <span></span>
       </div>
-      <a class="adm-call" href="#contact">যোগাযোগ করুন</a>
+      <div class="ab-mid">
+        <div><img class="ab-kids" data-img="bannerKids" alt="" hidden></div>
+        <div class="ab-right">
+          <span class="ab-ribbon" data-set="bRibbon">নার্সারি থেকে দাখিল অষ্টম</span>
+          <span class="ab-badge" data-set="bBadge">ভর্তি চলছে</span>
+          <div class="ab-cards"><div class="ab-card"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5c3-1.5 6.5-1.5 9.5.5v15C8.5 18.5 5 18.5 2 20zm20 0c-3-1.5-6.5-1.5-9.5.5v15c3-2 6.5-2 9.5-.5z"/></svg><span data-set="bc1"></span></div><div class="ab-card"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3 6.6 7.2.7-5.4 4.8 1.6 7.1L12 17.5l-6.4 3.7 1.6-7.1L1.8 9.3 9 8.6z"/></svg><span data-set="bc2"></span></div><div class="ab-card"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c-1.5 2-4 3-4 6v1H6v13h12V9h-2V8c0-3-2.5-4-4-6zM9 13h6v7H9z"/></svg><span data-set="bc3"></span></div><div class="ab-card"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 12 2 7l5-5 5 5zm10 0-5-5 5-5 5 5zM4 14h16v2l-8 6-8-6z"/></svg><span data-set="bc4"></span></div></div>
+          <div class="ab-actions"><a class="ab-btn primary" href="#apply" id="applyOpen">ভর্তির জন্য আবেদন করুন</a><a class="ab-btn" href="#contact">যোগাযোগ</a></div>
+        </div>
+      </div>
+      <div class="ab-bottom"><span class="ab-strip" data-set="bStrip"></span><span class="ab-pill" data-set="bPill"></span></div>
     </div>
+    <p class="adm-note" id="admNote"><span data-set="admissionTitle"></span> · <span data-set="admissionBody"></span> · ভর্তির শেষ সময়: <b data-set="admissionDeadline"></b></p>
+  </section>
+
+  <section id="apply" class="wrap block" hidden>
+    <h2 class="sec-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h9l5 5v15H6zm8 1.5V8h4.5zM9 12h8v1.6H9zm0 3.5h8v1.6H9z"/></svg>অনলাইনে ভর্তির আবেদন</h2>
+    <form id="applyForm" class="apply-card" novalidate>
+      <p class="muted" style="margin:0">ফর্মটি পূরণ করে জমা দিন। জমা দেওয়ার পর একটি আবেদন কোড পাবেন এবং ফর্মটি PDF হিসেবে আপনার মোবাইলে ডাউনলোড হবে। <span class="req">*</span> চিহ্নিত ঘর পূরণ করা জরুরি।</p>
+      <h3>শিক্ষার্থীর তথ্য</h3>
+      <div class="apply-grid">
+        <label class="apply-fld"><span>যে শ্রেণিতে ভর্তি হতে চায় <b class="req">*</b></span><select id="apClass" required></select></label>
+        <div class="apply-photo"><div class="ph" id="apPh">শিক্ষার্থীর ছবি</div><label class="apply-fld"><span>ছবি (ঐচ্ছিক)</span><input type="file" id="apPhoto" accept="image/*"></label></div>
+        <label class="apply-fld"><span>নাম (বাংলায়) <b class="req">*</b></span><input id="apNameBn" required autocomplete="off"></label>
+        <label class="apply-fld"><span>নাম (ইংরেজিতে)</span><input id="apNameEn" lang="en" autocomplete="off" placeholder="বাংলা নাম লিখলে নিজে থেকে বসবে"></label>
+        <label class="apply-fld"><span>জন্মতারিখ</span><input id="apDob" type="date"></label>
+        <label class="apply-fld"><span>জাতীয়তা</span><input id="apNat" value="বাংলাদেশী"></label>
+        <label class="apply-fld"><span>ধর্ম</span><input id="apRel" value="ইসলাম"></label>
+        <div class="apply-fld"><span>লিঙ্গ <b class="req">*</b></span><div class="apply-radio"><label><input type="radio" name="apGender" value="ছেলে"> ছেলে</label><label><input type="radio" name="apGender" value="মেয়ে"> মেয়ে</label></div></div>
+        <label class="apply-fld"><span>মোবাইল নম্বর</span><input id="apMobile" inputmode="tel"></label>
+        <label class="apply-fld full"><span>সম্পূর্ণ ঠিকানা <b class="req">*</b></span><textarea id="apAddr" required></textarea></label>
+      </div>
+      <h3>অভিভাবকের তথ্য</h3>
+      <div class="apply-grid">
+        <label class="apply-fld"><span>পিতার নাম <b class="req">*</b></span><input id="apFather" required></label>
+        <label class="apply-fld"><span>পিতার পেশা</span><input id="apFatherJob"></label>
+        <label class="apply-fld"><span>মাতার নাম</span><input id="apMother"></label>
+        <label class="apply-fld"><span>মাতার পেশা</span><input id="apMotherJob"></label>
+        <label class="apply-fld"><span>অভিভাবকের মোবাইল নম্বর <b class="req">*</b></span><input id="apGMobile" inputmode="tel" required></label>
+      </div>
+      <h3>শিক্ষার্থীর পূর্বের তথ্য</h3>
+      <div class="apply-grid">
+        <label class="apply-fld"><span>পূর্ববর্তী প্রতিষ্ঠানের নাম</span><input id="apPrev"></label>
+        <label class="apply-fld"><span>বর্তমান শ্রেণি</span><input id="apCur"></label>
+      </div>
+      <h3>বিশেষ তথ্য</h3>
+      <div class="apply-grid">
+        <label class="apply-fld"><span>শারীরিক সমস্যা (যদি থাকে)</span><input id="apHealth"></label>
+        <label class="apply-fld"><span>অন্যান্য তথ্য</span><input id="apOther"></label>
+      </div>
+      <label style="display:flex;gap:8px;margin-top:16px;font-weight:600"><input type="checkbox" id="apDecl"> আমি উপরোক্ত তথ্যসমূহ সঠিক ও সত্য বলে ঘোষণা করছি।</label>
+      <p id="apMsg" class="form-msg" role="alert" hidden></p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn btn-green" id="apSubmit" type="submit">আবেদন জমা দিন</button><button class="btn btn-ghost" id="apCancel" type="button">বন্ধ করুন</button></div>
+    </form>
+    <div id="applyDone" class="apply-card apply-done" hidden></div>
   </section>
 
   <section id="contact" class="wrap block">
@@ -138,6 +193,8 @@
 <script src="js/calc.js"></script>
 <script src="js/store.js"></script>
 <script src="js/marksheet.js"></script>
+<script src="js/translit.js"></script>
+<script src="js/forms.js"></script>
 <script src="js/public.js"></script>
 </body>
 </html>

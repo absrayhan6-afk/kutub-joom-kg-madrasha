@@ -22,7 +22,7 @@ jobs:
       - name: Syntax check
         run: for f in js/*.js; do node --check "$f"; done
       - name: Grade and fee calculation tests
-        run: node tests/calc.test.js
+        run: node tests/calc.test.js && node tests/translit.test.js
 
   deploy:
     needs: test

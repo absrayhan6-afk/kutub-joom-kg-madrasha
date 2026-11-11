@@ -29,8 +29,8 @@
     $$('[data-href-wa]').forEach((el) => { el.href = 'https://wa.me/88' + C.toEn(settings[el.dataset.hrefWa]).replace(/^\+?88/, ''); });
     $$('[data-href-mail]').forEach((el) => { el.href = 'mailto:' + settings[el.dataset.hrefMail]; });
     $('#admission').hidden = settings.admissionOpen === false;
-    $$('[data-img]').forEach((el) => { const v = images[el.dataset.img]; if (v) el.src = v; });
-    $$('[data-bg]').forEach((el) => { const v = images[el.dataset.bg]; if (v) el.style.backgroundImage = `url('${v}')`; });
+    $$('[data-img]').forEach((el) => { const v = images[el.dataset.img]; if (v) { el.src = v; el.hidden = false; } });
+    $$('[data-bg]').forEach((el) => { const v = images[el.dataset.bg] || images[el.dataset.bgFallback]; if (v) el.style.backgroundImage = `url('${v}')`; });
   }
 
   function fillSelects() {
@@ -61,6 +61,60 @@
     fillSelects();
     $('#noticeList').innerHTML = '<p class="muted">নোটিশ লোড করা যায়নি। ইন্টারনেট সংযোগ দেখে পেজটি আবার খুলুন।</p>';
   }
+
+  // ===== অনলাইন ভর্তি আবেদন =====
+  const AF = window.AdmissionForm;
+  const apMsg = (t) => { const el = $('#apMsg'); el.textContent = t || ''; el.hidden = !t; };
+  let apPhoto = '';
+  function openApply() {
+    $('#apply').hidden = false; $('#applyForm').hidden = false; $('#applyDone').hidden = true;
+    $('#apClass').innerHTML = '<option value="">শ্রেণি নির্বাচন করুন</option>' + catalog.classes.map((c) => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
+    setTimeout(() => $('#apply').scrollIntoView({ behavior: 'smooth' }), 30);
+  }
+  $$('#applyOpen, [data-open-apply]').forEach((a) => a.addEventListener('click', (ev) => { ev.preventDefault(); openApply(); }));
+  if (location.hash === '#apply') openApply();
+  $('#apCancel').onclick = () => { $('#apply').hidden = true; $('#admission').scrollIntoView({ behavior: 'smooth' }); };
+  $('#apNameBn').addEventListener('input', () => { const en = $('#apNameEn'); if (!en.dataset.touched) en.value = window.Translit.name($('#apNameBn').value); });
+  $('#apNameEn').addEventListener('input', () => { $('#apNameEn').dataset.touched = '1'; });
+  $('#apPhoto').addEventListener('change', async () => {
+    const f = $('#apPhoto').files[0]; if (!f) return;
+    try {
+      const src = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(f); });
+      const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+      const w = 300, h = 360, r = w / h; let sw = img.width, sh = img.height; if (sw / sh > r) sw = sh * r; else sh = sw / r;
+      const cv = document.createElement('canvas'); cv.width = w; cv.height = h; cv.getContext('2d').drawImage(img, (img.width - sw) / 2, (img.height - sh) * 0.3, sw, sh, 0, 0, w, h);
+      apPhoto = cv.toDataURL('image/jpeg', 0.8); $('#apPh').style.backgroundImage = `url('${apPhoto}')`; $('#apPh').textContent = '';
+    } catch (e) { apMsg('ছবিটি খোলা যাচ্ছে না। অন্য ছবি দিন।'); }
+  });
+  $('#applyForm').addEventListener('submit', async (ev) => {
+    ev.preventDefault(); apMsg('');
+    const v = (id) => $(id).value.trim();
+    const cls = catalog.classes.find((c) => c.id === v('#apClass'));
+    const g = ($('input[name=apGender]:checked') || {}).value || '';
+    const a = { nameBn: v('#apNameBn'), nameEn: v('#apNameEn'), dob: v('#apDob'), nationality: v('#apNat'), religion: v('#apRel'), gender: g, mobile: C.toEn(v('#apMobile')), address: v('#apAddr'), father: v('#apFather'), fatherJob: v('#apFatherJob'), mother: v('#apMother'), motherJob: v('#apMotherJob'), guardianMobile: C.toEn(v('#apGMobile')), prevSchool: v('#apPrev'), currentClass: v('#apCur'), applyClassId: cls ? cls.id : '', applyClass: cls ? cls.name : '', health: v('#apHealth'), other: v('#apOther'), year: String(Number(settings.activeYear) + (new Date().getMonth() >= 9 ? 1 : 0)) };
+    if (apPhoto) a.photo = apPhoto;
+    if (!cls) return apMsg('যে শ্রেণিতে ভর্তি হতে চায় তা নির্বাচন করুন।');
+    if (!a.nameBn) return apMsg('শিক্ষার্থীর নাম (বাংলায়) লিখুন।');
+    if (!g) return apMsg('লিঙ্গ নির্বাচন করুন।');
+    if (!a.address) return apMsg('সম্পূর্ণ ঠিকানা লিখুন।');
+    if (!a.father) return apMsg('পিতার নাম লিখুন।');
+    if (!/^01\d{9}$/.test(a.guardianMobile)) return apMsg('অভিভাবকের সঠিক মোবাইল নম্বর দিন (11 সংখ্যা, 01 দিয়ে শুরু)।');
+    if (!$('#apDecl').checked) return apMsg('ঘোষণার ঘরে টিক দিন।');
+    const btn = $('#apSubmit'); btn.disabled = true;
+    try {
+      if (!store) store = await window.getStore();
+      const code = await store.submitApplication(a);
+      const full = Object.assign({ code, submittedAt: Date.now(), status: 'new' }, a);
+      const done = $('#applyDone');
+      done.innerHTML = `<div class="tick"><svg viewBox="0 0 24 24"><path d="M9.5 16.2 5.3 12l-1.4 1.4 5.6 5.6 12-12-1.4-1.4z"/></svg></div><h3 style="justify-content:center">আবেদন সফলভাবে জমা হয়েছে</h3><p>আপনার আবেদন কোড:</p><div class="apply-code">${esc(code)}</div><p class="muted">কোডটি লিখে রাখুন। মাদ্রাসায় এলে এই কোড বললেই আপনার ফর্ম খুঁজে পাওয়া যাবে। ফর্মের PDF আপনার মোবাইলে ডাউনলোড হচ্ছে।</p><div class="result-actions"><button class="btn btn-green" type="button" id="apPdf">PDF আবার ডাউনলোড</button><button class="btn btn-ghost" type="button" id="apPrint">প্রিন্ট</button></div><div class="af-scale" style="margin-top:16px">${AF.render(full, settings, images)}</div>`;
+      $('#applyForm').hidden = true; done.hidden = false; done.scrollIntoView({ behavior: 'smooth' });
+      const getPdf = () => AF.pdf(AF.render(full, settings, images), `Admission-Form-${code}.pdf`).catch(() => apMsg('PDF তৈরি করা যায়নি। "প্রিন্ট" চেপে Save as PDF করুন।'));
+      $('#apPdf').onclick = getPdf;
+      $('#apPrint').onclick = () => { $('#resultArea').hidden = false; $('#resultArea').innerHTML = AF.render(full, settings, images); window.print(); };
+      getPdf();
+      $('#applyForm').reset(); apPhoto = ''; $('#apPh').style.backgroundImage = ''; $('#apPh').textContent = 'শিক্ষার্থীর ছবি'; delete $('#apNameEn').dataset.touched;
+    } catch (e) { apMsg(e.message || 'আবেদন জমা দেওয়া যায়নি। আবার চেষ্টা করুন।'); } finally { btn.disabled = false; }
+  });
 
   $('#resultForm').addEventListener('submit', async (ev) => {
     ev.preventDefault(); msg('');

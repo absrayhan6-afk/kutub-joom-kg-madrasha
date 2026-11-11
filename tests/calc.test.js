@@ -23,10 +23,19 @@ assert.strictEqual(C.studentResult(subs, { a: '৮০', b: '৪০' }).gpa, 5);
 // নম্বর বাকি থাকলে উত্তীর্ণ নয়
 assert.strictEqual(C.studentResult(subs, { a: 90 }).missing, 1);
 
-// মেধাক্রম: সমান নম্বর হলে একই মেধাক্রম, নতুন রোল আলাদা; ফেল করা শেষে
+// মেধাক্রম: সমান নম্বর হলে একই মেধাক্রম, নতুন রোল আলাদা
 const st = [{ id: 1, roll: '1' }, { id: 2, roll: '2' }, { id: 3, roll: '3' }, { id: 4, roll: '4' }];
 const r = C.classResults(st, subs, { 1: { a: 85, b: 45 }, 2: { a: 78, b: 30 }, 3: { a: 100, b: 5 }, 4: { a: 85, b: 45 } });
-assert.deepStrictEqual(r.map((x) => [x.student.id, x.rank, x.newRoll]), [[1, 1, 1], [4, 1, 2], [2, 3, 3], [3, 4, 4]]);
+// শিক্ষার্থী 3: এক বিষয়ে অকৃতকার্য → বিশেষ বিবেচনা, মোট নম্বর বেশি হলেও সবার শেষে
+assert.deepStrictEqual(r.map((x) => [x.student.id, x.status, x.rank, x.newRoll]), [[1, 'pass', 1, 1], [4, 'pass', 1, 2], [2, 'pass', 3, 3], [3, 'special', 4, 4]]);
+// 3 বিষয়ে অকৃতকার্য → ফেল, রোল/মেধাক্রম নেই
+const subs3 = [{ id: 'a', full: 100, pass: 33 }, { id: 'b', full: 100, pass: 33 }, { id: 'c', full: 100, pass: 33 }, { id: 'd', full: 100, pass: 33 }];
+const r3 = C.classResults([{ id: 1, roll: '1' }, { id: 2, roll: '2' }, { id: 3, roll: '3' }], subs3, { 1: { a: 10, b: 10, c: 10, d: 99 }, 2: { a: 20, b: 20, c: 90, d: 90 }, 3: { a: 50, b: 50, c: 50, d: 50 } });
+assert.deepStrictEqual(r3.map((x) => [x.student.id, x.status, x.rank]), [[3, 'pass', 1], [2, 'special', 2], [1, 'fail', null]]);
+assert.strictEqual(r3[2].promoted, false); assert.strictEqual(r3[1].promoted, true);
+// উপস্থিতি
+assert.deepStrictEqual(C.attendance(90, 85), { total: 90, present: 85, absent: 5 });
+assert.strictEqual(C.attendance('', 5), null);
 
 // হিসাব: তিন পর্বে বাকি (খালি ঘর = বাকি)
 const items = C.defaultFeeItems({ admission: 500, monthly: 150, exam_first: 100, exam_second: 100, exam_annual: 100 });

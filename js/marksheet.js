@@ -9,7 +9,11 @@
   function render(r, settings, images) {
     const s = settings || {};
     const logo = (images && images.logo) || 'assets/logo.webp';
-    const passed = r.passed;
+    const status = r.status || (r.passed ? 'pass' : 'fail');
+    const passed = status === 'pass';
+    const special = status === 'special';
+    const resText = passed ? 'PASS' : special ? 'SPECIAL' : 'FAIL';
+    const att = r.attendance;
     const rows = r.rows.map((x, i) => `<tr><td>${i + 1}</td><td class="ms-sub">${esc(x.nameEn || x.name)}</td><td>${x.full}</td><td>${x.mark == null ? '—' : x.mark}</td><td class="${x.grade === 'F' ? 'ms-f' : ''}">${esc(x.grade)}</td><td>${C.fix2(x.gp)}</td></tr>`).join('');
     const info = [
       ['Name', r.nameEn || r.name], ["Father's Name", r.fatherEn || r.father], ['Class', r.classNameEn || r.className],
@@ -19,27 +23,29 @@
       ['Total Marks', `${r.total}<small>/${r.full}</small>`, 't-blue'],
       ['Average', C.fix2(r.average), 't-purple'],
       ['GPA', C.fix2(r.gpa), 't-green'],
-      ['Result', passed ? 'PASS' : 'FAIL', passed ? 't-orange' : 't-red'],
+      ['Result', resText, passed ? 't-orange' : special ? 't-gold' : 't-red'],
       ['Merit Position', r.rank || '—', 't-sky']
     ].map((t) => `<div class="ms-tile ${t[2]}"><span>${t[0]}</span><b>${t[1]}</b></div>`).join('');
     return `<article class="marksheet" lang="en" aria-label="Marksheet">
   <header class="ms-head">
     <img class="ms-logo" src="${esc(logo)}" alt="Logo" width="120" height="110">
     <div class="ms-name"><h2>${esc(s.nameEn || s.name)}</h2><p class="ms-addr"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>${esc(s.addressEn || s.address)}</p>${s.established ? `<p class="ms-en">Established: ${esc(C.toEn(s.established))}</p>` : ''}</div>
-    <dl class="ms-meta"><dt>Academic Year</dt><dd>${esc(r.year)}</dd><dt>Class</dt><dd>${esc(r.classNameEn || r.className)}</dd><dt>Examination</dt><dd>${esc(C.examEn(r.exam))}</dd></dl>
+    <dl class="ms-meta"><dt>Academic Year</dt><dd>${esc(r.year)}</dd><dt>Class</dt><dd>${esc(r.classNameEn || r.className)}</dd><dt>Examination</dt><dd>${esc(C.examEn(r.exam))}</dd>${att ? `<dt>Attendance</dt><dd>Total: ${att.total} days, Present: ${att.present} days, Absent: ${att.absent} days</dd>` : ''}</dl>
   </header>
   <div class="ms-ribbon"><span>Academic Transcript</span></div>
   <section class="ms-info">
     <div class="ms-grid">${info}</div>
-    <div class="ms-grade ${passed ? '' : 'is-fail'}"><span>Overall Grade</span><div class="ms-grade-row">${laurel(false)}<b>${esc(r.grade)}</b>${laurel(true)}</div></div>
+    <div class="ms-grade ${passed ? '' : special ? 'is-special' : 'is-fail'}"><span>Overall Grade</span><div class="ms-grade-row">${laurel(false)}<b>${esc(r.grade)}</b>${laurel(true)}</div></div>
   </section>
   <section class="ms-tiles">${tiles}</section>
   <div class="ms-table-wrap"><table class="ms-table"><thead><tr><th>SL</th><th>Subject</th><th>Full Marks</th><th>Obtained Marks</th><th>Grade</th><th>GP</th></tr></thead><tbody>${rows}</tbody></table></div>
   <section class="ms-msg ${passed ? '' : 'is-fail'}">
     <span class="ms-msg-ico" aria-hidden="true">${passed ? '<svg viewBox="0 0 24 24"><path d="M9.5 16.2 5.3 12l-1.4 1.4 5.6 5.6 12-12-1.4-1.4z"/></svg>' : '!'}</span>
-    <div>${passed ? '<h3>Congratulations!</h3><p>You have passed the examination. May Allah grant you more success.</p>' : '<h3>Do not lose hope!</h3><p>Study with more care. In sha Allah, you will do better in the next examination.</p>'}</div>
+    <div>${passed ? '<h3>Congratulations!</h3><p>You have passed the examination. May Allah grant you more success.</p>'
+      : special ? `<h3>Promoted on Special Consideration</h3><p>Failed in ${r.fails || ''} subject${r.fails > 1 ? 's' : ''}. Please take extra care of ${r.fails > 1 ? 'these subjects' : 'this subject'}. In sha Allah, you will do better next time.</p>`
+      : '<h3>Do not lose hope!</h3><p>Study with more care. In sha Allah, you will do better in the next examination.</p>'}</div>
   </section>
-  <footer class="ms-foot"><span>Result Published: ${dateEn(r.publishedAt)}</span><span class="ms-sign">Head Teacher</span></footer>
+  <footer class="ms-foot"><span>Result Published: ${dateEn(r.publishedAt)}</span><span class="ms-sign">${images && images.sign ? `<img src="${esc(images.sign)}" alt="" class="sign-img">` : ''}<span>Head Teacher</span></span></footer>
 </article>`;
   }
   global.Marksheet = { render, esc };
