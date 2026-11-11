@@ -90,6 +90,9 @@
 .apply-done .tick svg { width: 54px; height: 54px; fill: #fff; }
 .apply-code { display: inline-block; font-family: 'Hind Siliguri', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: .08em; background: #fff6d8; border: 2px dashed #e6b422; border-radius: 12px; padding: 6px 18px; margin: 8px 0; user-select: all; }
 @media (max-width: 640px) { .apply-grid { grid-template-columns: minmax(0, 1fr); } }
+/* A4 প্রিন্ট: ফরম ঠিক একটি A4 পাতায় */
+@page admform { size: A4 portrait; margin: 0; }
 @media print {
-  .adm-form { border-radius: 0; break-after: page; }
+  .adm-form { page: admform; width: 210mm; height: 297mm; min-height: 0; border-radius: 0; border-width: 2px; margin: 0; break-after: page; break-inside: avoid; }
+  .af-scale { overflow: visible; }
 }

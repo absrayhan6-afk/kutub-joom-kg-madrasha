@@ -71,7 +71,7 @@
     $('#apClass').innerHTML = '<option value="">শ্রেণি নির্বাচন করুন</option>' + catalog.classes.map((c) => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
     setTimeout(() => $('#apply').scrollIntoView({ behavior: 'smooth' }), 30);
   }
-  $$('#applyOpen, [data-open-apply]').forEach((a) => a.addEventListener('click', (ev) => { ev.preventDefault(); openApply(); }));
+  $$('#applyOpen, [data-open-apply]').forEach((a) => a.addEventListener('click', (ev) => { ev.preventDefault(); nav.classList.remove('open'); openApply(); }));
   if (location.hash === '#apply') openApply();
   $('#apCancel').onclick = () => { $('#apply').hidden = true; $('#admission').scrollIntoView({ behavior: 'smooth' }); };
   $('#apNameBn').addEventListener('input', () => { const en = $('#apNameEn'); if (!en.dataset.touched) en.value = window.Translit.name($('#apNameBn').value); });

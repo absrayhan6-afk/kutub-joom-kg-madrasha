@@ -27,8 +27,8 @@ site_html = fix_links(part(index, 'SITE-START', 'SITE-END'))
 admin_html = fix_links(part(admin, 'ADMIN-START', 'ADMIN-END'))
 css = '\n'.join(read(f'css/{n}.css') for n in ('site', 'marksheet', 'forms', 'admin'))
 js = '\n;\n'.join(fix_links(read(f'js/{n}.js')) for n in ('config', 'calc', 'store', 'marksheet', 'translit', 'forms', 'idcard', 'public', 'admin'))
-router = """(function(){var A=['admin','dashboard','students','classes','teachers','marks','publish','archive','fees','notices','admission','config','idcards','applications'];
-function r(){var h=location.hash.slice(1),adm=A.indexOf(h)>=0;document.getElementById('sitePart').hidden=adm;document.getElementById('adminPart').hidden=!adm;document.body.classList.toggle('admin-body',adm);}
+router = """(function(){var A=['admin','dashboard','students','classes','teachers','marks','publish','archive','fees','notices','banner','config','idcards','applications'];
+function r(){var h=location.hash.slice(1),adm=A.indexOf(h)>=0;try{if(!h&&sessionStorage.getItem('kjm-last')&&JSON.parse(sessionStorage.getItem('kjm-demo-v3-s')||'null')){adm=true;}else if(h&&!adm){sessionStorage.removeItem('kjm-last');}}catch(e){}document.getElementById('sitePart').hidden=adm;document.getElementById('adminPart').hidden=!adm;document.body.classList.toggle('admin-body',adm);}
 window.addEventListener('hashchange',function(){r();window.scrollTo(0,0);});r();})();"""
 
 out = f"""<title>কুতুবজোম মাদ্রাসা ওয়েবসাইট</title>

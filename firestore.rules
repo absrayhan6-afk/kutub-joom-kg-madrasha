@@ -2,7 +2,7 @@ rules_version = '2';
 // ডাটাবেসের নিরাপত্তা নিয়ম
 // - অভিভাবক (লগইন ছাড়া): শুধু প্রকাশিত ফলাফল (সঠিক রোল + রেজিস্ট্রেশন জানলে), নোটিশ ও সাধারণ তথ্য দেখতে পারবেন
 // - শিক্ষক: নিজের শ্রেণির নম্বর এন্ট্রি, প্রকাশের আগ পর্যন্ত
-// - অফিস / কম্পিউটার: শুধু আইডি কার্ড (শিক্ষার্থীর ছবি ও কার্ডের তথ্য)
+// - অফিস / কম্পিউটার: ড্যাশবোর্ড, হিসাব ও আইডি কার্ড
 // - প্রিন্সিপাল: সব কিছু
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -77,7 +77,7 @@ service cloud.firestore {
     }
 
     match /routines/{id} {
-      allow read, write: if isPrincipal();
+      allow read, write: if isPrincipal() || isOffice();
     }
 
     // অনলাইন ভর্তি আবেদন: যে কেউ জমা দিতে পারবে (শুধু নতুন), দেখবেন শুধু প্রিন্সিপাল
@@ -96,7 +96,7 @@ service cloud.firestore {
     }
 
     match /fees/{id} {
-      allow read, write: if isPrincipal();
+      allow read, write: if isPrincipal() || isOffice();
     }
   }
 }

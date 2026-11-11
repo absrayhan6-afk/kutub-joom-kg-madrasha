@@ -139,18 +139,18 @@
   const ic = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${I[k]}"/></svg>`;
 
   const PAGES = [
-    { k: 'dashboard', t: 'ড্যাশবোর্ড', i: 'home', r: ['principal', 'teacher'] },
+    { k: 'dashboard', t: 'ড্যাশবোর্ড', i: 'home', r: ['principal', 'teacher', 'office'] },
     { k: 'students', t: 'শিক্ষার্থী ব্যবস্থাপনা', i: 'students', r: ['principal', 'teacher'] },
     { k: 'classes', t: 'শ্রেণি ও বিষয়', i: 'classes', r: ['principal'] },
     { k: 'teachers', t: 'শিক্ষক ও স্টাফ', i: 'teacher', r: ['principal'] },
     { k: 'marks', t: 'নম্বর এন্ট্রি', i: 'marks', r: ['principal', 'teacher'] },
     { k: 'publish', t: 'ফলাফল প্রকাশ', i: 'publish', r: ['principal'] },
     { k: 'archive', t: 'ফলাফল সংরক্ষণ', i: 'archive', r: ['principal'] },
-    { k: 'fees', t: 'হিসাব', i: 'fees', r: ['principal'] },
+    { k: 'fees', t: 'হিসাব', i: 'fees', r: ['principal', 'office'] },
     { k: 'idcards', t: 'আইডি কার্ড', i: 'idcard', r: ['principal', 'office'] },
     { k: 'applications', t: 'ভর্তি আবেদন', i: 'apply', r: ['principal'] },
     { k: 'notices', t: 'নোটিশ ব্যবস্থাপনা', i: 'notice', r: ['principal'] },
-    { k: 'admission', t: 'ভর্তি বিজ্ঞপ্তি', i: 'admission', r: ['principal'] },
+    { k: 'banner', t: 'ভর্তি ব্যানার', i: 'admission', r: ['principal'] },
     { k: 'config', t: 'সেটিংস', i: 'settings', r: ['principal'] }
   ];
   const allowed = (k) => PAGES.some((p) => p.k === k && p.r.includes(role()));
@@ -179,7 +179,7 @@
     $('#pageTitle').textContent = p ? p.t : '';
     $('#side').classList.remove('open');
     const v = $('#view'); v.innerHTML = '<div class="card empty">লোড হচ্ছে…</div>';
-    try { history.replaceState(null, '', '#' + page); } catch (e) { /* ignore */ }
+    try { history.replaceState(null, '', '#' + page); sessionStorage.setItem('kjm-last', page); sessionStorage.setItem('kjm-ui', JSON.stringify(ui)); } catch (e) { /* ignore */ }
     try { await VIEWS[page](v); } catch (e) { v.innerHTML = `<div class="card note">${esc(e.message || 'পেজ লোড করা যায়নি।')}</div>`; }
     window.scrollTo(0, 0);
   }
@@ -196,7 +196,7 @@
     const maxN = Math.max(5, ...counts.map((x) => x.n));
     const quick = isP() ? [
       ['students', 'q1', 'students', 'শিক্ষার্থী যোগ'], ['marks', 'q2', 'marks', 'নম্বর এন্ট্রি'], ['publish', 'q3', 'publish', 'ফলাফল প্রকাশ'], ['fees', 'q5', 'fees', 'হিসাব'], ['idcards', 'q4', 'idcard', 'আইডি কার্ড']
-    ] : [['marks', 'q2', 'marks', 'নম্বর এন্ট্রি'], ['students', 'q1', 'students', 'শিক্ষার্থী তালিকা']];
+    ] : role() === 'office' ? [['fees', 'q5', 'fees', 'হিসাব'], ['idcards', 'q4', 'idcard', 'আইডি কার্ড']] : [['marks', 'q2', 'marks', 'নম্বর এন্ট্রি'], ['students', 'q1', 'students', 'শিক্ষার্থী তালিকা']];
     const pubRows = myClasses().map((c) => `<tr><td class="left">${esc(c.name)}</td>${C.EXAMS.map((e) => { const on = catalog.published[U.marksId(year, e.key, c.id)]; return `<td>${on ? '<span class="chip chip-green">প্রকাশিত</span>' : '<span class="chip chip-gray">অপ্রকাশিত</span>'}</td>`; }).join('')}</tr>`).join('');
     v.innerHTML = `
       ${isP() && newApps ? `<button type="button" class="note app-alert" data-go="applications">${ic('apply')}<span><b>${newApps}টি নতুন অনলাইন ভর্তি আবেদন</b> জমা হয়েছে। দেখতে এখানে চাপুন।</span></button>` : ''}
@@ -728,8 +728,8 @@
   VIEWS.fees = async (v) => {
     const tab = ui.fTab || 'collect';
     v.innerHTML = `<section class="card"><div class="toolbar">
-      <label class="fld w-md"><span>শ্রেণি</span><select id="fClass">${classOpts(ui.fClass || catalog.classes[0].id, catalog.classes)}</select></label>
-      <label class="fld w-sm"><span>সাল</span><select id="fYear">${yearOpts(ui.fYear || settings.activeYear)}</select></label>
+      <label class="fld w-md"><span>শ্রেণি</span><select id="feClass">${classOpts(ui.fClass || catalog.classes[0].id, catalog.classes)}</select></label>
+      <label class="fld w-sm"><span>সাল</span><select id="feYear">${yearOpts(ui.fYear || settings.activeYear)}</select></label>
       <label class="fld w-lg"><span>হিসাবের পর্ব</span><select id="fPeriod">${opt(C.FEE_PERIODS.map((p) => ({ v: p.key, t: p.name })).concat([{ v: 'all', t: 'সারা বছর' }]), ui.fPeriod || 'first')}</select></label>
       <div class="toolbar" role="tablist">${[['collect', 'টাকা আদায় এন্ট্রি'], ['summary', 'বকেয়া সারাংশ'], ['routine', 'পরীক্ষার রুটিন'], ['items', 'ফি ও খাত']].map((t) => `<button type="button" class="btn ${t[0] === tab ? 'btn-dark' : 'btn-ghost'}" data-tab="${t[0]}" role="tab" aria-selected="${t[0] === tab}">${t[1]}</button>`).join('')}</div>
     </div><p class="muted" style="margin:10px 0 0">বছরে তিনবার হিসাব হয়। কোন মাস বা খাত কোন হিসাবে যাবে, "ফি ও খাত" ট্যাবে বদলানো যায়। আদায় এন্ট্রিতে যে ঘর খালি থাকবে, সেটা নিজে থেকে বকেয়া হিসেবে ধরা হবে। "পরীক্ষার রুটিন" ট্যাব থেকে প্রতিটি শিক্ষার্থীর জন্য রুটিন ও বকেয়া একসাথে প্রিন্ট করা যায়।</p></section>
@@ -737,7 +737,7 @@
     let students = [], fees = C.normalizeFees({});
     const periodItems = () => (ui.fPeriod === 'all' ? fees.items : fees.items.filter((it) => it.period === ui.fPeriod));
     const load = async () => {
-      ui.fClass = $('#fClass').value; ui.fYear = $('#fYear').value; ui.fPeriod = $('#fPeriod').value;
+      ui.fClass = $('#feClass').value; ui.fYear = $('#feYear').value; ui.fPeriod = $('#fPeriod').value;
       [students, fees] = await Promise.all([store.listStudents({ year: ui.fYear, classId: ui.fClass }), store.getFees(ui.fYear, ui.fClass)]);
       students.sort((a, b) => C.num(a.roll) - C.num(b.roll));
       await ({ collect: drawCollect, summary: drawSummary, items: drawItems, routine: drawRoutine })[ui.fTab || 'collect']();
@@ -798,7 +798,7 @@
         students.forEach((s) => {
           let paid = 0, due = 0;
           $$(`input[data-s="${s.id}"]`, v).forEach((inp) => { const n = C.num(inp.value) || 0; const dd = Number(inp.dataset.due); paid += n; due += dd; col[inp.dataset.k] = (col[inp.dataset.k] || 0) + n; inp.parentElement.className = inp.value.trim() === '' ? (dd ? 'fee-due-empty' : '') : (n >= dd ? 'fee-paid' : 'fee-due'); });
-          const row = $(`tr[data-st="${s.id}"]`, v); row.querySelector('.c-paid').textContent = money(paid); const bal = Math.max(0, due - paid); row.querySelector('.c-bal').innerHTML = bal ? `<b class="f">${money(bal)}</b>` : '<span class="chip chip-green">পরিশোধ</span>';
+          const row = $(`tr[data-st="${s.id}"]`, v); row.querySelector('.c-paid').textContent = money(paid); const bal = Math.max(0, due - paid); row.querySelector('.c-bal').innerHTML = bal ? `<b class="due">${money(bal)}</b>` : '<span class="paid">পরিশোধ</span>';
           tp += paid; tb += bal;
         });
         Object.keys(col).forEach((k) => { const td = $(`[data-sum="${k}"]`, v); if (td) td.textContent = money(col[k]); });
@@ -818,7 +818,7 @@
       const p = fees.payments[s.id] || {}; const dc = fees.discounts[s.id]; const f = C.studentFees(fees.items, p, dc);
       return `<div class="slip"><div class="slip-head"><img src="${esc(images.logo || 'assets/logo.webp')}" alt="" width="54" height="50"><div><h3>${esc(settings.name)}</h3><p class="slip-sub">${esc(settings.address)} · শিক্ষার্থীর হিসাব ${esc(ui.fYear)}</p></div></div>
         <p><b>নাম:</b> ${esc(s.name)} &nbsp; <b>পিতার নাম:</b> ${esc(s.father || '')} &nbsp; <b>শ্রেণি:</b> ${esc(className(ui.fClass))} &nbsp; <b>রোল:</b> ${esc(s.roll)} &nbsp; <b>রেজিস্ট্রেশন:</b> ${esc(s.reg)}${dc && dc.type ? ` &nbsp; <b>ছাড়:</b> ${esc(C.discountLabel(dc))}` : ''}</p>
-        ${C.FEE_PERIODS.map((per) => { const its = fees.items.filter((it) => it.period === per.key); if (!its.length) return ''; const sum = f.periods.find((x) => x.key === per.key); return `<h4 style="margin:10px 0 4px">${per.name}</h4><table class="tbl"><thead><tr><th class="left">খাত</th><th>প্রদেয়</th><th>জমা</th><th>বাকি</th></tr></thead><tbody>${its.map((it) => { const due = C.itemDue(it, dc); const got = Number(p[it.key]) || 0; return `<tr><td class="left">${esc(it.name)}</td><td>${money(due)}</td><td>${p[it.key] == null ? '—' : money(got)}</td><td>${due - got > 0 ? `<b class="f">${money(due - got)}</b>` : '—'}</td></tr>`; }).join('')}<tr class="sum-row"><td class="left">মোট</td><td>${money(sum.due)}</td><td>${money(sum.paid)}</td><td>${money(sum.balance)}</td></tr></tbody></table>`; }).join('')}
+        ${C.FEE_PERIODS.map((per) => { const its = fees.items.filter((it) => it.period === per.key); if (!its.length) return ''; const sum = f.periods.find((x) => x.key === per.key); return `<h4 style="margin:10px 0 4px">${per.name}</h4><table class="tbl"><thead><tr><th class="left">খাত</th><th>প্রদেয়</th><th>জমা</th><th>বাকি</th></tr></thead><tbody>${its.map((it) => { const due = C.itemDue(it, dc); const got = Number(p[it.key]) || 0; return `<tr><td class="left">${esc(it.name)}</td><td>${money(due)}</td><td>${p[it.key] == null ? '—' : money(got)}</td><td>${due - got > 0 ? `<b class="due">${money(due - got)}</b>` : '—'}</td></tr>`; }).join('')}<tr class="sum-row"><td class="left">মোট</td><td>${money(sum.due)}</td><td>${money(sum.paid)}</td><td>${money(sum.balance)}</td></tr></tbody></table>`; }).join('')}
         <p style="margin:12px 0 0;font-weight:700">সারা বছর: প্রদেয় ${money(f.due)} · জমা ${money(f.paid)} · বাকি ${money(f.balance)}</p>
         <div style="text-align:right;margin:16px 0 0;font-weight:700;display:flex;flex-direction:column;align-items:flex-end">${signImg(38)}<span>প্রধান শিক্ষক</span></div></div>`;
     };
@@ -838,7 +838,7 @@
         <section class="card"><div class="toolbar" style="justify-content:space-between;align-items:center"><h2 style="margin:0">${per === 'all' ? 'সারা বছরের' : esc(C.periodName(per))} — ${esc(className(ui.fClass))} ${esc(ui.fYear)}</h2>
         <div class="toolbar"><button class="btn btn-ghost" id="slipAll" type="button">${ic('print')}বকেয়া স্লিপ</button><button class="btn btn-ghost" id="fPdf" type="button">${ic('print')}পুরো শ্রেণির PDF</button><button class="btn btn-ghost" id="fXls" type="button">${ic('down')}Excel</button></div></div>
         <div class="tbl-wrap" style="margin-top:12px"><table class="tbl"><thead><tr><th>রোল</th><th class="left">নাম</th>${C.FEE_PERIODS.map((p) => `<th>${p.name}<span class="th-sub">বাকি</span></th>`).join('')}<th>মোট প্রাপ্য</th><th>মোট জমা</th><th>মোট বাকি</th><th>প্রিন্ট</th></tr></thead>
-        <tbody>${rows.map((r) => `<tr><td>${esc(r.s.roll)}</td><td class="left">${esc(r.s.name)}${fees.discounts[r.s.id] && fees.discounts[r.s.id].type ? ` <span class="chip chip-gold">${esc(C.discountLabel(fees.discounts[r.s.id]))}</span>` : ''}</td>${r.f.periods.map((p) => `<td>${p.balance ? `<b class="f">${money(p.balance)}</b>` : '<span class="chip chip-green">পরিশোধ</span>'}</td>`).join('')}<td>${money(r.f.due)}</td><td>${money(r.f.paid)}</td><td>${r.f.balance ? `<b class="f">${money(r.f.balance)}</b>` : '—'}</td><td><div class="row-actions"><button class="btn btn-sm btn-ghost" data-stm="${r.s.id}">হিসাব</button><button class="btn btn-sm btn-ghost" data-rt="${r.s.id}">রুটিন</button></div></td></tr>`).join('')}
+        <tbody>${rows.map((r) => `<tr><td>${esc(r.s.roll)}</td><td class="left">${esc(r.s.name)}${fees.discounts[r.s.id] && fees.discounts[r.s.id].type ? ` <span class="chip chip-gold">${esc(C.discountLabel(fees.discounts[r.s.id]))}</span>` : ''}</td>${r.f.periods.map((p) => `<td>${p.balance ? `<b class="due">${money(p.balance)}</b>` : '<span class="paid">পরিশোধ</span>'}</td>`).join('')}<td>${money(r.f.due)}</td><td>${money(r.f.paid)}</td><td>${r.f.balance ? `<b class="due">${money(r.f.balance)}</b>` : '—'}</td><td><div class="row-actions"><button class="btn btn-sm btn-ghost" data-stm="${r.s.id}">হিসাব</button><button class="btn btn-sm btn-ghost" data-rt="${r.s.id}">রুটিন</button></div></td></tr>`).join('')}
         <tr class="sum-row"><td colspan="2" class="left">মোট</td>${C.FEE_PERIODS.map((p) => `<td>${money(rows.reduce((a, r) => a + r.f.periods.find((x) => x.key === p.key).balance, 0))}</td>`).join('')}<td>${money(rows.reduce((a, r) => a + r.f.due, 0))}</td><td>${money(rows.reduce((a, r) => a + r.f.paid, 0))}</td><td>${money(rows.reduce((a, r) => a + r.f.balance, 0))}</td><td></td></tr></tbody></table></div>
         <p class="muted">"হিসাব" = শিক্ষার্থীর সারা বছরের হিসাব, "রুটিন" = পরীক্ষার রুটিনের নিচে তার বকেয়া। প্রিন্টের পাতায় প্রিন্টার হিসেবে "Save as PDF" বেছে নিলে PDF ফাইল হিসেবে সংরক্ষণ হবে।</p></section>`;
       const slip = (r) => {
@@ -905,7 +905,7 @@
     }
 
     $$('[data-tab]', v).forEach((b) => { b.onclick = () => { ui.fTab = b.dataset.tab; go('fees'); }; });
-    $('#fClass').onchange = load; $('#fYear').onchange = load; $('#fPeriod').onchange = load;
+    $('#feClass').onchange = load; $('#feYear').onchange = load; $('#fPeriod').onchange = load;
     await load();
   };
 
@@ -943,10 +943,11 @@
       const cfg = cardCfg();
       $('#iGrid').innerHTML = rows.length ? rows.map((s) => { const d = cardData(s, photos[s.id], logo0()); return `<div class="id-item"><div class="id-pair">${ID.previewSvg(d, 'front', cfg)}${ID.previewSvg(d, 'back', cfg)}</div>
         <div class="id-meta">${photos[s.id] ? '' : '<span class="chip chip-red">ছবি নেই</span>'}${s.nameEn ? '' : '<span class="chip chip-gold">ইংরেজি নাম নেই</span>'}${s.card && Object.keys(s.card).length ? '<span class="chip chip-gray">কার্ডে আলাদা তথ্য</span>' : ''}</div>
-        <div class="row-actions"><button class="btn btn-sm btn-green" data-cam="${s.id}">${ic('camera')}ছবি তুলুন</button><label class="btn btn-sm btn-ghost file-btn">${ic('upload')}আপলোড<input type="file" accept="image/*" data-up="${s.id}" hidden></label><button class="btn btn-sm btn-ghost" data-info="${s.id}">${ic('edit')}তথ্য</button>${photos[s.id] ? `<button class="btn btn-sm btn-ghost" data-rm="${s.id}" aria-label="ছবি মুছুন">✕</button>` : ''}</div></div>`; }).join('') : `<p class="empty">${esc(className($('#iClass').value))} এ ${esc($('#iYear').value)} সালের কোনো শিক্ষার্থী নেই।</p>`;
+        <div class="row-actions"><button class="btn btn-sm btn-green" data-cam="${s.id}">${ic('camera')}ছবি তুলুন</button><label class="btn btn-sm ${photos[s.id] ? 'btn-done' : 'btn-ghost'} file-btn">${photos[s.id] ? '✓ ছবি আপলোড হয়েছে' : ic('upload') + 'আপলোড'}<input type="file" accept="image/*" data-up="${s.id}" hidden></label><button class="btn btn-sm btn-ghost" data-info="${s.id}">${ic('edit')}তথ্য</button><button class="btn btn-sm btn-ghost" data-pr="${s.id}">${ic('print')}প্রিন্ট</button>${photos[s.id] ? `<button class="btn btn-sm btn-ghost" data-rm="${s.id}" aria-label="ছবি মুছুন">✕</button>` : ''}</div></div>`; }).join('') : `<p class="empty">${esc(className($('#iClass').value))} এ ${esc($('#iYear').value)} সালের কোনো শিক্ষার্থী নেই।</p>`;
       $$('[data-cam]', v).forEach((b) => { b.onclick = () => camera(list.find((s) => s.id === b.dataset.cam)); });
       $$('[data-up]', v).forEach((inp) => { inp.onchange = async () => { const f = inp.files[0]; if (!f) return; try { await setPhoto(list.find((s) => s.id === inp.dataset.up), await ID.fileToUrl(f)); } catch (e) { fail(e); } }; });
       $$('[data-info]', v).forEach((b) => { b.onclick = () => info(list.find((s) => s.id === b.dataset.info)); });
+      $$('[data-pr]', v).forEach((b) => { b.onclick = () => { const s = list.find((x) => x.id === b.dataset.pr); const cfg = cardCfg(); const d = cardData(s, photos[s.id], logo0()); printHtml(`<div class="id-print"><div class="id-print-card">${ID.previewSvg(d, 'front', cfg)}</div><div class="id-print-card">${ID.previewSvg(d, 'back', cfg)}</div></div>`); }; });
       $$('[data-rm]', v).forEach((b) => { b.onclick = async () => { if (!(await confirmBox('ছবি মুছবেন?', 'এই শিক্ষার্থীর কার্ডের ছবি মুছে যাবে।', 'মুছে ফেলুন'))) return; try { await store.savePhoto(b.dataset.rm, ''); delete photos[b.dataset.rm]; draw(); } catch (e) { fail(e); } }; });
     };
     const load = async () => {
@@ -1019,28 +1020,51 @@
         await store.updateStudentCard(s.id, real); Object.assign(s, real); draw(); toast('কার্ডের তথ্য সংরক্ষণ হয়েছে');
       } catch (e) { fail(e); }
     }
-    // কার্ডের নকশা এডিট (লাইভ প্রিভিউসহ)
+    // কার্ডের নকশা এডিট (লাইভ প্রিভিউসহ): লেখা, প্রতিটি অংশের অবস্থান/মাপ, প্রতিটি রঙিন আকৃতি
     async function design() {
-      const c = cardCfg();
+      const c = JSON.parse(JSON.stringify(cardCfg())); c.off = c.off || {}; c.shapes = c.shapes || {};
       const sample = list[0] ? cardData(list[0], photos[list[0].id], logo0()) : cardData({ name: 'Student Name', reg: '1001', roll: '1', classId: ui.iClass, year: ui.iYear, father: 'Father Name' }, '', logo0());
       const defLines = String(settings.nameEn || settings.name).toUpperCase();
       await ID.ensureQR();
-      const d = await dialog('আইডি কার্ড এডিট (নকশা)', `<div class="design-grid"><div class="design-fields">
-        <label class="fld"><span>মাদ্রাসার নাম (কার্ডে) — প্রতি লাইন আলাদা</span><textarea id="dLines" rows="3" placeholder="${esc(defLines)}">${esc(c.schoolLines)}</textarea></label>
-        <div class="grid-2" style="gap:10px"><label class="fld"><span>নামের লেখার সাইজ</span><input id="dSchool" type="number" step="0.1" min="1.5" max="5" value="${esc(c.schoolSize || 3.2)}"></label><label class="fld"><span>ঠিকানার লাইন</span><input id="dAddr" value="${esc(c.addrLine)}" placeholder="Maheshkhali, Cox's Bazar"></label></div>
-        <div class="grid-2" style="gap:10px"><label class="fld"><span>শিক্ষার্থীর নামের সাইজ</span><input id="dName" type="number" step="0.1" min="2" max="6" value="${esc(c.nameSize || 3.9)}"></label><label class="fld"><span>তথ্যের লেখার সাইজ</span><input id="dInfo" type="number" step="0.05" min="1.6" max="3.5" value="${esc(c.infoSize)}"></label></div>
-        <div class="grid-3" style="gap:10px"><label class="fld"><span>গাঢ় নীল</span><input id="dNavy" type="color" value="${esc(c.navy)}"></label><label class="fld"><span>নীল</span><input id="dBlue" type="color" value="${esc(c.blue)}"></label><label class="fld"><span>হালকা নীল</span><input id="dTeal" type="color" value="${esc(c.teal)}"></label></div>
-        <div class="grid-2" style="gap:10px"><label class="fld"><span>নিচের লেখা</span><input id="dFooter" value="${esc(c.footer)}"></label><label class="fld"><span>স্বাক্ষরের লেখা</span><input id="dSign" value="${esc(c.signLabel)}"></label></div>
-        <label class="fld"><span>QR কোডে কী থাকবে</span><select id="dQr">${opt([{ v: 'student', t: 'শিক্ষার্থীর তথ্য (নাম, আইডি, শ্রেণি, রোল, মোবাইল)' }, { v: 'website', t: 'ওয়েবসাইটের লিংক' }, { v: 'custom', t: 'নিজের লেখা' }, { v: 'none', t: 'QR কোড দেখাবে না' }], c.qr)}</select></label>
-        <label class="fld"><span>নিজের লেখা (QR)</span><input id="dQrText" value="${esc(c.qrCustom)}"></label>
+      const num = (id, label, val, min, max, step) => `<label class="fld"><span>${label}</span><input id="${id}" type="number" step="${step}" min="${min}" max="${max}" value="${esc(val)}"></label>`;
+      const slider = (id, label, val, min, max, step) => `<label class="sl"><span>${label}</span><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${esc(val)}"><output>${esc(val)}</output></label>`;
+      const colorOf = (k) => (c.shapes[k] && c.shapes[k].color) || c[ID.SHAPES[k].c];
+      const body = `<div class="design-grid"><div class="design-fields">
+        <div class="seg" role="tablist"><button type="button" class="btn btn-sm btn-dark" data-seg="t">লেখা</button><button type="button" class="btn btn-sm btn-ghost" data-seg="p">অবস্থান ও মাপ</button><button type="button" class="btn btn-sm btn-ghost" data-seg="s">রঙিন আকৃতি</button></div>
+        <div data-pane="t" class="pane">
+          <label class="fld"><span>মাদ্রাসার নাম (কার্ডে) — প্রতি লাইন আলাদা</span><textarea id="dLines" rows="2" placeholder="${esc(defLines)}">${esc(c.schoolLines)}</textarea></label>
+          <div class="grid-3" style="gap:10px">${num('dSchool', 'নামের সাইজ', c.schoolSize || 3.2, 1.5, 5, 0.05)}${num('dAddrSize', 'ঠিকানার সাইজ', c.addrSize, 1.2, 4, 0.05)}<label class="fld"><span>নাম ও ঠিকানার রং</span><input id="dSchoolColor" type="color" value="${esc(c.schoolColor)}"></label></div>
+          <label class="fld"><span>ঠিকানার লাইন</span><input id="dAddr" value="${esc(c.addrLine)}" placeholder="Maheshkhali, Cox's Bazar"></label>
+          <div class="grid-2" style="gap:10px">${num('dName', 'শিক্ষার্থীর নামের সাইজ', c.nameSize || 3.9, 2, 6, 0.05)}<label class="fld"><span>নামের মোটা ভাব</span><select id="dWeight">${opt([{ v: 300, t: 'পাতলা' }, { v: 400, t: 'স্বাভাবিক' }, { v: 600, t: 'হালকা বোল্ড' }, { v: 700, t: 'বোল্ড' }], c.nameWeight)}</select></label></div>
+          <div class="grid-2" style="gap:10px"><label class="fld"><span>নামের ফন্ট</span><select id="dFont">${opt([{ v: 'impact', t: 'Impact (চওড়া)' }, { v: 'arial', t: 'Arial' }, { v: 'serif', t: 'Georgia / Times' }], c.nameFont)}</select></label><label class="fld"><span>নামের রং</span><input id="dNameColor" type="color" value="${esc(c.nameColor)}"></label></div>
+          <div class="grid-3" style="gap:10px">${num('dInfo', 'তথ্যের সাইজ', c.infoSize, 1.6, 3.5, 0.05)}${num('dContact', 'পেছনের যোগাযোগের সাইজ (গুণ)', c.contactSize, 0.6, 1.6, 0.05)}${num('dFooterSize', 'নিচের লেখার সাইজ', c.footerSize, 1.5, 5, 0.05)}</div>
+          <div class="grid-2" style="gap:10px"><label class="fld"><span>নিচের লেখা</span><input id="dFooter" value="${esc(c.footer)}"></label><label class="fld"><span>স্বাক্ষরের লেখা</span><input id="dSign" value="${esc(c.signLabel)}"></label></div>
+          <label class="fld"><span>QR কোডে কী থাকবে</span><select id="dQr">${opt([{ v: 'student', t: 'শিক্ষার্থীর তথ্য (নাম, আইডি, শ্রেণি, রোল, মোবাইল)' }, { v: 'website', t: 'ওয়েবসাইটের লিংক' }, { v: 'custom', t: 'নিজের লেখা' }, { v: 'none', t: 'QR কোড দেখাবে না' }], c.qr)}</select></label>
+          <label class="fld"><span>নিজের লেখা (QR)</span><input id="dQrText" value="${esc(c.qrCustom)}"></label>
+        </div>
+        <div data-pane="p" class="pane" hidden><p class="muted" style="margin:0">উপরে-নিচে / ডানে-বামে সরান (mm) আর বড়-ছোট করুন। প্রিভিউ সাথে সাথে বদলাবে।</p>
+          ${Object.keys(ID.ITEMS).map((k) => { const o = Object.assign({ dx: 0, dy: 0, s: 1 }, c.off[k] || {}); return `<div class="pos-row"><b>${ID.ITEMS[k]}</b>${slider('o_dy_' + k, 'উপরে ↕ নিচে', o.dy, -20, 20, 0.2)}${slider('o_dx_' + k, 'বামে ↔ ডানে', o.dx, -20, 20, 0.2)}${slider('o_s_' + k, 'মাপ', o.s, 0.5, 1.8, 0.02)}</div>`; }).join('')}
+        </div>
+        <div data-pane="s" class="pane" hidden><p class="muted" style="margin:0">কার্ডের প্রতিটি রঙিন আকৃতি আলাদাভাবে রং, অবস্থান ও মাপ বদলানো যায়।</p>
+          ${Object.keys(ID.SHAPES).map((k) => { const o = Object.assign({ dx: 0, dy: 0, s: 1, hide: false }, c.shapes[k] || {}); return `<div class="pos-row"><b><input type="color" id="s_c_${k}" value="${esc(colorOf(k))}" aria-label="রং"> ${ID.SHAPES[k].n}</b>${slider('s_dy_' + k, 'উপরে ↕ নিচে', o.dy, -30, 30, 0.2)}${slider('s_dx_' + k, 'বামে ↔ ডানে', o.dx, -30, 30, 0.2)}${slider('s_s_' + k, 'মাপ', o.s, 0.5, 1.8, 0.02)}<label><input type="checkbox" id="s_h_${k}" ${o.hide ? 'checked' : ''}> লুকান</label></div>`; }).join('')}
+        </div>
         <label><input type="checkbox" id="dReset"> সব কিছু শুরুর নকশায় ফিরিয়ে আনুন</label></div>
-        <div class="design-prev" id="dPrev"></div></div>`, 'সংরক্ষণ করুন', false, true, (f) => {
-        const readCfg = () => ({ schoolLines: $('#dLines', f).value.trim(), schoolSize: Number($('#dSchool', f).value) || 0, addrLine: $('#dAddr', f).value.trim(), nameSize: Number($('#dName', f).value) || 0, infoSize: Number($('#dInfo', f).value) || 2.55, navy: $('#dNavy', f).value, blue: $('#dBlue', f).value, teal: $('#dTeal', f).value, footer: $('#dFooter', f).value, signLabel: $('#dSign', f).value, qr: $('#dQr', f).value, qrCustom: $('#dQrText', f).value });
-        const paint = () => { const cfg = $('#dReset', f).checked ? ID.DEF : readCfg(); $('#dPrev', f).innerHTML = ID.previewSvg(sample, 'front', cfg) + ID.previewSvg(sample, 'back', cfg); };
+        <div class="design-prev" id="dPrev"></div></div>`;
+      let result = null;
+      const readCfg = (f) => {
+        const g = (id) => $('#' + id, f);
+        const o = { schoolLines: g('dLines').value.trim(), schoolSize: Number(g('dSchool').value) || 0, addrSize: Number(g('dAddrSize').value) || 2.35, schoolColor: g('dSchoolColor').value, addrLine: g('dAddr').value.trim(), nameSize: Number(g('dName').value) || 0, nameWeight: Number(g('dWeight').value) || 400, nameFont: g('dFont').value, nameColor: g('dNameColor').value, infoSize: Number(g('dInfo').value) || 2.55, contactSize: Number(g('dContact').value) || 1, footerSize: Number(g('dFooterSize').value) || 2.9, footer: g('dFooter').value, signLabel: g('dSign').value, qr: g('dQr').value, qrCustom: g('dQrText').value, navy: c.navy, blue: c.blue, teal: c.teal, off: {}, shapes: {} };
+        Object.keys(ID.ITEMS).forEach((k) => { const v2 = { dy: Number(g('o_dy_' + k).value), dx: Number(g('o_dx_' + k).value), s: Number(g('o_s_' + k).value) }; if (v2.dy || v2.dx || v2.s !== 1) o.off[k] = v2; });
+        Object.keys(ID.SHAPES).forEach((k) => { const v2 = { dy: Number(g('s_dy_' + k).value), dx: Number(g('s_dx_' + k).value), s: Number(g('s_s_' + k).value), hide: g('s_h_' + k).checked }; const col = g('s_c_' + k).value; if (col.toLowerCase() !== String(c[ID.SHAPES[k].c]).toLowerCase()) v2.color = col; if (v2.dy || v2.dx || v2.s !== 1 || v2.hide || v2.color) o.shapes[k] = v2; });
+        return o;
+      };
+      const d = await dialog('আইডি কার্ড এডিট (নকশা)', body, 'সংরক্ষণ করুন', false, true, (f) => {
+        const paint = () => { $$('.sl', f).forEach((l) => { l.querySelector('output').textContent = l.querySelector('input').value; }); const cfg = $('#dReset', f).checked ? ID.DEF : readCfg(f); result = cfg; $('#dPrev', f).innerHTML = ID.previewSvg(sample, 'front', cfg) + ID.previewSvg(sample, 'back', cfg); };
+        $$('[data-seg]', f).forEach((b) => { b.onclick = () => { $$('[data-seg]', f).forEach((x) => { x.className = 'btn btn-sm ' + (x === b ? 'btn-dark' : 'btn-ghost'); }); $$('[data-pane]', f).forEach((pn) => { pn.hidden = pn.dataset.pane !== b.dataset.seg; }); }; });
         f.addEventListener('input', paint); f.addEventListener('change', paint); paint();
       });
       if (!d) return;
-      const cfg = d.dReset ? {} : { schoolLines: d.dLines.trim(), schoolSize: Number(d.dSchool) || 0, addrLine: d.dAddr.trim(), nameSize: Number(d.dName) || 0, infoSize: Number(d.dInfo) || 2.55, navy: d.dNavy, blue: d.dBlue, teal: d.dTeal, footer: d.dFooter, signLabel: d.dSign, qr: d.dQr, qrCustom: d.dQrText };
+      const cfg = d.dReset ? {} : result;
       try { await store.saveSettings({ card: cfg }); settings.card = cfg; draw(); toast('কার্ডের নকশা সংরক্ষণ হয়েছে'); } catch (e) { fail(e); }
     }
     // Illustrator ফাইল: প্রতি শিক্ষার্থী আলাদা (সামনে + পেছন, bleed সহ) ও পুরো শ্রেণি একসাথে
@@ -1122,7 +1146,7 @@
       <div class="ab-mid"><div>${img.bannerKids ? `<img class="ab-kids" src="${esc(img.bannerKids)}" alt="">` : ''}</div><div class="ab-right">${s.bRibbon ? `<span class="ab-ribbon">${esc(s.bRibbon)}</span>` : ''}${s.bShowBadge !== false && s.bBadge ? `<span class="ab-badge">${esc(s.bBadge)}</span>` : ''}<div class="ab-cards">${[1, 2, 3, 4].filter((n) => s['bc' + n]).map((n) => `<div class="ab-card"><svg viewBox="0 0 24 24"><path d="${BANNER_ICONS[n - 1]}"/></svg><span>${esc(s['bc' + n])}</span></div>`).join('')}</div></div></div>
       <div class="ab-bottom"><span class="ab-strip">${esc(s.bStrip)}</span>${s.bPill ? `<span class="ab-pill">${esc(s.bPill)}</span>` : ''}</div></div>`;
   }
-  VIEWS.admission = async (v) => {
+  VIEWS.banner = async (v) => {
     const s = settings;
     const f = (id, label, val) => `<label class="fld"><span>${label}</span><input id="${id}" value="${esc(val || '')}"></label>`;
     const imgRow = (k, label, max) => `<div class="img-row"><div class="img-thumb" id="th_${k}" style="background-image:url('${esc(images[k] || (k === 'bannerBg' ? images.campus || 'assets/campus.jpg' : ''))}')"></div><div class="fld grow"><span>${label}</span><input type="file" accept="image/*" id="fi_${k}" data-max="${max}"></div><button class="btn btn-sm btn-ghost" type="button" data-clear="${k}">মুছুন</button></div>`;
@@ -1234,7 +1258,7 @@
     if (d.nw !== d.nw2) return toast('দুইবার লেখা নতুন পাসওয়ার্ড মিলছে না।', true);
     try { await store.changePassword(d.cur, d.nw); toast('পাসওয়ার্ড পরিবর্তন হয়েছে'); } catch (e) { fail(e); }
   }
-  async function logout() { await store.logout(); try { history.replaceState(null, '', '#admin'); } catch (e) { /* ignore */ } }
+  async function logout() { await store.logout(); try { sessionStorage.removeItem('kjm-last'); history.replaceState(null, '', '#admin'); } catch (e) { /* ignore */ } }
 
   let setupMode = false;
   async function showLogin() {
@@ -1258,7 +1282,8 @@
     document.title = 'অ্যাডমিন প্যানেল | কুতুবজোম মাদ্রাসা';
     showWho(); buildNav();
     const h = (location.hash || '').slice(1);
-    go(allowed(h) ? h : (role() === 'office' ? 'idcards' : 'dashboard'));
+    let last = ''; try { last = sessionStorage.getItem('kjm-last') || ''; Object.assign(ui, JSON.parse(sessionStorage.getItem('kjm-ui') || '{}')); } catch (e) { /* ignore */ }
+    go(allowed(h) ? h : allowed(last) ? last : 'dashboard');
   }
 
   // ---------- শুরু ----------

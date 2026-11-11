@@ -161,15 +161,15 @@
         if (!db.regNext) { const max = db.students.reduce((m, x) => Math.max(m, Number(C.toEn(x.reg)) || 0), 0); db.regNext = Math.max(Number(C.toEn((db.settings || {}).regStart || DEFAULT_SETTINGS.regStart)) || 1001, max + 1); }
         const out = []; for (let i = 0; i < n; i++) out.push(String(db.regNext++)); save(); return out;
       },
-      async getRoutine(y, e) { need('principal'); return clone((db.routines || {})[`${y}_${e}`] || null); },
-      async saveRoutine(y, e, r) { need('principal'); db.routines = db.routines || {}; db.routines[`${y}_${e}`] = clone(r); save(); },
+      async getRoutine(y, e) { need('principal', 'office'); return clone((db.routines || {})[`${y}_${e}`] || null); },
+      async saveRoutine(y, e, r) { need('principal', 'office'); db.routines = db.routines || {}; db.routines[`${y}_${e}`] = clone(r); save(); },
       async submitApplication(a) { const code = appCode(); db.applications = db.applications || {}; db.applications[code] = clone(Object.assign({}, a, { code, status: 'new', submittedAt: Date.now() })); save(); return code; },
       async listApplications() { need('principal'); return clone(Object.values(db.applications || {}).sort((a, b) => b.submittedAt - a.submittedAt)); },
       async getApplication(code) { need('principal'); return clone((db.applications || {})[String(code).trim().toUpperCase()] || null); },
       async updateApplication(code, f) { need('principal'); const a = (db.applications || {})[code]; if (a) { Object.assign(a, f); save(); } },
       async deleteApplication(code) { need('principal'); delete (db.applications || {})[code]; save(); },
-      async getFees(y, c) { need('principal'); return C.normalizeFees(clone(db.fees[`${y}_${c}`] || {})); },
-      async saveFees(y, c, data) { need('principal'); db.fees[`${y}_${c}`] = clone(Object.assign({}, data, { year: String(y), classId: c })); save(); },
+      async getFees(y, c) { need('principal', 'office'); return C.normalizeFees(clone(db.fees[`${y}_${c}`] || {})); },
+      async saveFees(y, c, data) { need('principal', 'office'); db.fees[`${y}_${c}`] = clone(Object.assign({}, data, { year: String(y), classId: c })); save(); },
       async exportAll() { need('principal'); const d = clone(db); d.users = d.users.map(pub); return d; },
       async resetDemo() { db = seed(); save(); setSession(null); }
     };
@@ -424,15 +424,15 @@
           return out;
         });
       }),
-      getRoutine: wrap(async (y, e) => { need('principal'); return data(await getDoc(doc(db, 'routines', `${y}_${e}`))); }),
-      saveRoutine: wrap(async (y, e, r) => { need('principal'); await setDoc(doc(db, 'routines', `${y}_${e}`), r); }),
+      getRoutine: wrap(async (y, e) => { need('principal', 'office'); return data(await getDoc(doc(db, 'routines', `${y}_${e}`))); }),
+      saveRoutine: wrap(async (y, e, r) => { need('principal', 'office'); await setDoc(doc(db, 'routines', `${y}_${e}`), r); }),
       submitApplication: wrap(async (a) => { const code = appCode(); await setDoc(doc(db, 'applications', code), Object.assign({}, a, { code, status: 'new', submittedAt: Date.now() })); return code; }),
       listApplications: wrap(async () => { need('principal'); return (await all(collection(db, 'applications'))).sort((a, b) => b.submittedAt - a.submittedAt); }),
       getApplication: wrap(async (code) => { need('principal'); return data(await getDoc(doc(db, 'applications', String(code).trim().toUpperCase()))); }),
       updateApplication: wrap(async (code, f) => { need('principal'); await updateDoc(doc(db, 'applications', code), f); }),
       deleteApplication: wrap(async (code) => { need('principal'); await deleteDoc(doc(db, 'applications', code)); }),
-      getFees: wrap(async (y, c) => { need('principal'); return C.normalizeFees(data(await getDoc(doc(db, 'fees', `${y}_${c}`))) || {}); }),
-      saveFees: wrap(async (y, c, d) => { need('principal'); await setDoc(doc(db, 'fees', `${y}_${c}`), Object.assign({}, d, { year: String(y), classId: c })); }),
+      getFees: wrap(async (y, c) => { need('principal', 'office'); return C.normalizeFees(data(await getDoc(doc(db, 'fees', `${y}_${c}`))) || {}); }),
+      saveFees: wrap(async (y, c, d) => { need('principal', 'office'); await setDoc(doc(db, 'fees', `${y}_${c}`), Object.assign({}, d, { year: String(y), classId: c })); }),
       exportAll: wrap(async () => {
         need('principal'); const out = {};
         for (const name of ['subjects', 'students', 'users', 'marks', 'notices', 'fees', 'routines', 'applications']) out[name] = await all(collection(db, name));

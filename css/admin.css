@@ -157,8 +157,7 @@
 
 /* হিসাব */
 .fee-cell { width: 64px; }
-.fee-paid { background: #eaf7ee; }
-.fee-due { background: #fff4f2; }
+.fee-paid, .fee-due { background: transparent; }
 .sum-row td { font-weight: 800; background: #f3f8f4; }
 .slip { border: 2px solid var(--g700); border-radius: 14px; padding: 16px; background: #fff; }
 .slip h3 { text-align: center; margin: 0; font-family: var(--font-display); color: var(--g900); font-size: 22px; }
@@ -212,7 +211,7 @@
 
 /* ===== নতুন অংশ ===== */
 .cell-sel { padding: 7px 8px; border: 1.5px solid #cfdcd3; border-radius: 10px; background: #fff; }
-.fee-due-empty { background: #fff7f5; }
+.fee-due-empty { background: transparent; }
 .slip-head { display: flex; gap: 12px; align-items: center; justify-content: center; margin-bottom: 6px; }
 .slip-head h3, .slip-head .slip-sub { text-align: left; margin: 0; }
 .archive-hero { background: linear-gradient(120deg, #fffbea, #fff3c8); border-color: #f1d98a; display: grid; gap: 12px; }
@@ -270,10 +269,10 @@
 .rt-time { display: block; font-weight: 400; font-size: 11px; }
 .rt-table .rt-date { text-align: left; white-space: nowrap; width: 1%; }
 .rt-gap { width: 6px; padding: 0 !important; background: #d9d9d9; border-top: 0 !important; border-bottom: 0 !important; }
-.rt-hl { background: #fff3c4 !important; font-weight: 700; }
+.rt-hl { font-weight: 600; }
 .rt-fee-title { text-align: center; margin: 6px 0 3px; font-size: 16px; font-weight: 800; }
 .rt-fee th { background: #f2f2f2; font-weight: 700; }
-.rt-fee .rt-due td { font-weight: 800; color: #b3261e; }
+.rt-fee .rt-due td { font-weight: 600; color: #111; }
 .rt-foot { display: grid; grid-template-columns: 1fr 260px; gap: 12px; margin-top: 6px; align-items: start; }
 .rt-letter p { margin: 0 0 3px; font-size: 12px; }
 .rt-to { text-align: center; font-weight: 700; }
@@ -285,3 +284,21 @@
 }
 
 .fld input, .fld select, .fld textarea { font: inherit; }
+
+/* হিসাব ও রুটিন: কোনো লাল রং নয়, সব কালো, বোল্ড হালকা */
+#fBody .due, .slip .due { color: #111; font-weight: 600; }
+#fBody .paid, .slip .paid { color: #111; font-weight: 500; }
+#fBody b, #fBody th, .slip b, .slip h3, .slip th, .routine-page b, .routine-page th, .routine-page h2, .routine-page h3, .rt-fee-title { font-weight: 600 !important; color: #111; }
+#fBody .stat b { color: inherit; }
+#fBody .fee-cell { color: #111; }
+.slip .tbl th { background: #f2f2f2; color: #111; }
+.btn-done { background: #e9f7ee; color: #12512f; border: 1.5px solid #9fd6ae; }
+/* কার্ড এডিট: স্লাইডার */
+.seg { display: flex; gap: 6px; flex-wrap: wrap; }
+.pane { display: grid; gap: 10px; }
+.pos-row { border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; display: grid; gap: 4px; }
+.pos-row > b { display: flex; align-items: center; gap: 8px; font-size: 15px; }
+.pos-row input[type=color] { width: 34px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 6px; }
+.sl { display: grid; grid-template-columns: 110px minmax(0, 1fr) 44px; gap: 8px; align-items: center; font-size: 14px; }
+.sl output { font-variant-numeric: tabular-nums; text-align: right; }
+.design-fields { max-height: 70vh; overflow-y: auto; padding-right: 4px; }
