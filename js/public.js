@@ -16,6 +16,23 @@
   }));
   $('#yearNow').textContent = C.toBn(new Date().getFullYear());
 
+  // ফেসবুক লিংক: মোবাইলে সরাসরি ফেসবুক অ্যাপে খোলে (অ্যাপে লগইন থাকে, তাই লগইন পেজ আসে না)।
+  // অ্যাপ না থাকলে বা কম্পিউটারে সাধারণ ফেসবুক লিংক খোলে।
+  document.addEventListener('click', (ev) => {
+    const a = ev.target.closest('a[href*="facebook.com"]');
+    if (!a) return;
+    const url = a.href.replace('://m.facebook.com', '://www.facebook.com');
+    const isAndroid = /Android/i.test(navigator.userAgent), isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (!isAndroid && !isIOS) return; // কম্পিউটারে নতুন ট্যাবে সাধারণ লিংক
+    ev.preventDefault();
+    const app = isAndroid ? 'fb://facewebmodal/f?href=' + encodeURIComponent(url) : 'fb://profile?id=' + encodeURIComponent(url.split('facebook.com/')[1] || '');
+    let left = false;
+    const onHide = () => { left = true; };
+    document.addEventListener('visibilitychange', onHide, { once: true });
+    window.location.href = isIOS ? 'fb://facewebmodal/f?href=' + encodeURIComponent(url) : app;
+    setTimeout(() => { document.removeEventListener('visibilitychange', onHide); if (!left && !document.hidden) window.open(url, '_blank', 'noopener'); }, 1200);
+  });
+
   function applySettings() {
     $$('[data-set]').forEach((el) => {
       const v = settings[el.dataset.set];
