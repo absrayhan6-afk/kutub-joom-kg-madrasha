@@ -7,7 +7,7 @@
   const BW = 54, BH = 85.6;
   const W = 2.13 * 25.4, H = 3.39 * 25.4, BLEED = 0.125 * 25.4;
   const SX = W / BW, SY = H / BH;
-  const DEF = { navy: '#2b2e7c', blue: '#3f88c9', teal: '#7fcfdb', ink: '#1f2357', schoolSize: 0, addrLine: '', nameSize: 0, infoSize: 2.55, footer: 'STUDENT', signLabel: 'Headmaster Signature', qr: 'student', qrCustom: '', schoolLines: '', nameWeight: 400, nameFont: 'impact', addrSize: 2.35, footerSize: 2.9, contactSize: 1, schoolColor: '#ffffff', nameColor: '#111111', shapes: {}, off: {} };
+  const DEF = { navy: '#2b2e7c', blue: '#3f88c9', teal: '#7fcfdb', ink: '#111111', schoolSize: 0, addrLine: '', nameSize: 0, infoSize: 2.55, footer: 'STUDENT', signLabel: 'Headmaster Signature', qr: 'student', qrCustom: '', schoolLines: '', nameWeight: 400, nameFont: 'impact', addrSize: 2.35, footerSize: 2.9, contactSize: 1, schoolColor: '#ffffff', nameColor: '#111111', shapes: {}, off: {} };
   let NAVY, BLUE, TEAL, INK, CFG = DEF;
   function useCfg(c) { CFG = Object.assign({}, DEF, c || {}); NAVY = CFG.navy; BLUE = CFG.blue; TEAL = CFG.teal; INK = CFG.ink; }
   useCfg();
@@ -53,14 +53,14 @@
     tNavy: { n: 'সামনে: উপরের গাঢ় নীল', d: 'M0 0H23L41 38.5L33 41L0 19.5Z', c: 'navy' },
     tBlue: { n: 'সামনে: উপরের নীল', d: 'M23 0H54V31L41 38.5Z', c: 'blue' },
     tTeal: { n: 'সামনে: উপরের হালকা নীল', d: 'M54 31V36.6L41.6 43.6L39.4 39.4Z', c: 'teal' },
-    ring: { n: 'সামনে: ছবির চারপাশের রিং', d: 'M27 16.2A11.4 11.4 0 1 1 15.7 29.3C15.3 25 14.6 20 13.4 16.6C17.6 16.4 22.4 16.2 27 16.2Z', c: 'navy' },
-    kBlue: { n: 'পেছনে: উপরের নীল', d: 'M0 0H54V27L44 35Z', c: 'blue' },
-    kNavy: { n: 'পেছনে: উপরের গাঢ় নীল', d: 'M0 0H30L46 34.5L39 37.5L0 23Z', c: 'navy' },
-    kTeal: { n: 'পেছনে: উপরের হালকা নীল', d: 'M54 26V31.4L44.2 38.4L42.4 34.6Z', c: 'teal' },
-    kRing: { n: 'পেছনে: লোগোর চারপাশের রিং', d: 'M27 7.8A12.6 12.6 0 1 1 26.99 7.8Z', c: 'navy' },
-    bNavy: { n: 'নিচের গাঢ় নীল (দুই দিকে)', d: 'M0 72.5L54 81.5V85.6H0Z', c: 'navy' },
-    bTeal: { n: 'নিচের হালকা নীল বাঁক (দুই দিকে)', d: 'M7.5 85.6C8.6 79.6 12.6 75.8 20 75.6L54 79.6V85.6Z', c: 'teal' },
-    bBlue: { n: 'নিচের নীল বাঁক (দুই দিকে)', d: 'M11.2 85.6C12.4 81.4 15.6 78.6 21.2 78.4L54 82.2V85.6Z', c: 'blue' }
+    ring: { n: 'সামনে: ছবির চারপাশের রিং', d: 'M27.8 16.3A12.9 12.9 0 1 1 14.9 29.2L12.6 16.6Z', c: 'navy' },
+    kBlue: { n: 'পেছনে: উপরের নীল', d: 'M0 0H54V30L44 38Z', c: 'blue' },
+    kNavy: { n: 'পেছনে: উপরের গাঢ় নীল', d: 'M0 0H28L46.5 36.8L39.5 39.8L0 27.4Z', c: 'navy' },
+    kTeal: { n: 'পেছনে: উপরের হালকা নীল', d: 'M54 29.4V35L45 41.6L43.2 37.8Z', c: 'teal' },
+    kRing: { n: 'পেছনে: লোগোর চারপাশের রিং', d: 'M27.8 14A13.4 13.4 0 1 1 27.79 14Z', c: 'navy' },
+    bNavy: { n: 'নিচের গাঢ় নীল (দুই দিকে)', d: 'M0 67.6L54 78.6V85.6H0Z', c: 'navy' },
+    bTeal: { n: 'নিচের হালকা নীল বাঁক (দুই দিকে)', d: 'M8 85.6C9.2 76.4 12.8 71 20.6 70.8L54 75V85.6Z', c: 'teal' },
+    bBlue: { n: 'নিচের নীল বাঁক (দুই দিকে)', d: 'M11.4 85.6C12.6 78.2 16 74.2 22 74L54 77.6V85.6Z', c: 'blue' }
   };
   // লেখা/ছবির অবস্থান (উপরে-নিচে mm) ও মাপ
   const ITEMS = {
@@ -97,29 +97,29 @@
     const school = CFG.schoolLines ? CFG.schoolLines.split('\n').map((t) => t.trim()).filter(Boolean).slice(0, 3) : wrap(String(d.school || '').toUpperCase(), 24, 2);
     const shortAddr = CFG.addrLine || String(d.schoolAddress || '').split(',').map((t) => t.trim()).filter(Boolean).slice(-2).join(', ');
     const name = wrap(d.name, 22, 2);
-    const nameSize = Number(CFG.nameSize) || (name.length > 1 ? 3.2 : (String(d.name).length > 18 ? 3.4 : 3.9));
+    const nameSize = Number(CFG.nameSize) || (name.length > 1 ? 3.4 : (String(d.name).length > 18 ? 3.7 : 4.2));
     const nameFont = CFG.nameFont === 'arial' ? F_HEAD.replace("'Arial Black', ", '') : CFG.nameFont === 'serif' ? F_BODY : F_NAME;
-    const fsz = Number(CFG.infoSize) || 2.55;
+    const fsz = Number(CFG.infoSize) || 2.7;
     const schoolSize = Number(CFG.schoolSize) || (school.some((t) => t.length > 20) ? 3.05 : 3.35);
     const addrSize = Number(CFG.addrSize) || 2.35;
-    const addr = wrap(d.address, 22, 2);
+    const addr = wrap(d.address, 18, 2);
     const rows = [['ID Number', d.id], ["Father's name", d.father], ['Roll', d.roll], ['Class', d.cls], ['Mobile', d.phone]];
-    let y = 46.6 + (name.length - 1) * 3.6;
+    let y = 51 + (name.length - 1) * 3.8;
     const lh = fsz * 1.35;
-    const row = (l, val, yy, first) => `${l ? `<text x="8.6" y="${n2(yy)}" font-size="${fsz}" fill="${INK}">${x(l)}</text>` : ''}${first ? `<text x="24.6" y="${n2(yy)}" font-size="${n2(fsz + 0.25)}" font-weight="700" fill="${INK}">:</text>` : ''}<text x="26.4" y="${n2(yy)}" font-size="${fsz}" fill="${INK}">${x(val || '')}</text>`;
+    const row = (l, val, yy, first) => `${l ? `<text x="10" y="${n2(yy)}" font-size="${fsz}" fill="${INK}">${x(l)}</text>` : ''}${first ? `<text x="27.2" y="${n2(yy)}" font-size="${n2(fsz + 0.3)}" font-weight="700" fill="${INK}">:</text>` : ''}<text x="29.4" y="${n2(yy)}" font-size="${fsz}" fill="${INK}">${x(val || '')}</text>`;
     const y0 = y;
-    let rowsSvg = rows.map((r) => { const s = row(r[0], r[1], y, true); y += lh; return s; }).join('');
+    let rowsSvg = rows.map((r) => { const s = row(r[0], r[1], y, true); y += Math.min(lh, 3.55); return s; }).join('');
     rowsSvg += addr.length ? addr.map((l, i) => row(i === 0 ? 'Address' : '', l, y + i * fsz * 1.18, i === 0)).join('') : row('Address', '', y, true);
     const schoolEnd = 5.4 + school.length * (schoolSize + 0.75);
     return frame(cid, `${topShapes()}${bottomShapes()}`) + `
   ${place('school', 27, 8, `<g font-family="${F_HEAD}" font-weight="900" fill="${CFG.schoolColor || '#ffffff'}" text-anchor="middle">${school.map((l, i) => `<text x="27" y="${n2(5.4 + i * (schoolSize + 0.75))}" font-size="${schoolSize}" letter-spacing="0.12">${x(l)}</text>`).join('')}</g>`)}
   ${place('addr', 27, schoolEnd, `<text x="27" y="${n2(schoolEnd + 0.2)}" font-family="${F_BODY}" font-size="${addrSize}" fill="${CFG.schoolColor || '#ffffff'}" text-anchor="middle">${x(shortAddr)}</text>`)}
-  ${place('photo', 27, 27.6, `<defs><clipPath id="${cid}p"><circle cx="27" cy="27.6" r="9.4"/></clipPath></defs>${shape('ring')}<circle cx="27" cy="27.6" r="9.9" fill="#ffffff"/>
-  ${d.photo ? `<image xlink:href="${x(d.photo)}" x="17.6" y="18.2" width="18.8" height="18.8" preserveAspectRatio="xMidYMid slice" clip-path="url(#${cid}p)"/>`
-    : `<g clip-path="url(#${cid}p)"><rect x="17" y="17" width="20" height="21" fill="#e8edf5"/><circle cx="27" cy="25.2" r="3.6" fill="#b9c3d6"/><path d="M19.8 37.4c0-4.6 3.2-7.4 7.2-7.4s7.2 2.8 7.2 7.4z" fill="#b9c3d6"/></g>`}`)}
-  ${place('name', 27, 42, `<g font-family="${nameFont}" font-weight="${CFG.nameWeight || 400}" fill="${CFG.nameColor || '#111111'}" text-anchor="middle">${name.map((l, i) => `<text x="27" y="${n2(42.6 + i * 3.6)}" font-size="${nameSize}">${x(l)}</text>`).join('')}</g>`)}
+  ${place('photo', 27, 29, `<defs><clipPath id="${cid}p"><circle cx="27.2" cy="28.9" r="11"/></clipPath></defs>${shape('ring')}<circle cx="27.2" cy="28.9" r="11.6" fill="#ffffff"/>
+  ${d.photo ? `<image xlink:href="${x(d.photo)}" x="16.2" y="17.9" width="22" height="22" preserveAspectRatio="xMidYMid slice" clip-path="url(#${cid}p)"/>`
+    : `<g clip-path="url(#${cid}p)"><rect x="16" y="17.6" width="22.4" height="22.6" fill="#e8edf5"/><circle cx="27.2" cy="26.2" r="4.2" fill="#b9c3d6"/><path d="M18.8 40c0-5.4 3.7-8.6 8.4-8.6s8.4 3.2 8.4 8.6z" fill="#b9c3d6"/></g>`}`)}
+  ${place('name', 27, 45.6, `<g font-family="${nameFont}" font-weight="${CFG.nameWeight || 400}" fill="${CFG.nameColor || '#111111'}" text-anchor="middle">${name.map((l, i) => `<text x="27" y="${n2(46.4 + i * 3.8)}" font-size="${nameSize}">${x(l)}</text>`).join('')}</g>`)}
   ${place('info', 27, y0 + 8, `<g font-family="${F_BODY}">${rowsSvg}</g>`)}
-  ${place('footer', 31.5, 83.2, `<text x="31.5" y="84.1" font-family="${F_HEAD}" font-weight="900" font-size="${Number(CFG.footerSize) || 2.9}" fill="#ffffff" text-anchor="middle" letter-spacing="0.1">${x(CFG.footer)}</text>`)}`;
+  ${place('footer', 29.5, 78.6, `<text x="29.5" y="79.6" font-family="${F_HEAD}" font-weight="900" font-size="${Number(CFG.footerSize) || 2.9}" fill="#ffffff" text-anchor="middle" letter-spacing="0.1">${x(CFG.footer)}</text>`)}`;
   }
 
   // ===== পেছনের দিক =====
@@ -133,18 +133,19 @@
     const addr = wrap(d.schoolAddress, 24, 2);
     const items = [['phone', [d.schoolPhone]], ['pin', addr], ['mail', [d.schoolEmail]]].filter((it) => it[1].join('').trim());
     const cs = Number(CFG.contactSize) || 1;
-    let y = 43.2; const lineTop = y - 2.6;
+    let y = 45; const lineTop = y - 3.2;
     const rows = items.map((it) => {
-      const ty = y; const block = `${ICON[it[0]](12.2, ty - 0.8 + (it[1].length > 1 ? 1.4 : 0))}<circle cx="17" cy="${n2(ty - 0.85 + (it[1].length > 1 ? 1.4 : 0))}" r="0.95" fill="${shapeColor('kNavy')}"/>${it[1].map((l, i) => `<text x="19.4" y="${n2(ty + i * 2.9)}" font-size="${n2((it[0] === 'mail' ? 2.25 : it[0] === 'phone' ? 2.9 : 2.3) * cs)}" fill="#111111">${x(l)}</text>`).join('')}`;
-      y += 3.2 + (it[1].length - 1) * 2.9 + 2;
+      const ty = y; const mid = ty - 0.85 + (it[1].length > 1 ? 1.35 : 0);
+      const block = `${ICON[it[0]](12.4, mid)}<circle cx="16.6" cy="${n2(mid)}" r="0.95" fill="${shapeColor('kNavy')}"/>${it[1].map((l, i) => `<text x="18.8" y="${n2(ty + i * 2.75)}" font-size="${n2((it[0] === 'mail' ? 2.3 : it[0] === 'phone' ? 3 : 2.45) * cs)}" fill="#111111">${x(l)}</text>`).join('')}`;
+      y += 2.9 + (it[1].length - 1) * 2.75 + 1.7;
       return block;
     }).join('');
-    const lineBot = y - 3.6;
+    const lineBot = y - 3.4;
     return frame(cid, `${shape('kBlue')}${shape('kNavy')}${shape('kTeal')}${bottomShapes()}`) + `
-  ${place('logo', 27, 20.4, `${shape('kRing')}<circle cx="26.2" cy="20.2" r="11.6" fill="#ffffff"/>${d.logo ? `<image xlink:href="${x(d.logo)}" x="16.4" y="11.2" width="19.6" height="18" preserveAspectRatio="xMidYMid meet"/>` : ''}`)}
+  ${place('logo', 27, 27, `${shape('kRing')}<circle cx="27" cy="26.8" r="12.6" fill="#ffffff"/>${d.logo ? `<image xlink:href="${x(d.logo)}" x="16.4" y="17" width="21.2" height="19.6" preserveAspectRatio="xMidYMid meet"/>` : ''}`)}
   ${place('contact', 27, (lineTop + lineBot) / 2, `<line x1="17" y1="${n2(lineTop)}" x2="17" y2="${n2(lineBot)}" stroke="${shapeColor('kNavy')}" stroke-width="0.55"/><g font-family="${F_BODY}">${rows}</g>`)}
-  ${CFG.qr === 'none' ? '' : place('qr', 27, y + 5.5, qrSvg(CFG.qr === 'custom' ? (CFG.qrCustom || '') : CFG.qr === 'website' ? (d.website || '') : (d.qr || ''), 20.3, y - 1.2, 13.4))}
-  ${place('sign', 43.6, y + 9, `${d.sign ? `<image xlink:href="${x(d.sign)}" x="36.6" y="${n2(y + 5.6)}" width="13.8" height="4.6" preserveAspectRatio="xMidYMid meet"/>` : ''}<line x1="35.6" y1="${n2(y + 10.6)}" x2="51.6" y2="${n2(y + 10.6)}" stroke="#111111" stroke-width="0.3"/><text x="43.6" y="${n2(y + 13)}" font-family="${F_BODY}" font-size="1.95" fill="#111111" text-anchor="middle">${x(CFG.signLabel)}</text>`)}`;
+  ${CFG.qr === 'none' ? '' : place('qr', 27, 63.3, qrSvg(CFG.qr === 'custom' ? (CFG.qrCustom || '') : CFG.qr === 'website' ? (d.website || '') : (d.qr || ''), 21.4, 57.6, 11.4))}
+  ${place('sign', 43.2, 69.4, `${d.sign ? `<image xlink:href="${x(d.sign)}" x="36.4" y="65.2" width="13.6" height="4.6" preserveAspectRatio="xMidYMid meet"/>` : ''}<line x1="35.4" y1="70.2" x2="51.2" y2="70.2" stroke="#111111" stroke-width="0.3"/><text x="43.3" y="72.4" font-family="${F_BODY}" font-size="1.95" fill="#111111" text-anchor="middle">${x(CFG.signLabel)}</text>`)}`;
   }
 
   // একটি দিক আসল মাপে (mm)
