@@ -1038,7 +1038,11 @@
           <div class="grid-2" style="gap:10px">${num('dName', 'শিক্ষার্থীর নামের সাইজ', c.nameSize || 3.9, 2, 6, 0.05)}<label class="fld"><span>নামের মোটা ভাব</span><select id="dWeight">${opt([{ v: 300, t: 'পাতলা' }, { v: 400, t: 'স্বাভাবিক' }, { v: 600, t: 'হালকা বোল্ড' }, { v: 700, t: 'বোল্ড' }], c.nameWeight)}</select></label></div>
           <div class="grid-2" style="gap:10px"><label class="fld"><span>নামের ফন্ট</span><select id="dFont">${opt([{ v: 'impact', t: 'Impact (চওড়া)' }, { v: 'arial', t: 'Arial' }, { v: 'serif', t: 'Georgia / Times' }], c.nameFont)}</select></label><label class="fld"><span>নামের রং</span><input id="dNameColor" type="color" value="${esc(c.nameColor)}"></label></div>
           <div class="grid-3" style="gap:10px">${num('dInfo', 'তথ্যের সাইজ', c.infoSize, 1.6, 3.5, 0.05)}${num('dContact', 'পেছনের যোগাযোগের সাইজ (গুণ)', c.contactSize, 0.6, 1.6, 0.05)}${num('dFooterSize', 'নিচের লেখার সাইজ', c.footerSize, 1.5, 5, 0.05)}</div>
-          <div class="grid-2" style="gap:10px"><label class="fld"><span>নিচের লেখা</span><input id="dFooter" value="${esc(c.footer)}"></label><label class="fld"><span>স্বাক্ষরের লেখা</span><input id="dSign" value="${esc(c.signLabel)}"></label></div>
+          <div class="grid-2" style="gap:10px"><label class="fld"><span>নিচের লেখা</span><input id="dFooter" value="${esc(c.footer)}"></label><label class="fld"><span>স্বাক্ষরের নিচের লেখা</span><input id="dSign" value="${esc(c.signLabel)}"></label></div>
+          <p style="margin:6px 0 0;font-weight:700">পেছনের দিক</p>
+          <div class="grid-2" style="gap:10px"><label class="fld"><span>মোবাইল নম্বর</span><input id="dBPhone" value="${esc(c.backPhone)}" placeholder="${esc(settings.phone || '')}"></label><label class="fld"><span>ইমেইল</span><input id="dBEmail" value="${esc(c.backEmail)}" placeholder="${esc(settings.email || '')}"></label></div>
+          <label class="fld"><span>ঠিকানা (প্রতি লাইন আলাদা)</span><textarea id="dBAddr" rows="2" placeholder="${esc(settings.addressEn || '')}">${esc(c.backAddress)}</textarea></label>
+          ${isP() ? `<div class="img-row"><div class="img-thumb" id="dSignTh" style="background-image:url('${esc(images.sign || '')}')"></div><label class="fld grow"><span>প্রিন্সিপালের স্বাক্ষর (ছবি)</span><input type="file" accept="image/*" id="dSignFile"></label></div>` : ''}
           <label class="fld"><span>QR কোডে কী থাকবে</span><select id="dQr">${opt([{ v: 'student', t: 'শিক্ষার্থীর তথ্য (নাম, আইডি, শ্রেণি, রোল, মোবাইল)' }, { v: 'website', t: 'ওয়েবসাইটের লিংক' }, { v: 'custom', t: 'নিজের লেখা' }, { v: 'none', t: 'QR কোড দেখাবে না' }], c.qr)}</select></label>
           <label class="fld"><span>নিজের লেখা (QR)</span><input id="dQrText" value="${esc(c.qrCustom)}"></label>
         </div>
@@ -1053,7 +1057,7 @@
       let result = null;
       const readCfg = (f) => {
         const g = (id) => $('#' + id, f);
-        const o = { schoolLines: g('dLines').value.trim(), schoolSize: Number(g('dSchool').value) || 0, addrSize: Number(g('dAddrSize').value) || 2.35, schoolColor: g('dSchoolColor').value, addrLine: g('dAddr').value.trim(), nameSize: Number(g('dName').value) || 0, nameWeight: Number(g('dWeight').value) || 400, nameFont: g('dFont').value, nameColor: g('dNameColor').value, infoSize: Number(g('dInfo').value) || 2.55, contactSize: Number(g('dContact').value) || 1, footerSize: Number(g('dFooterSize').value) || 2.9, footer: g('dFooter').value, signLabel: g('dSign').value, qr: g('dQr').value, qrCustom: g('dQrText').value, navy: c.navy, blue: c.blue, teal: c.teal, off: {}, shapes: {} };
+        const o = { schoolLines: g('dLines').value.trim(), schoolSize: Number(g('dSchool').value) || 0, addrSize: Number(g('dAddrSize').value) || 2.35, schoolColor: g('dSchoolColor').value, addrLine: g('dAddr').value.trim(), nameSize: Number(g('dName').value) || 0, nameWeight: Number(g('dWeight').value) || 400, nameFont: g('dFont').value, nameColor: g('dNameColor').value, infoSize: Number(g('dInfo').value) || 2.55, contactSize: Number(g('dContact').value) || 1, footerSize: Number(g('dFooterSize').value) || 2.9, footer: g('dFooter').value, signLabel: g('dSign').value, backPhone: g('dBPhone').value.trim(), backEmail: g('dBEmail').value.trim(), backAddress: g('dBAddr').value.trim(), qr: g('dQr').value, qrCustom: g('dQrText').value, navy: c.navy, blue: c.blue, teal: c.teal, off: {}, shapes: {} };
         Object.keys(ID.ITEMS).forEach((k) => { const v2 = { dy: Number(g('o_dy_' + k).value), dx: Number(g('o_dx_' + k).value), s: Number(g('o_s_' + k).value) }; if (v2.dy || v2.dx || v2.s !== 1) o.off[k] = v2; });
         Object.keys(ID.SHAPES).forEach((k) => { const v2 = { dy: Number(g('s_dy_' + k).value), dx: Number(g('s_dx_' + k).value), s: Number(g('s_s_' + k).value), hide: g('s_h_' + k).checked }; const col = g('s_c_' + k).value; if (col.toLowerCase() !== String(c[ID.SHAPES[k].c]).toLowerCase()) v2.color = col; if (v2.dy || v2.dx || v2.s !== 1 || v2.hide || v2.color) o.shapes[k] = v2; });
         return o;
@@ -1062,6 +1066,8 @@
         const paint = () => { $$('.sl', f).forEach((l) => { l.querySelector('output').textContent = l.querySelector('input').value; }); const cfg = $('#dReset', f).checked ? ID.DEF : readCfg(f); result = cfg; $('#dPrev', f).innerHTML = ID.previewSvg(sample, 'front', cfg) + ID.previewSvg(sample, 'back', cfg); };
         $$('[data-seg]', f).forEach((b) => { b.onclick = () => { $$('[data-seg]', f).forEach((x) => { x.className = 'btn btn-sm ' + (x === b ? 'btn-dark' : 'btn-ghost'); }); $$('[data-pane]', f).forEach((pn) => { pn.hidden = pn.dataset.pane !== b.dataset.seg; }); }; });
         f.addEventListener('input', paint); f.addEventListener('change', paint); paint();
+        const sf = $('#dSignFile', f);
+        if (sf) sf.addEventListener('change', async () => { try { const url = await readImage(sf.files[0], 500, 'sign'); if (!url) return; await store.saveImages({ sign: url }); images.sign = url; sample.sign = url; $('#dSignTh', f).style.backgroundImage = `url('${url}')`; paint(); toast('স্বাক্ষর সংরক্ষণ হয়েছে'); } catch (e) { fail(e); } });
       });
       if (!d) return;
       const cfg = d.dReset ? {} : result;
@@ -1316,6 +1322,9 @@
   $('#logoutBtn2').onclick = logout;
   window.addEventListener('afterprint', () => { $('#printArea').innerHTML = ''; });
 
+  // "স্টাফ লগইন" থেকে এলে সবসময় নতুন করে User ID ও Password চাইবে
+  if (location.hash === '#login' || location.hash === '#admin') { try { sessionStorage.removeItem('kjm-last'); await store.logout(); } catch (e) { /* ignore */ } }
+  window.addEventListener('hashchange', () => { if ((location.hash === '#login' || location.hash === '#admin') && me) { try { sessionStorage.removeItem('kjm-last'); } catch (e) { /* ignore */ } store.logout(); } });
   let shownFor = null;
   store.onAuth((p) => {
     me = p;

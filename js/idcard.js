@@ -7,7 +7,7 @@
   const BW = 54, BH = 85.6;
   const W = 2.13 * 25.4, H = 3.39 * 25.4, BLEED = 0.125 * 25.4;
   const SX = W / BW, SY = H / BH;
-  const DEF = { navy: '#2b2e7c', blue: '#3f88c9', teal: '#7fcfdb', ink: '#111111', schoolSize: 0, addrLine: '', nameSize: 0, infoSize: 2.55, footer: 'STUDENT', signLabel: 'Headmaster Signature', qr: 'student', qrCustom: '', schoolLines: '', nameWeight: 400, nameFont: 'impact', addrSize: 2.35, footerSize: 2.9, contactSize: 1, schoolColor: '#ffffff', nameColor: '#111111', shapes: {}, off: {} };
+  const DEF = { navy: '#2b2e7c', blue: '#3f88c9', teal: '#7fcfdb', ink: '#111111', schoolSize: 0, addrLine: '', nameSize: 0, infoSize: 2.75, footer: 'STUDENT', signLabel: 'Headmaster Signature', qr: 'student', qrCustom: '', schoolLines: '', nameWeight: 400, nameFont: 'impact', addrSize: 2.4, footerSize: 2.6, contactSize: 1, schoolColor: '#ffffff', nameColor: '#111111', shapes: {}, off: {}, backPhone: '', backAddress: '', backEmail: '' };
   let NAVY, BLUE, TEAL, INK, CFG = DEF;
   function useCfg(c) { CFG = Object.assign({}, DEF, c || {}); NAVY = CFG.navy; BLUE = CFG.blue; TEAL = CFG.teal; INK = CFG.ink; }
   useCfg();
@@ -48,19 +48,20 @@
     return `<rect x="${n2(px - 0.6)}" y="${n2(py - 0.6)}" width="${n2(size + 1.2)}" height="${n2(size + 1.2)}" fill="#ffffff"/><path d="${d}" fill="#111111"/>`;
   }
 
-  // ===== পটভূমির আকৃতি — প্রতিটি আলাদাভাবে রং, অবস্থান ও মাপ বদলানো যায় (কার্ড এডিট) =====
+  // ===== পটভূমির আকৃতি — মাদ্রাসার দেওয়া কার্ড থেকে মাপা (54 × 85.6 একক) =====
+  // প্রতিটি আকৃতি "কার্ড এডিট" থেকে আলাদাভাবে রং, অবস্থান ও মাপ বদলানো যায়।
   const SHAPES = {
-    tNavy: { n: 'সামনে: উপরের গাঢ় নীল', d: 'M0 0H23L41 38.5L33 41L0 19.5Z', c: 'navy' },
-    tBlue: { n: 'সামনে: উপরের নীল', d: 'M23 0H54V31L41 38.5Z', c: 'blue' },
-    tTeal: { n: 'সামনে: উপরের হালকা নীল', d: 'M54 31V36.6L41.6 43.6L39.4 39.4Z', c: 'teal' },
-    ring: { n: 'সামনে: ছবির চারপাশের রিং', d: 'M27.8 16.3A12.9 12.9 0 1 1 14.9 29.2L12.6 16.6Z', c: 'navy' },
-    kBlue: { n: 'পেছনে: উপরের নীল', d: 'M0 0H54V30L44 38Z', c: 'blue' },
-    kNavy: { n: 'পেছনে: উপরের গাঢ় নীল', d: 'M0 0H28L46.5 36.8L39.5 39.8L0 27.4Z', c: 'navy' },
-    kTeal: { n: 'পেছনে: উপরের হালকা নীল', d: 'M54 29.4V35L45 41.6L43.2 37.8Z', c: 'teal' },
-    kRing: { n: 'পেছনে: লোগোর চারপাশের রিং', d: 'M27.8 14A13.4 13.4 0 1 1 27.79 14Z', c: 'navy' },
-    bNavy: { n: 'নিচের গাঢ় নীল (দুই দিকে)', d: 'M0 67.6L54 78.6V85.6H0Z', c: 'navy' },
-    bTeal: { n: 'নিচের হালকা নীল বাঁক (দুই দিকে)', d: 'M8 85.6C9.2 76.4 12.8 71 20.6 70.8L54 75V85.6Z', c: 'teal' },
-    bBlue: { n: 'নিচের নীল বাঁক (দুই দিকে)', d: 'M11.4 85.6C12.6 78.2 16 74.2 22 74L54 77.6V85.6Z', c: 'blue' }
+    tBlue: { n: 'সামনে: উপরের নীল', d: 'M18.7 0H54V35.3L37.5 26.8Z', c: 'blue' },
+    tNavy: { n: 'সামনে: উপরের গাঢ় নীল', d: 'M0 0H18.7L34.6 19.5L27 28.3L16.5 33L0 18.2Z', c: 'navy' },
+    tTeal: { n: 'সামনে: উপরের হালকা নীল', d: 'M37.5 26.8L54 35.3V38.8L37 29.6Z', c: 'teal' },
+    ring: { n: 'সামনে: ছবির চারপাশের রিং', d: 'M27 16.4A11.9 11.9 0 1 1 26.99 16.4Z', c: 'navy' },
+    kBlue: { n: 'পেছনে: উপরের নীল', d: 'M17.6 0H54V35.5L38.5 27.5Z', c: 'blue' },
+    kNavy: { n: 'পেছনে: উপরের গাঢ় নীল', d: 'M0 0H17.6L37.5 17.6L27 24.6L19 34.4L0 26.8Z', c: 'navy' },
+    kTeal: { n: 'পেছনে: উপরের হালকা নীল', d: 'M38.5 27.5L54 35.5V38.4L38 30.2Z', c: 'teal' },
+    kRing: { n: 'পেছনে: লোগোর চারপাশের রিং', d: 'M27 11.2A13.4 13.4 0 1 1 26.99 11.2Z', c: 'navy' },
+    bNavy: { n: 'নিচের গাঢ় নীল (দুই দিকে)', d: 'M0 66.2L30 74.2V85.6H0Z', c: 'navy' },
+    bTeal: { n: 'নিচের হালকা নীল বাঁক (দুই দিকে)', d: 'M8.6 85.6C9.4 76.3 13 70.8 20.4 70.2L54 81.4V85.6Z', c: 'teal' },
+    bBlue: { n: 'নিচের নীল বাঁক (দুই দিকে)', d: 'M9.8 85.6C10.6 77.5 14.2 72.5 21.4 71.8L54 83.3V85.6Z', c: 'blue' }
   };
   // লেখা/ছবির অবস্থান (উপরে-নিচে mm) ও মাপ
   const ITEMS = {
@@ -82,7 +83,6 @@
     if (!dx && !dy && s === 1) return `<g id="${k}">${inner}</g>`;
     return `<g id="${k}" transform="translate(${n2(dx + cx * (1 - s))} ${n2(dy + cy * (1 - s))}) scale(${n2(s)})">${inner}</g>`;
   }
-  const topShapes = () => shape('tNavy') + shape('tBlue') + shape('tTeal');
   const bottomShapes = () => shape('bNavy') + shape('bTeal') + shape('bBlue');
   // পটভূমি: স্ক্রিনে গোল কোনা; প্রিন্ট ফাইলে bleed পর্যন্ত বিস্তৃত
   let BLEED_MODE = false;
@@ -97,55 +97,58 @@
     const school = CFG.schoolLines ? CFG.schoolLines.split('\n').map((t) => t.trim()).filter(Boolean).slice(0, 3) : wrap(String(d.school || '').toUpperCase(), 24, 2);
     const shortAddr = CFG.addrLine || String(d.schoolAddress || '').split(',').map((t) => t.trim()).filter(Boolean).slice(-2).join(', ');
     const name = wrap(d.name, 22, 2);
-    const nameSize = Number(CFG.nameSize) || (name.length > 1 ? 3.4 : (String(d.name).length > 18 ? 3.7 : 4.2));
+    const nameSize = Number(CFG.nameSize) || (name.length > 1 ? 3.4 : (String(d.name).length > 18 ? 3.7 : 4.1));
     const nameFont = CFG.nameFont === 'arial' ? F_HEAD.replace("'Arial Black', ", '') : CFG.nameFont === 'serif' ? F_BODY : F_NAME;
-    const fsz = Number(CFG.infoSize) || 2.7;
-    const schoolSize = Number(CFG.schoolSize) || (school.some((t) => t.length > 20) ? 3.05 : 3.35);
-    const addrSize = Number(CFG.addrSize) || 2.35;
+    const fsz = Number(CFG.infoSize) || 2.75;
+    const schoolSize = Number(CFG.schoolSize) || (school.some((t) => t.length > 22) ? 3.3 : 3.6);
+    const addrSize = Number(CFG.addrSize) || 2.4;
     const addr = wrap(d.address, 18, 2);
     const rows = [['ID Number', d.id], ["Father's name", d.father], ['Roll', d.roll], ['Class', d.cls], ['Mobile', d.phone]];
-    let y = 51 + (name.length - 1) * 3.8;
-    const lh = fsz * 1.35;
-    const row = (l, val, yy, first) => `${l ? `<text x="10" y="${n2(yy)}" font-size="${fsz}" fill="${INK}">${x(l)}</text>` : ''}${first ? `<text x="27.2" y="${n2(yy)}" font-size="${n2(fsz + 0.3)}" font-weight="700" fill="${INK}">:</text>` : ''}<text x="29.4" y="${n2(yy)}" font-size="${fsz}" fill="${INK}">${x(val || '')}</text>`;
-    const y0 = y;
-    let rowsSvg = rows.map((r) => { const s = row(r[0], r[1], y, true); y += Math.min(lh, 3.55); return s; }).join('');
-    rowsSvg += addr.length ? addr.map((l, i) => row(i === 0 ? 'Address' : '', l, y + i * fsz * 1.18, i === 0)).join('') : row('Address', '', y, true);
-    const schoolEnd = 5.4 + school.length * (schoolSize + 0.75);
-    return frame(cid, `${topShapes()}${bottomShapes()}`) + `
-  ${place('school', 27, 8, `<g font-family="${F_HEAD}" font-weight="900" fill="${CFG.schoolColor || '#ffffff'}" text-anchor="middle">${school.map((l, i) => `<text x="27" y="${n2(5.4 + i * (schoolSize + 0.75))}" font-size="${schoolSize}" letter-spacing="0.12">${x(l)}</text>`).join('')}</g>`)}
-  ${place('addr', 27, schoolEnd, `<text x="27" y="${n2(schoolEnd + 0.2)}" font-family="${F_BODY}" font-size="${addrSize}" fill="${CFG.schoolColor || '#ffffff'}" text-anchor="middle">${x(shortAddr)}</text>`)}
-  ${place('photo', 27, 29, `<defs><clipPath id="${cid}p"><circle cx="27.2" cy="28.9" r="11"/></clipPath></defs>${shape('ring')}<circle cx="27.2" cy="28.9" r="11.6" fill="#ffffff"/>
-  ${d.photo ? `<image xlink:href="${x(d.photo)}" x="16.2" y="17.9" width="22" height="22" preserveAspectRatio="xMidYMid slice" clip-path="url(#${cid}p)"/>`
-    : `<g clip-path="url(#${cid}p)"><rect x="16" y="17.6" width="22.4" height="22.6" fill="#e8edf5"/><circle cx="27.2" cy="26.2" r="4.2" fill="#b9c3d6"/><path d="M18.8 40c0-5.4 3.7-8.6 8.4-8.6s8.4 3.2 8.4 8.6z" fill="#b9c3d6"/></g>`}`)}
-  ${place('name', 27, 45.6, `<g font-family="${nameFont}" font-weight="${CFG.nameWeight || 400}" fill="${CFG.nameColor || '#111111'}" text-anchor="middle">${name.map((l, i) => `<text x="27" y="${n2(46.4 + i * 3.8)}" font-size="${nameSize}">${x(l)}</text>`).join('')}</g>`)}
+    const nameY = 46.5, y0 = 50.8 + (name.length - 1) * 3.8, lh = Math.min(3.57, fsz * 1.25);
+    let y = y0;
+    const row = (l, val, yy, first) => `${l ? `<text x="10.1" y="${n2(yy)}" font-size="${fsz}" fill="${INK}">${x(l)}</text>` : ''}${first ? `<text x="27.1" y="${n2(yy)}" font-size="${n2(fsz + 0.3)}" font-weight="700" fill="${INK}">:</text>` : ''}<text x="29.9" y="${n2(yy)}" font-size="${fsz}" fill="${INK}">${x(val || '')}</text>`;
+    let rowsSvg = rows.map((r) => { const s = row(r[0], r[1], y, true); y += lh; return s; }).join('');
+    rowsSvg += addr.length ? addr.map((l, i) => row(i === 0 ? 'Address' : '', l, y + i * fsz * 1.1, i === 0)).join('') : row('Address', '', y, true);
+    const line1 = 6.95, gap = schoolSize * 1.28;
+    const addrY = line1 + (school.length - 1) * gap + 3.2;
+    return frame(cid, `${shape('tBlue')}${shape('tNavy')}${shape('tTeal')}${bottomShapes()}`) + `
+  ${place('school', 27, line1, `<g font-family="${F_HEAD}" font-weight="900" fill="${CFG.schoolColor || '#ffffff'}" text-anchor="middle">${school.map((l, i) => `<text x="27" y="${n2(line1 + i * gap)}" font-size="${schoolSize}" letter-spacing="0.1">${x(l)}</text>`).join('')}</g>`)}
+  ${place('addr', 27, addrY, `<text x="27" y="${n2(addrY)}" font-family="${F_BODY}" font-size="${addrSize}" fill="${CFG.schoolColor || '#ffffff'}" text-anchor="middle">${x(shortAddr)}</text>`)}
+  ${place('photo', 27, 28.3, `<defs><clipPath id="${cid}p"><circle cx="27" cy="28.3" r="10.6"/></clipPath></defs>${shape('ring')}<circle cx="27" cy="28.3" r="10.6" fill="#ffffff"/>
+  ${d.photo ? `<image xlink:href="${x(d.photo)}" x="16.4" y="17.7" width="21.2" height="21.2" preserveAspectRatio="xMidYMid slice" clip-path="url(#${cid}p)"/>`
+    : `<g clip-path="url(#${cid}p)"><rect x="16.2" y="17.5" width="21.6" height="21.6" fill="#e8edf5"/><circle cx="27" cy="25.8" r="4" fill="#b9c3d6"/><path d="M19 39c0-5.2 3.6-8.3 8-8.3s8 3.1 8 8.3z" fill="#b9c3d6"/></g>`}`)}
+  ${place('name', 27, nameY - 1.4, `<g font-family="${nameFont}" font-weight="${CFG.nameWeight || 400}" fill="${CFG.nameColor || '#111111'}" text-anchor="middle">${name.map((l, i) => `<text x="27" y="${n2(nameY + i * 3.8)}" font-size="${nameSize}">${x(l)}</text>`).join('')}</g>`)}
   ${place('info', 27, y0 + 8, `<g font-family="${F_BODY}">${rowsSvg}</g>`)}
-  ${place('footer', 29.5, 78.6, `<text x="29.5" y="79.6" font-family="${F_HEAD}" font-weight="900" font-size="${Number(CFG.footerSize) || 2.9}" fill="#ffffff" text-anchor="middle" letter-spacing="0.1">${x(CFG.footer)}</text>`)}`;
+  ${place('footer', 26.8, 77.4, `<text x="26.8" y="78.4" font-family="${F_HEAD}" font-weight="900" font-size="${Number(CFG.footerSize) || 2.6}" fill="#ffffff" text-anchor="middle" letter-spacing="0.08">${x(CFG.footer)}</text>`)}`;
   }
 
   // ===== পেছনের দিক =====
   const ICON = {
-    phone: (cx, cy) => `<circle cx="${cx}" cy="${cy}" r="1.75" fill="#2fb34a"/><path d="M${cx - 0.75} ${cy - 0.95}c.18-.1.4-.04.5.13l.38.66c.1.17.05.38-.1.5l-.25.2c.18.42.5.78.92 1l.22-.24c.13-.14.34-.17.5-.07l.65.4c.17.1.23.31.13.48l-.18.33c-.18.32-.55.47-.9.36a3.6 3.6 0 0 1-2.33-2.4c-.1-.34.06-.7.37-.87z" fill="#ffffff"/>`,
-    pin: (cx, cy) => `<path d="M${cx} ${cy + 2.1}c-.2-.5-1.75-2.1-1.75-3.3a1.75 1.75 0 0 1 3.5 0c0 1.2-1.55 2.8-1.75 3.3z" fill="#e5484d"/><circle cx="${cx}" cy="${cy - 1.2}" r="0.62" fill="#ffffff"/>`,
-    mail: (cx, cy) => `<circle cx="${cx}" cy="${cy}" r="1.75" fill="#3d8fd6"/><rect x="${cx - 1}" y="${cy - 0.65}" width="2" height="1.35" rx="0.15" fill="none" stroke="#ffffff" stroke-width="0.22"/><path d="M${cx - 1} ${cy - 0.6}l1 .75 1-.75" fill="none" stroke="#ffffff" stroke-width="0.22"/>`
+    phone: (cx, cy) => `<circle cx="${cx}" cy="${cy}" r="1.6" fill="#2fb34a"/><path d="M${n2(cx - 0.7)} ${n2(cy - 0.9)}c.17-.1.38-.04.47.12l.36.62c.1.16.05.36-.1.47l-.23.19c.17.4.47.73.86.94l.21-.23c.12-.13.32-.16.47-.07l.61.38c.16.1.22.29.12.45l-.17.31c-.17.3-.52.44-.85.34a3.4 3.4 0 0 1-2.19-2.26c-.1-.32.06-.66.35-.82z" fill="#ffffff"/>`,
+    pin: (cx, cy) => `<path d="M${cx} ${n2(cy + 2.1)}c-.2-.5-1.75-2.1-1.75-3.3a1.75 1.75 0 0 1 3.5 0c0 1.2-1.55 2.8-1.75 3.3z" fill="#e5484d"/><circle cx="${cx}" cy="${n2(cy - 1.2)}" r="0.62" fill="#ffffff"/>`,
+    mail: (cx, cy) => `<circle cx="${cx}" cy="${cy}" r="1.6" fill="#3d8fd6"/><rect x="${n2(cx - 0.95)}" y="${n2(cy - 0.62)}" width="1.9" height="1.28" rx="0.15" fill="none" stroke="#ffffff" stroke-width="0.2"/><path d="M${n2(cx - 0.95)} ${n2(cy - 0.57)}l.95.72.95-.72" fill="none" stroke="#ffffff" stroke-width="0.2"/>`
   };
   function back(d) {
     const cid = 'b' + (++seq);
-    const addr = wrap(d.schoolAddress, 24, 2);
-    const items = [['phone', [d.schoolPhone]], ['pin', addr], ['mail', [d.schoolEmail]]].filter((it) => it[1].join('').trim());
+    const phone = CFG.backPhone || d.schoolPhone;
+    const addrLines = CFG.backAddress ? CFG.backAddress.split('\n').map((t) => t.trim()).filter(Boolean).slice(0, 3) : wrap(d.schoolAddress, 24, 2);
+    const email = CFG.backEmail || d.schoolEmail;
     const cs = Number(CFG.contactSize) || 1;
-    let y = 45; const lineTop = y - 3.2;
+    const items = [['phone', [phone], 3.0], ['pin', addrLines, 2.3], ['mail', [email], 2.3]].filter((it) => it[1].join('').trim());
+    // মাদ্রাসার কার্ড অনুযায়ী: ফোন 44.1, ঠিকানা 48.2/50.6, ইমেইল 54.6
+    let y = 44.1; const lineTop = y - 3.4;
     const rows = items.map((it) => {
-      const ty = y; const mid = ty - 0.85 + (it[1].length > 1 ? 1.35 : 0);
-      const block = `${ICON[it[0]](12.4, mid)}<circle cx="16.6" cy="${n2(mid)}" r="0.95" fill="${shapeColor('kNavy')}"/>${it[1].map((l, i) => `<text x="18.8" y="${n2(ty + i * 2.75)}" font-size="${n2((it[0] === 'mail' ? 2.3 : it[0] === 'phone' ? 3 : 2.45) * cs)}" fill="#111111">${x(l)}</text>`).join('')}`;
-      y += 2.9 + (it[1].length - 1) * 2.75 + 1.7;
+      const ty = y; const mid = ty - 0.85 + (it[1].length > 1 ? 1.2 : 0);
+      const block = `${ICON[it[0]](12.1, Math.round(mid * 100) / 100)}<circle cx="16.3" cy="${n2(mid)}" r="0.95" fill="${shapeColor('kNavy')}"/>${it[1].map((l, i) => `<text x="18.4" y="${n2(ty + i * 2.45)}" font-size="${n2(it[2] * cs)}" fill="#111111">${x(l)}</text>`).join('')}`;
+      y += 4.1 + (it[1].length - 1) * 2.45;
       return block;
     }).join('');
-    const lineBot = y - 3.4;
+    const lineBot = y - 3.2;
     return frame(cid, `${shape('kBlue')}${shape('kNavy')}${shape('kTeal')}${bottomShapes()}`) + `
-  ${place('logo', 27, 27, `${shape('kRing')}<circle cx="27" cy="26.8" r="12.6" fill="#ffffff"/>${d.logo ? `<image xlink:href="${x(d.logo)}" x="16.4" y="17" width="21.2" height="19.6" preserveAspectRatio="xMidYMid meet"/>` : ''}`)}
-  ${place('contact', 27, (lineTop + lineBot) / 2, `<line x1="17" y1="${n2(lineTop)}" x2="17" y2="${n2(lineBot)}" stroke="${shapeColor('kNavy')}" stroke-width="0.55"/><g font-family="${F_BODY}">${rows}</g>`)}
-  ${CFG.qr === 'none' ? '' : place('qr', 27, 63.3, qrSvg(CFG.qr === 'custom' ? (CFG.qrCustom || '') : CFG.qr === 'website' ? (d.website || '') : (d.qr || ''), 21.4, 57.6, 11.4))}
-  ${place('sign', 43.2, 69.4, `${d.sign ? `<image xlink:href="${x(d.sign)}" x="36.4" y="65.2" width="13.6" height="4.6" preserveAspectRatio="xMidYMid meet"/>` : ''}<line x1="35.4" y1="70.2" x2="51.2" y2="70.2" stroke="#111111" stroke-width="0.3"/><text x="43.3" y="72.4" font-family="${F_BODY}" font-size="1.95" fill="#111111" text-anchor="middle">${x(CFG.signLabel)}</text>`)}`;
+  ${place('logo', 27, 24.6, `${shape('kRing')}<circle cx="27" cy="24.6" r="12.4" fill="#ffffff"/>${d.logo ? `<image xlink:href="${x(d.logo)}" x="16.2" y="14.6" width="21.6" height="20" preserveAspectRatio="xMidYMid meet"/>` : ''}`)}
+  ${place('contact', 27, (lineTop + lineBot) / 2, `<line x1="16.3" y1="${n2(lineTop)}" x2="16.3" y2="${n2(lineBot)}" stroke="${shapeColor('kNavy')}" stroke-width="0.5"/><g font-family="${F_BODY}">${rows}</g>`)}
+  ${CFG.qr === 'none' ? '' : place('qr', 27, 62.9, qrSvg(CFG.qr === 'custom' ? (CFG.qrCustom || '') : CFG.qr === 'website' ? (d.website || '') : (d.qr || ''), 21.4, 57.3, 11.2))}
+  ${place('sign', 42.6, 72, `${d.sign ? `<image xlink:href="${x(d.sign)}" x="35.9" y="68.3" width="13.4" height="4.1" preserveAspectRatio="xMidYMid meet"/>` : ''}<line x1="34.8" y1="72.8" x2="50.3" y2="72.8" stroke="#111111" stroke-width="0.3"/><text x="42.6" y="74.9" font-family="${F_BODY}" font-size="1.95" fill="#111111" text-anchor="middle">${x(CFG.signLabel)}</text>`)}`;
   }
 
   // একটি দিক আসল মাপে (mm)

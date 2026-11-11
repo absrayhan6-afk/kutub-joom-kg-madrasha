@@ -18,7 +18,7 @@ def part(html, start, end):
 def fix_links(s):
     s = re.sub(r'href="index\.html#([\w-]+)"', r'href="#\1"', s)
     s = re.sub(r'href="index\.html"( target="_blank" rel="noopener")?', 'href="#home"', s)
-    s = s.replace('href="admin.html"', 'href="#admin"')
+    s = re.sub(r'href="admin\.html(#login)?"', 'href="#admin"', s)
     return s
 
 

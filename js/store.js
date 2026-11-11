@@ -265,6 +265,8 @@
     const fs = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`);
     const app = appMod.initializeApp(config);
     const auth = authMod.getAuth(app);
+    // ব্রাউজার বন্ধ করলে লগআউট (মাদ্রাসার কমন কম্পিউটারের জন্য নিরাপদ)
+    await authMod.setPersistence(auth, authMod.browserSessionPersistence).catch(() => {});
     const db = fs.getFirestore(app);
     const { doc, getDoc, setDoc, deleteDoc, collection, getDocs, query, where, writeBatch, updateDoc } = fs;
     const email = (userId) => `${String(userId).trim().toLowerCase()}@${STAFF_DOMAIN}`;
