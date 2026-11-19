@@ -147,7 +147,7 @@
         <div class="apply-fld"><span>লিঙ্গ <b class="req">*</b></span><div class="apply-radio"><label><input type="radio" name="apGender" value="ছেলে"> ছেলে</label><label><input type="radio" name="apGender" value="মেয়ে"> মেয়ে</label></div></div>
         <label class="apply-fld"><span>পিতার নাম <b class="req">*</b></span><input id="apFather" required></label>
         <label class="apply-fld"><span>মাতার নাম</span><input id="apMother"></label>
-        <div class="apply-photo full"><div class="ph" id="apPh">শিক্ষার্থীর ছবি</div><label class="apply-fld"><span>ছবি (ঐচ্ছিক)</span><input type="file" id="apPhoto" accept="image/*"></label></div>
+        <div class="apply-photo full"><div class="ph" id="apPh">শিক্ষার্থীর ছবি</div><label class="apply-fld"><span id="apPhotoLbl">শিক্ষার্থীর ছবি</span><input type="file" id="apPhoto" accept="image/*"></label></div>
       </div>
       <h3>অভিভাবকের তথ্য</h3>
       <div class="apply-grid">
@@ -162,6 +162,7 @@
         <label class="apply-fld"><span>মোবাইল নম্বর (২)</span><input id="apMobile2" inputmode="tel" placeholder="01XXXXXXXXX"></label>
         <label class="apply-fld full"><span>ই-মেইল (যদি থাকে)</span><input id="apEmail" type="email" lang="en" autocomplete="email"></label>
       </div>
+      <div class="apply-docs" data-only="new"><b>প্রয়োজনীয় কাগজপত্র</b><p>ভর্তির সময় শিক্ষার্থীর জন্ম নিবন্ধন সনদ এবং পিতা ও মাতার জাতীয় পরিচয়পত্রের (NID) ফটোকপি মাদ্রাসায় জমা দিতে হবে।</p><ul><li>শিক্ষার্থীর জন্ম নিবন্ধন সনদ (ফটোকপি)</li><li>পিতার জাতীয় পরিচয়পত্র (ফটোকপি)</li><li>মাতার জাতীয় পরিচয়পত্র (ফটোকপি)</li></ul></div>
       <p class="muted" style="margin:12px 0 0">শ্রেণি বাছাই করলে ওই শ্রেণির ফি উপরে দেখাবে (আনুমানিক)। চূড়ান্ত ফি মাদ্রাসা অফিস নিশ্চিত করবে।</p>
       <label style="display:flex;gap:8px;margin-top:12px;font-weight:600"><input type="checkbox" id="apDecl"> আমি উপরোক্ত তথ্যসমূহ সঠিক ও সত্য বলে ঘোষণা করছি।</label>
       <p id="apMsg" class="form-msg" role="alert" hidden></p>

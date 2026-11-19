@@ -94,6 +94,7 @@
     $('#apTitle').textContent = apType === 'renew' ? `ভর্তি নবায়ন ফরম (পুরাতন শিক্ষার্থী) · শিক্ষাবর্ষ ${nextYear()}` : 'অনলাইন ভর্তি ফরম (নতুন শিক্ষার্থী)';
     $('#apClassLbl').innerHTML = (apType === 'renew' ? 'নতুন শিক্ষাবর্ষে যে শ্রেণিতে পড়বে' : 'যে শ্রেণিতে ভর্তি হতে চায়') + ' <b class="req">*</b>';
     $$('[data-only]', $('#applyForm')).forEach((el) => { el.hidden = el.dataset.only !== apType; });
+    $('#apPhotoLbl').innerHTML = apType === 'renew' ? 'শিক্ষার্থীর ছবি (ঐচ্ছিক)' : 'শিক্ষার্থীর ছবি <b class="req">*</b> (বাধ্যতামূলক)';
     $('#apClass').innerHTML = '<option value="">শ্রেণি নির্বাচন করুন</option>' + catalog.classes.map((c) => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
     showFees();
     $('#applyForm').scrollIntoView({ behavior: 'smooth' });
@@ -143,6 +144,7 @@
     const a = { type: apType, nameBn: v('#apNameBn'), nameEn: v('#apNameEn'), dob: v('#apDob'), gender: g, father: v('#apFather'), mother: v('#apMother'), guardian: v('#apGuardian'), relation: rel, relationOther: rel === 'অন্যান্য' ? v('#apRelOther') : '', address: v('#apAddr'), guardianMobile: C.toEn(v('#apGMobile')), mobile2: C.toEn(v('#apMobile2')), email: v('#apEmail'), currentClass: renew ? '' : v('#apCur'), applyClassId: cls ? cls.id : '', applyClass: cls ? cls.name : '', year: nextYear(), reg: renew ? C.toEn(v('#apReg')) : '' };
     if (apPhoto) a.photo = apPhoto;
     if (renew && !/^\d{1,8}$/.test(a.reg)) return apMsg('সঠিক রেজিস্ট্রেশন নম্বর লিখুন (শুধু সংখ্যা)।');
+    if (!renew && !apPhoto) return apMsg('নতুন শিক্ষার্থীর ছবি দেওয়া বাধ্যতামূলক। "শিক্ষার্থীর ছবি" ঘরে ছবি দিন।');
     if (!cls) return apMsg(renew ? 'নতুন শিক্ষাবর্ষে যে শ্রেণিতে পড়বে তা নির্বাচন করুন।' : 'যে শ্রেণিতে ভর্তি হতে চায় তা নির্বাচন করুন।');
     if (!a.nameBn) return apMsg('শিক্ষার্থীর নাম (বাংলায়) লিখুন।');
     if (!g) return apMsg('লিঙ্গ নির্বাচন করুন।');

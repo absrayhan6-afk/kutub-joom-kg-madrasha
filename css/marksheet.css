@@ -10,7 +10,7 @@
 .ms-head { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: center; }
 .ms-logo { width: 150px; height: auto; padding-right: 18px; border-right: 2px solid var(--ms-g); }
 .ms-name { text-align: center; }
-.ms-name h2 { margin: 0; font-family: var(--ms-serif); color: var(--ms-g); font-size: clamp(22px, 3.6vw, 38px); line-height: 1.08; font-weight: 900; letter-spacing: .01em; text-wrap: balance; }
+.ms-name h2 { margin: 0; font-family: var(--ms-serif); color: var(--ms-g); font-size: clamp(22px, 3.6vw, 38px); line-height: 1.08; font-weight: 900; letter-spacing: .01em; text-wrap: balance; -webkit-text-stroke: 1px var(--ms-g); paint-order: stroke fill; }
 .ms-addr { margin: 6px 0 0; display: flex; justify-content: center; align-items: center; gap: 6px; font-weight: 600; font-size: 17px; }
 .ms-addr svg { width: 16px; height: 16px; fill: #b3261e; flex: none; }
 .ms-est { margin: 4px 0 0; display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 16px; }
@@ -93,7 +93,7 @@
   .ms-logo { width: 34mm; padding-right: 4mm; border-right-width: 0.5mm; }
   .ms-water { height: min(88%, 78mm); }
   .ms-head { gap: 5mm; }
-  .ms-name h2 { font-size: 21pt; }
+  .ms-name h2 { font-size: 21pt; -webkit-text-stroke: 0.25mm var(--ms-g); }
   .ms-addr { font-size: 11pt; margin-top: 1.5mm; } .ms-addr svg { width: 4mm; height: 4mm; }
   .ms-est { font-size: 10.5pt; margin-top: 1mm; }
   .ms-meta { margin-top: 3mm; padding: 1.6mm 4mm; font-size: 10pt; border-radius: 3.5mm; gap: 0.6mm; }

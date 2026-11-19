@@ -86,7 +86,8 @@
   ${card('people', 'অভিভাবকের তথ্য', guardian)}
   ${card('phone', 'যোগাযোগের তথ্য', contact)}
   ${renew ? '' : `<section class="af-classbox"><div class="af-crow"><span class="af-chip af-big">${ico('book')}ভর্তির শ্রেণি</span><span class="af-cval">${esc(a.applyClass || '')}</span></div>
-    <div class="af-crow"><span class="af-chip af-note">বিশেষ নির্দেশনা:</span><p>${esc(s.formNote || 'উল্লেখিত শ্রেণি মাদ্রাসায় যাচাই ও ভর্তি পরীক্ষার মাধ্যমে নির্ধারিত হবে। নির্ধারিত শ্রেণিতেই ভর্তি হতে হবে।')}</p></div></section>`}
+    <div class="af-crow"><span class="af-chip af-note">বিশেষ নির্দেশনা:</span><p>${esc(s.formNote || 'উল্লেখিত শ্রেণি মাদ্রাসায় যাচাই ও ভর্তি পরীক্ষার মাধ্যমে নির্ধারিত হবে। নির্ধারিত শ্রেণিতেই ভর্তি হতে হবে।')}</p></div>
+    <div class="af-crow"><span class="af-chip af-note">প্রয়োজনীয় কাগজপত্র:</span><p>${esc(s.docNote || 'ভর্তির সময় শিক্ষার্থীর জন্ম নিবন্ধন সনদ এবং পিতা ও মাতার জাতীয় পরিচয়পত্রের (NID) ফটোকপি মাদ্রাসায় জমা দিতে হবে।')}</p></div></section>`}
   ${card('coins', 'ফি সংক্রান্ত তথ্য', feeRow, 'af-feecard')}
   ${renew ? '' : `<div class="af-total"><span>মোট টাকা :</span><b>৳ ${esc(tot ? String(tot) : '')}</b></div>`}
   ${WAVE}
