@@ -196,7 +196,7 @@
         $('#printBtn').onclick = () => window.print();
         $('#pdfBtn').onclick = async () => {
           const b = $('#pdfBtn'); b.disabled = true; const t = b.textContent; b.textContent = 'PDF তৈরি হচ্ছে…';
-          try { await M.pdf(M.render(r, settings, images), `Marksheet-${C.toEn(r.roll)}-${C.toEn(r.reg)}-${r.year}.pdf`); b.textContent = '✓ PDF ডাউনলোড হয়েছে'; setTimeout(() => { b.textContent = t; }, 4000); }
+          try { await M.pdf(r, settings, images, `Marksheet-${C.toEn(r.roll)}-${C.toEn(r.reg)}-${r.year}.pdf`); b.textContent = '✓ PDF ডাউনলোড হয়েছে'; setTimeout(() => { b.textContent = t; }, 4000); }
           catch (e) { console.error(e); b.textContent = t; alert('PDF তৈরি করা যায়নি। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন, অথবা Chrome ব্রাউজারে খুলে "প্রিন্ট" চেপে Save as PDF করুন।'); }
           finally { b.disabled = false; }
         };

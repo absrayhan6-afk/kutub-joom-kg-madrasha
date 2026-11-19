@@ -67,54 +67,166 @@
   ${WAVE}
 </article>`;
   }
-  // মার্কশিটের PDF সরাসরি ডাউনলোড — মোবাইলে প্রিন্ট কাজ না করলেও চলে।
-  // আলাদা A4 মাপের ফ্রেমে প্রিন্টের মতো সাজিয়ে ছবি তুলে PDF বানানো হয় (বাংলা/ইংরেজি সব ঠিক থাকে)।
+  // ===== মার্কশিটের PDF সরাসরি আঁকা (A4, এক পাতা) =====
+  // পেজের ছবি না তুলে PDF-এর ভেতরে লেখা-রেখা আঁকা হয়, তাই সব মোবাইলে একই রকম ও পরিষ্কার আসে।
   const loaded = {};
   const load = (src) => loaded[src] || (loaded[src] = new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => { delete loaded[src]; rej(new Error('PDF তৈরির জন্য ইন্টারনেট সংযোগ দরকার।')); }; document.head.appendChild(el); }));
-  // ক্যানভাস প্রায় পুরো সাদা হলে (কিছু ব্রাউজারে foreignObject কাজ করে না) সাধারণ পদ্ধতিতে আবার
-  function blankCanvas(cv) {
-    try { const g = cv.getContext('2d'); const d = g.getImageData(0, 0, cv.width, cv.height).data; let dark = 0; for (let i = 0; i < d.length; i += 4 * 97) if (d[i] < 200 || d[i + 1] < 200 || d[i + 2] < 200) dark++; return dark < 50; } catch (e) { return true; }
+  // যেকোনো ছবি (WebP সহ) → PNG; সঙ্গে মাপের অনুপাত
+  const toPng = (src) => new Promise((res) => {
+    if (!src) return res(null);
+    const im = new Image(); im.crossOrigin = 'anonymous';
+    im.onload = () => { try { const cv = document.createElement('canvas'); cv.width = im.naturalWidth; cv.height = im.naturalHeight; cv.getContext('2d').drawImage(im, 0, 0); res({ url: cv.toDataURL('image/png'), r: im.naturalWidth / im.naturalHeight }); } catch (e) { res(null); } };
+    im.onerror = () => res(null); im.src = src;
+  });
+  // PDF-এর ফন্টে শুধু ইংরেজি — বাংলা থাকলে ইংরেজিতে রূপান্তর
+  const en = (t) => { t = C.toEn(String(t == null ? '' : t)); if (/[^\x00-\x7F]/.test(t)) t = global.Translit ? global.Translit.name(t) : t; return t.replace(/[^\x00-\x7F]/g, ''); };
+  const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+
+  async function draw(doc, r, settings, images, first) {
+    const s = settings || {};
+    const G = '#0b4d2c', G2 = '#138a43', GOLD = '#e2b923', LINE = '#b9d8c3', ZEBRA = '#eef8f1', INK = '#12301f';
+    const status = r.status || (r.passed ? 'pass' : 'fail'), passed = status === 'pass', special = status === 'special';
+    const fill = (c) => doc.setFillColor(...hex(c)), stroke = (c) => doc.setDrawColor(...hex(c)), color = (c) => doc.setTextColor(...hex(c));
+    const font = (st, size) => { doc.setFont(st[0], st[1]); doc.setFontSize(size); };
+    const text = (t, x, y, o) => doc.text(String(t), x, y, o || {});
+    const W = (t) => doc.getTextWidth(String(t));
+    if (!first) doc.addPage();
+    const [logo, sign] = await Promise.all([toPng((images && images.logo) || 'assets/logo.webp'), toPng(images && images.sign)]);
+
+    // ফ্রেম
+    const FX = 8, FY = 8, FW = 194, FH = 281;
+    fill('#ffffff'); stroke(G); doc.setLineWidth(0.7); doc.roundedRect(FX, FY, FW, FH, 6, 6, 'FD');
+
+    // মাথা: লোগো | মাদ্রাসার নাম
+    if (logo) { const h = 31, w = Math.min(36, h * logo.r); doc.addImage(logo.url, 'PNG', 14 + (36 - w) / 2, 13, w, h); }
+    stroke(G); doc.setLineWidth(0.5); doc.line(53, 14, 53, 43);
+    const cx = 126;
+    font(['times', 'bold'], 22); color(G); stroke(G); doc.setLineWidth(0.22);
+    const nameLines = doc.splitTextToSize(en(s.nameEn || s.name).toUpperCase(), 138).slice(0, 2);
+    nameLines.forEach((l, i) => text(l, cx, 21 + i * 8.6 - (nameLines.length === 1 ? -4 : 0), { align: 'center', renderingMode: 'fillThenStroke' }));
+    font(['helvetica', 'bold'], 10); color(INK);
+    const addr = en(s.addressEn || s.address); const aw = W(addr), ay = 21 + nameLines.length * 8.6 + 0.6;
+    fill('#b3261e'); doc.circle(cx - aw / 2 - 3, ay - 1.6, 1.1, 'F'); doc.triangle(cx - aw / 2 - 4, ay - 1.3, cx - aw / 2 - 2, ay - 1.3, cx - aw / 2 - 3, ay + 0.4, 'F');
+    text(addr, cx, ay, { align: 'center' });
+    if (s.established) {
+      const est = 'Established: ' + C.toEn(s.established); font(['helvetica', 'bold'], 10); const ew = W(est), ey = ay + 5.2;
+      text(est, cx, ey, { align: 'center' }); stroke(GOLD); doc.setLineWidth(0.5);
+      doc.line(cx - ew / 2 - 30, ey - 1.2, cx - ew / 2 - 3, ey - 1.2); doc.line(cx + ew / 2 + 3, ey - 1.2, cx + ew / 2 + 30, ey - 1.2);
+    }
+
+    // পরীক্ষার তথ্য
+    let y = 49; const att = r.attendance;
+    const mh = att ? 12.5 : 8; stroke(G); doc.setLineWidth(0.4); doc.roundedRect(14, y, 182, mh, 3.5, 3.5, 'S');
+    const seg = (parts, yy) => {
+      font(['helvetica', 'bold'], 9.5);
+      const ws = parts.map((p) => { font(['helvetica', 'bold'], 9.5); const a = W(p[0] + ' : '); font(['helvetica', p[2] ? 'bold' : 'normal'], 9.5); return a + W(p[1]); });
+      const gap = 7, tot = ws.reduce((a, b) => a + b, 0) + gap * (parts.length - 1); let xx = 105 - tot / 2;
+      parts.forEach((p, i) => {
+        font(['helvetica', 'bold'], 9.5); color(G2); text(p[0] + ' : ', xx, yy); const a = W(p[0] + ' : ');
+        font(['helvetica', p[2] ? 'bold' : 'normal'], 9.5); color(INK); text(p[1], xx + a, yy);
+        xx += ws[i] + gap; if (i < parts.length - 1) { stroke('#999999'); doc.setLineWidth(0.3); doc.line(xx - gap / 2, yy - 3, xx - gap / 2, yy + 0.8); }
+      });
+    };
+    seg([['Academic Year', en(r.year), 1], ['Class', en(r.classNameEn || r.className), 1], ['Examination', en(C.examEn(r.exam)), 1]], y + 5.2);
+    if (att) seg([['Attendance', `Total: ${att.total} days, Present: ${att.present} days, Absent: ${att.absent} days`, 0]], y + 10.3);
+    y += mh + 3;
+
+    // Academic Transcript ফিতা
+    stroke(GOLD); doc.setLineWidth(0.7); doc.line(16, y + 4, 74, y + 4); doc.line(136, y + 4, 194, y + 4);
+    fill(G); stroke(GOLD); doc.setLineWidth(0.8); doc.roundedRect(75, y, 60, 8, 3, 3, 'FD');
+    font(['helvetica', 'bold'], 14); color('#ffffff'); text('Academic Transcript', 105, y + 5.7, { align: 'center' });
+    y += 12;
+
+    // শিক্ষার্থীর তথ্য ও গ্রেড
+    const ih = 33; stroke(G); doc.setLineWidth(0.4); doc.roundedRect(14, y, 120, ih, 3.5, 3.5, 'S');
+    const info = [['Name', r.nameEn || r.name], ["Father's Name", r.fatherEn || r.father], ['Class', r.classNameEn || r.className], ['Roll No', r.roll], ['Registration No', r.reg], ['Merit Position', r.rank || '-']].filter((x) => x[1]);
+    const lh = Math.min(5, (ih - 5) / info.length), iy = y + 4.5 + (ih - 4 - lh * info.length) / 2 + lh * 0.65;
+    info.forEach((row, i) => { font(['helvetica', 'bold'], 10); color(INK); text(row[0], 26, iy + i * lh); text(':', 60, iy + i * lh); font(['helvetica', 'normal'], 10); text(doc.splitTextToSize(en(row[1]), 68)[0], 64, iy + i * lh); });
+    fill('#fffdf3'); stroke(GOLD); doc.setLineWidth(0.8); doc.roundedRect(138, y, 58, ih, 3.5, 3.5, 'FD');
+    font(['times', 'bold'], 15); color(G); text('Overall Grade', 167, y + 9, { align: 'center' });
+    font(['helvetica', 'bold'], 34); color(passed ? '#f07c0f' : special ? '#9a6b00' : '#5b5b5b'); text(en(r.grade), 167, y + 26, { align: 'center' });
+    // পাতার মালা (সাধারণ রূপ)
+    fill('#c99a12'); [0, 1, 2, 3, 4].forEach((i) => { doc.ellipse(150 + i * 0.4, y + 14 + i * 3, 1.6, 0.8, 'F'); doc.ellipse(184 - i * 0.4, y + 14 + i * 3, 1.6, 0.8, 'F'); });
+    y += ih + 3;
+
+    // পাঁচটি ঘর
+    const resText = passed ? 'PASS' : special ? 'SPECIAL' : 'FAIL';
+    const tiles = [['Total Marks', String(r.total), '/' + r.full], ['Average', C.fix2(r.average)], ['GPA', C.fix2(r.gpa)], ['Result', resText], ['Merit Position', String(r.rank || '-')]];
+    const unit = (182 - 4 * 2.5) / 5.15; let tx = 14;
+    tiles.forEach((t, i) => {
+      const w = i === 0 ? unit * 1.15 : unit, res = i === 3;
+      if (res) { fill('#fff7dc'); stroke(GOLD); } else { fill('#ffffff'); stroke(G); }
+      doc.setLineWidth(0.4); doc.roundedRect(tx, y, w, 13, 3, 3, 'FD');
+      font(['helvetica', 'bold'], 8.5); color(G); text(t[0], tx + w / 2, y + 4, { align: 'center' });
+      font(['helvetica', 'bold'], res && special ? 12 : 16); color(INK);
+      if (t[2]) { const a = W(t[1]); font(['helvetica', 'bold'], 9); const b = W(t[2]); font(['helvetica', 'bold'], 16); const sx = tx + w / 2 - (a + b) / 2; text(t[1], sx, y + 10.8); font(['helvetica', 'bold'], 9); color('#444444'); text(t[2], sx + a, y + 10.8); }
+      else text(t[1], tx + w / 2, y + 10.8, { align: 'center' });
+      tx += w + 2.5;
+    });
+    y += 16;
+
+    // নম্বরের টেবিল: বিষয় যত বেশি, সারি তত চিকন — সব মিলিয়ে এক পাতা
+    const rows = r.rows || [], footTop = 262, msgH = 16;
+    const avail = footTop - 6 - msgH - 4 - y;
+    const rh = Math.max(3.4, Math.min(7.6, avail / (rows.length + 1.1)));
+    const fs = Math.max(6.5, Math.min(10.5, rh * 1.45));
+    const cols = [12, 72, 28, 34, 18, 18], heads = ['SL', 'Subject', 'Full Marks', 'Obtained Marks', 'Grade', 'GP'];
+    const th = rh + 0.8, tableH = th + rh * rows.length;
+    fill(G); doc.roundedRect(14, y, 182, th, 2.5, 2.5, 'F'); doc.rect(14, y + th / 2, 182, th / 2, 'F');
+    let cxx = 14; font(['helvetica', 'bold'], fs); color('#ffffff');
+    heads.forEach((h, i) => { text(h, cxx + cols[i] / 2, y + th / 2 + fs * 0.12, { align: 'center' }); cxx += cols[i]; });
+    rows.forEach((row, k) => {
+      const ry = y + th + k * rh;
+      if (k % 2) { fill(ZEBRA); doc.rect(14, ry, 182, rh, 'F'); }
+      stroke(LINE); doc.setLineWidth(0.2); doc.line(14, ry, 196, ry);
+      const vals = [String(k + 1), en(row.nameEn || row.name), String(row.full), row.mark == null ? '-' : String(row.mark), en(row.grade), C.fix2(row.gp)];
+      let xx = 14; font(['helvetica', 'normal'], fs); color(INK);
+      vals.forEach((v, i) => { const mid = ry + rh / 2 + fs * 0.12; if (i === 1) text(doc.splitTextToSize(v, cols[1] - 6)[0], xx + 4, mid); else text(v, xx + cols[i] / 2, mid, { align: 'center' }); xx += cols[i]; });
+    });
+    stroke(LINE); doc.setLineWidth(0.2); cxx = 14; cols.slice(0, -1).forEach((w) => { cxx += w; doc.line(cxx, y + th, cxx, y + tableH); });
+    stroke(G); doc.setLineWidth(0.4); doc.roundedRect(14, y, 182, tableH, 2.5, 2.5, 'S');
+    // টেবিলের মাঝে হালকা লোগো
+    if (logo && doc.GState) { const h = Math.min(tableH * 0.88, 78), w = h * logo.r; doc.saveGraphicsState(); doc.setGState(new doc.GState({ opacity: 0.1 })); doc.addImage(logo.url, 'PNG', 105 - w / 2, y + tableH / 2 - h / 2, w, h); doc.restoreGraphicsState(); }
+    y += tableH + 4;
+
+    // অভিনন্দন / বার্তা
+    fill('#fbfdf5'); stroke(GOLD); doc.setLineWidth(0.6); doc.roundedRect(14, y, 182, msgH, 4, 4, 'FD');
+    fill(passed ? '#1a8a46' : special ? '#9a6b00' : '#555555'); stroke(GOLD); doc.setLineWidth(0.7); doc.circle(24, y + msgH / 2, 4.6, 'FD');
+    stroke('#ffffff'); doc.setLineWidth(0.9);
+    if (passed) doc.lines([[1.6, 1.6], [3.2, -3.4]], 21.8, y + msgH / 2 + 0.1); else { font(['helvetica', 'bold'], 14); color('#ffffff'); text('!', 24, y + msgH / 2 + 2.2, { align: 'center' }); }
+    stroke('#333333'); doc.setLineWidth(0.5); doc.line(33, y + 3, 33, y + msgH - 3);
+    const msgT = passed ? ['Congratulations!', 'You have passed the examination. May Allah grant you more success.']
+      : special ? ['Promoted on Special Consideration', `Failed in ${r.fails || ''} subject${r.fails > 1 ? 's' : ''}. Please take extra care. In sha Allah, you will do better next time.`]
+        : ['Do not lose hope!', 'Study with more care. In sha Allah, you will do better in the next examination.'];
+    font(['times', 'bolditalic'], special ? 15 : 19); color(G); text(msgT[0], 38, y + 7.4);
+    font(['helvetica', 'normal'], 9.5); color(INK); text(doc.splitTextToSize(msgT[1], 152)[0], 38, y + 12.6);
+
+    // নিচে: প্রকাশের তারিখ | স্বাক্ষর
+    const d = r.publishedAt ? new Date(r.publishedAt) : new Date();
+    const dstr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    font(['helvetica', 'bold'], 10.5); color(INK); text('Result Published: ' + dstr, 16, 272);
+    stroke('#333333'); doc.setLineWidth(0.5); doc.line(105, 265, 105, 273);
+    if (sign) { const h = 9, w = Math.min(44, h * sign.r); doc.addImage(sign.url, 'PNG', 166 - w / 2, 262, w, h); }
+    doc.line(140, 271.5, 192, 271.5); font(['helvetica', 'bold'], 10.5); color(G); text('Head Teacher', 166, 276, { align: 'center' });
+
+    // নিচের ঢেউ (ফ্রেমের ভেতরে)
+    doc.saveGraphicsState();
+    doc.roundedRect(FX, FY, FW, FH, 6, 6, null); doc.clip(); doc.discardPath();
+    const wave = (yy, c) => { fill(c); doc.lines([[60, -6, 130, -6, 194, -2], [0, 14], [-194, 0]], FX, yy, [1, 1], 'F', true); };
+    wave(282, GOLD); wave(284, G2); wave(286.5, G);
+    doc.restoreGraphicsState();
+    stroke(G); doc.setLineWidth(0.7); doc.roundedRect(FX, FY, FW, FH, 6, 6, 'S');
   }
-  async function pdf(htmlList, filename) {
-    const list = Array.isArray(htmlList) ? htmlList : [htmlList];
-    await load('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+
+  // r এক বা একাধিক মার্কশিটের তথ্য; সব এক PDF-এ, প্রতিটি এক পাতা
+  async function pdf(list, settings, images, filename) {
     await load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-    const fr = document.createElement('iframe');
-    fr.setAttribute('aria-hidden', 'true');
-    fr.style.cssText = 'position:fixed;left:-12000px;top:0;width:794px;height:1123px;border:0;background:#fff';
-    document.body.appendChild(fr);
-    try {
-      const css = new URL('css/marksheet.css', location.href).href;
-      const fonts = Array.from(document.querySelectorAll('link[rel=stylesheet]')).filter((l) => /fonts\.googleapis/.test(l.href)).map((l) => `<link rel="stylesheet" href="${esc(l.href)}">`).join('');
-      const doc = fr.contentDocument;
-      doc.open();
-      doc.write(`<!doctype html><html><head><meta charset="utf-8"><base href="${esc(location.href)}">${fonts}<link rel="stylesheet" href="${esc(css)}"></head><body style="margin:0;background:#fff"></body></html>`);
-      doc.close();
-      await new Promise((r) => { if (doc.readyState === 'complete') r(); else fr.onload = r; setTimeout(r, 4000); });
-      const jsPDF = global.jspdf.jsPDF; const out = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-      for (let i = 0; i < list.length; i++) {
-        doc.body.innerHTML = `<div class="ms-a4">${list[i]}</div>`;
-        try { await doc.fonts.ready; } catch (e) { /* পুরনো ব্রাউজার */ }
-        // ছবিগুলো ফাইলের ভেতরে বসানো (তাহলে PDF-এ লোগো ও স্বাক্ষর আসে)
-        await Promise.all(Array.from(doc.images).map(async (im) => {
-          if (/^data:/.test(im.getAttribute('src') || '')) return;
-          try { const bl = await (await fetch(im.src)).blob(); const url = await new Promise((r, j) => { const fr2 = new FileReader(); fr2.onload = () => r(fr2.result); fr2.onerror = j; fr2.readAsDataURL(bl); }); im.src = url; } catch (e) { /* না পেলে যেমন আছে */ }
-        }));
-        await Promise.all(Array.from(doc.images).map((im) => im.complete ? 0 : new Promise((r) => { im.onload = im.onerror = r; setTimeout(r, 4000); })));
-        // ব্রাউজারের নিজের রেন্ডারিং (লেখা হুবহু থাকে); না হলে সাধারণ পদ্ধতি
-        const el = doc.body.firstElementChild, opt = { scale: 2, backgroundColor: '#ffffff', useCORS: true, windowWidth: 794, windowHeight: 1123 };
-        let canvas = null;
-        try { canvas = await global.html2canvas(el, Object.assign({ foreignObjectRendering: true }, opt)); canvas.toDataURL('image/jpeg', 0.5); if (blankCanvas(canvas)) canvas = null; } catch (e) { canvas = null; }
-        if (!canvas) canvas = await global.html2canvas(el, opt);
-        if (i) out.addPage();
-        out.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 210, 297);
-      }
-      const blob = out.output('blob');
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-      return url;
-    } finally { fr.remove(); }
+    const doc = new global.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    list = Array.isArray(list) ? list : [list];
+    for (let i = 0; i < list.length; i++) await draw(doc, list[i], settings, images, i === 0);
+    const url = URL.createObjectURL(doc.output('blob'));
+    const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
   global.Marksheet = { render, esc, pdf };
 })(window);
