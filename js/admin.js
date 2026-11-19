@@ -59,7 +59,9 @@
   // ডায়ালগ: ফর্ম দেখিয়ে মান ফেরত দেয় (বাতিল করলে null)
   function dialog(title, body, okText, danger, wide, onOpen) {
     return new Promise((resolve) => {
-      const d = $('#dlg'), f = $('#dlgForm');
+      // প্রতিবার নতুন ফর্ম: আগের ডায়ালগের ইভেন্ট যেন পরের ডায়ালগে না চলে
+      const old = $('#dlgForm'), f = old.cloneNode(false); old.replaceWith(f);
+      const d = $('#dlg');
       d.style.width = wide ? 'min(960px, calc(100vw - 24px))' : '';
       f.innerHTML = `<h2>${esc(title)}</h2>${body}<div class="dlg-actions"><button type="button" class="btn btn-ghost" id="dlgCancel">বাতিল</button>${okText === false ? '' : `<button type="submit" class="btn ${danger ? 'btn-red' : 'btn-green'}" id="dlgOk">${esc(okText || 'সংরক্ষণ করুন')}</button>`}</div>`;
       let done = false;
@@ -85,6 +87,23 @@
   const confirmBox = (title, text, ok) => dialog(title, `<p>${text}</p>`, ok || 'হ্যাঁ, নিশ্চিত', true).then((v) => !!v);
 
   // ছবি ছোট করে data URL বানানো
+  // প্রতিটি রং বাছাইয়ের ঘরের পাশে কালার কোডের ঘর (যেমন #2B2E7C) — দুটো একসাথে বদলায়
+  function hexInputs(root) {
+    $$('input[type=color]', root).forEach((col) => {
+      if (col.nextElementSibling && col.nextElementSibling.classList.contains('hex')) return;
+      const t = document.createElement('input');
+      t.type = 'text'; t.className = 'hex'; t.value = col.value.toUpperCase(); t.maxLength = 7; t.spellcheck = false;
+      t.setAttribute('aria-label', 'কালার কোড'); t.placeholder = '#000000';
+      col.after(t);
+      col.addEventListener('input', () => { t.value = col.value.toUpperCase(); });
+      t.addEventListener('input', (ev) => {
+        ev.stopPropagation();
+        let v = t.value.trim(); if (v && v[0] !== '#') v = '#' + v;
+        if (/^#[0-9a-f]{3}$/i.test(v)) v = '#' + v.slice(1).split('').map((ch) => ch + ch).join('');
+        if (/^#[0-9a-f]{6}$/i.test(v)) { col.value = v.toLowerCase(); col.dispatchEvent(new Event('input', { bubbles: true })); }
+      });
+    });
+  }
   async function readImage(file, max, type) {
     if (!file) return null;
     if (!/^image\//.test(file.type)) throw new Error('শুধু ছবি (JPG/PNG/WebP) আপলোড করুন।');
@@ -919,7 +938,7 @@
       name: o.name || s.nameEn || s.name, id: o.id || s.reg, father: o.father || s.fatherEn || s.father || '', cls: o.cls || classEn(s.classId), roll: o.roll || s.roll,
       phone: o.phone || s.phone || '', address: o.address || s.address || '', year: s.year, photo: photo || '', logo,
       school: settings.nameEn || settings.name, schoolAddress: settings.addressEn || settings.address, schoolPhone: settings.phone || '', schoolEmail: settings.email || '', sign: images.sign || '',
-      website: location.origin && location.origin.startsWith('http') ? location.origin : '',
+      website: location.origin && location.origin.startsWith('http') ? location.origin : 'https://kutubjoomkgmadrasha.web.app', facebook: settings.facebook || '',
       qr: `${o.name || s.nameEn || s.name}\nID: ${o.id || s.reg}\nClass: ${o.cls || classEn(s.classId)}  Roll: ${o.roll || s.roll}\nMobile: ${o.phone || s.phone || ''}\n${settings.nameEn || settings.name}`
     };
   }
@@ -930,8 +949,8 @@
       <label class="fld grow"><span>নাম / রোল দিয়ে খুঁজুন</span><input id="iFind" placeholder="নাম অথবা রোল"></label>
       <label style="align-self:center"><input type="checkbox" id="iBg" ${ui.iBg === false ? '' : 'checked'}> ছবির ব্যাকগ্রাউন্ড সাদা করুন</label>
     </div>
-    <div class="toolbar" style="margin-top:12px"><button class="btn btn-green" id="iZip" type="button">${ic('down')}এই শ্রেণির কার্ড (Illustrator ZIP)</button><button class="btn btn-dark" id="iZipAll" type="button">${ic('down')}সব শ্রেণির কার্ড (ZIP)</button><button class="btn btn-ghost" id="iPrint" type="button">${ic('print')}প্রিন্ট / PDF</button>${isP() ? `<button class="btn btn-gold" id="iDesign" type="button">${ic('edit')}কার্ড এডিট</button>` : ''}</div>
-    <p class="muted" style="margin:10px 0 0">কার্ডের মাপ 2.13 × 3.39 ইঞ্চি, চারপাশে 0.125 ইঞ্চি bleed। ZIP ফাইলে প্রতিটি শিক্ষার্থীর জন্য আলাদা Illustrator ফাইল (সামনে ও পেছন পাশাপাশি, লেয়ার আলাদা) এবং পুরো শ্রেণির সব কার্ড একসাথে একটি ফাইল থাকে।</p></section>
+    <div class="toolbar" style="margin-top:12px"><button class="btn btn-green" id="iSvg" type="button">${ic('down')}Illustrator ফাইল (এই শ্রেণির সব কার্ড)</button><button class="btn btn-ghost" id="iZip" type="button">${ic('down')}ZIP (প্রতি শিক্ষার্থী আলাদা ফাইল)</button><button class="btn btn-dark" id="iZipAll" type="button">${ic('down')}সব শ্রেণির কার্ড (ZIP)</button><button class="btn btn-ghost" id="iPrint" type="button">${ic('print')}প্রিন্ট / PDF</button>${isP() ? `<button class="btn btn-gold" id="iDesign" type="button">${ic('edit')}কার্ড এডিট</button>` : ''}</div>
+    <p class="muted" style="margin:10px 0 0">কার্ডের মাপ 2.13 × 3.39 ইঞ্চি। রং চারপাশে 0.125 ইঞ্চি বাড়তি (bleed) থাকে আর কাটার দাগ থাকে কার্ডের বাইরে, তাই কাটার সময় লেখা বা নকশা কাটা যাবে না। Illustrator-এ খুলতে: ফাইল ডাউনলোড করে Illustrator-এ <b>File → Open</b> দিয়ে .svg ফাইলটি খুলুন। ZIP হলে আগে ফাইলে রাইট-ক্লিক করে <b>Extract All</b> করুন, তারপর ভেতরের .svg খুলুন। প্রতিটি কার্ডের পাশে "AI" বাটনে একজনের ফাইল সরাসরি নামবে।</p></section>
     <section class="card"><div id="iStat" class="muted"></div><div class="id-grid" id="iGrid"></div></section>`;
     let list = [], photos = {};
     const logo0 = () => images.logo || 'assets/logo.webp';
@@ -943,11 +962,12 @@
       const cfg = cardCfg();
       $('#iGrid').innerHTML = rows.length ? rows.map((s) => { const d = cardData(s, photos[s.id], logo0()); return `<div class="id-item"><div class="id-pair">${ID.previewSvg(d, 'front', cfg)}${ID.previewSvg(d, 'back', cfg)}</div>
         <div class="id-meta">${photos[s.id] ? '' : '<span class="chip chip-red">ছবি নেই</span>'}${s.nameEn ? '' : '<span class="chip chip-gold">ইংরেজি নাম নেই</span>'}${s.card && Object.keys(s.card).length ? '<span class="chip chip-gray">কার্ডে আলাদা তথ্য</span>' : ''}</div>
-        <div class="row-actions"><button class="btn btn-sm btn-green" data-cam="${s.id}">${ic('camera')}ছবি তুলুন</button><label class="btn btn-sm ${photos[s.id] ? 'btn-done' : 'btn-ghost'} file-btn">${photos[s.id] ? '✓ ছবি আপলোড হয়েছে' : ic('upload') + 'আপলোড'}<input type="file" accept="image/*" data-up="${s.id}" hidden></label><button class="btn btn-sm btn-ghost" data-info="${s.id}">${ic('edit')}তথ্য</button><button class="btn btn-sm btn-ghost" data-pr="${s.id}">${ic('print')}প্রিন্ট</button>${photos[s.id] ? `<button class="btn btn-sm btn-ghost" data-rm="${s.id}" aria-label="ছবি মুছুন">✕</button>` : ''}</div></div>`; }).join('') : `<p class="empty">${esc(className($('#iClass').value))} এ ${esc($('#iYear').value)} সালের কোনো শিক্ষার্থী নেই।</p>`;
+        <div class="row-actions"><button class="btn btn-sm btn-green" data-cam="${s.id}">${ic('camera')}ছবি তুলুন</button><label class="btn btn-sm ${photos[s.id] ? 'btn-done' : 'btn-ghost'} file-btn">${photos[s.id] ? '✓ ছবি আপলোড হয়েছে' : ic('upload') + 'আপলোড'}<input type="file" accept="image/*" data-up="${s.id}" hidden></label><button class="btn btn-sm btn-ghost" data-info="${s.id}">${ic('edit')}তথ্য</button><button class="btn btn-sm btn-ghost" data-pr="${s.id}">${ic('print')}প্রিন্ট</button><button class="btn btn-sm btn-ghost" data-ai="${s.id}" title="Illustrator ফাইল (সামনে + পেছন, bleed সহ)">${ic('down')}AI</button>${photos[s.id] ? `<button class="btn btn-sm btn-ghost" data-rm="${s.id}" aria-label="ছবি মুছুন">✕</button>` : ''}</div></div>`; }).join('') : `<p class="empty">${esc(className($('#iClass').value))} এ ${esc($('#iYear').value)} সালের কোনো শিক্ষার্থী নেই।</p>`;
       $$('[data-cam]', v).forEach((b) => { b.onclick = () => camera(list.find((s) => s.id === b.dataset.cam)); });
       $$('[data-up]', v).forEach((inp) => { inp.onchange = async () => { const f = inp.files[0]; if (!f) return; try { await setPhoto(list.find((s) => s.id === inp.dataset.up), await ID.fileToUrl(f)); } catch (e) { fail(e); } }; });
       $$('[data-info]', v).forEach((b) => { b.onclick = () => info(list.find((s) => s.id === b.dataset.info)); });
-      $$('[data-pr]', v).forEach((b) => { b.onclick = () => { const s = list.find((x) => x.id === b.dataset.pr); const cfg = cardCfg(); const d = cardData(s, photos[s.id], logo0()); printHtml(`<div class="id-print"><div class="id-print-card">${ID.previewSvg(d, 'front', cfg)}</div><div class="id-print-card">${ID.previewSvg(d, 'back', cfg)}</div></div>`); }; });
+      $$('[data-pr]', v).forEach((b) => { b.onclick = async () => { const s = list.find((x) => x.id === b.dataset.pr); await printCards([s]); }; });
+      $$('[data-ai]', v).forEach((b) => { b.onclick = async () => { const s = list.find((x) => x.id === b.dataset.ai); try { await ID.ensureQR(); const d = cardData(s, photos[s.id] ? await ID.toPng(photos[s.id]) : '', await logoPng()); download(`ID Card - Roll ${String(d.roll).padStart(2, '0')} - ${safeName(d.name)}.svg`, ID.studentSvg(d, cardCfg()), 'image/svg+xml'); } catch (e) { fail(e); } }; });
       $$('[data-rm]', v).forEach((b) => { b.onclick = async () => { if (!(await confirmBox('ছবি মুছবেন?', 'এই শিক্ষার্থীর কার্ডের ছবি মুছে যাবে।', 'মুছে ফেলুন'))) return; try { await store.savePhoto(b.dataset.rm, ''); delete photos[b.dataset.rm]; draw(); } catch (e) { fail(e); } }; });
     };
     const load = async () => {
@@ -969,7 +989,7 @@
     // ক্যামেরা: কম্পিউটারের ওয়েবক্যাম বা মোবাইলের ক্যামেরা
     async function camera(s) {
       let stream = null, facing = 'user';
-      const d = $('#dlg'), f = $('#dlgForm');
+      const old = $('#dlgForm'), f = old.cloneNode(false); old.replaceWith(f); const d = $('#dlg');
       d.style.width = 'min(560px, calc(100vw - 24px))';
       f.innerHTML = `<h2>${esc(s.nameEn || s.name)} — ছবি তুলুন</h2><div class="cam-box"><video id="camV" autoplay playsinline muted></video><div class="cam-guide" aria-hidden="true"></div></div><p class="muted" id="camMsg">মুখ মাঝখানের দাগের ভেতরে রাখুন, পেছনে হালকা রঙের দেয়াল হলে ভালো হয়।</p>
         <div class="dlg-actions"><button type="button" class="btn btn-ghost" id="camClose">বাতিল</button><button type="button" class="btn btn-ghost" id="camFlip">ক্যামেরা বদলান</button><label class="btn btn-ghost file-btn">${ic('upload')}ফাইল থেকে<input type="file" accept="image/*" capture="user" id="camFile" hidden></label><button type="button" class="btn btn-green" id="camShot">${ic('camera')}ছবি তুলুন</button></div>`;
@@ -1043,13 +1063,16 @@
           <div class="grid-2" style="gap:10px"><label class="fld"><span>মোবাইল নম্বর</span><input id="dBPhone" value="${esc(c.backPhone)}" placeholder="${esc(settings.phone || '')}"></label><label class="fld"><span>ইমেইল</span><input id="dBEmail" value="${esc(c.backEmail)}" placeholder="${esc(settings.email || '')}"></label></div>
           <label class="fld"><span>ঠিকানা (প্রতি লাইন আলাদা)</span><textarea id="dBAddr" rows="2" placeholder="${esc(settings.addressEn || '')}">${esc(c.backAddress)}</textarea></label>
           ${isP() ? `<div class="img-row"><div class="img-thumb" id="dSignTh" style="background-image:url('${esc(images.sign || '')}')"></div><label class="fld grow"><span>প্রিন্সিপালের স্বাক্ষর (ছবি)</span><input type="file" accept="image/*" id="dSignFile"></label></div>` : ''}
-          <label class="fld"><span>QR কোডে কী থাকবে</span><select id="dQr">${opt([{ v: 'student', t: 'শিক্ষার্থীর তথ্য (নাম, আইডি, শ্রেণি, রোল, মোবাইল)' }, { v: 'website', t: 'ওয়েবসাইটের লিংক' }, { v: 'custom', t: 'নিজের লেখা' }, { v: 'none', t: 'QR কোড দেখাবে না' }], c.qr)}</select></label>
-          <label class="fld"><span>নিজের লেখা (QR)</span><input id="dQrText" value="${esc(c.qrCustom)}"></label>
+          <p style="margin:6px 0 0;font-weight:700">QR কোড</p>
+          <label class="fld"><span>QR কোডে কী থাকবে</span><select id="dQr">${opt(ID.QR_OPTS, c.qr)}</select></label>
+          <label class="fld" id="dQrTextWrap"><span>নিজের লেখা বা লিংক (QR কোডে যাবে)</span><input id="dQrText" value="${esc(c.qrCustom)}" placeholder="যেমন https://www.facebook.com/..."></label>
+          <div class="img-row" id="dQrImgWrap"><div class="img-thumb" id="dQrTh" style="background-image:url('${esc(c.qrImage || '')}');background-size:contain;background-repeat:no-repeat;background-position:center"></div><label class="fld grow"><span>QR কোডের ছবি (PNG / JPG)</span><input type="file" accept="image/*" id="dQrFile"></label></div>
         </div>
         <div data-pane="p" class="pane" hidden><p class="muted" style="margin:0">উপরে-নিচে / ডানে-বামে সরান (mm) আর বড়-ছোট করুন। প্রিভিউ সাথে সাথে বদলাবে।</p>
           ${Object.keys(ID.ITEMS).map((k) => { const o = Object.assign({ dx: 0, dy: 0, s: 1 }, c.off[k] || {}); return `<div class="pos-row"><b>${ID.ITEMS[k]}</b>${slider('o_dy_' + k, 'উপরে ↕ নিচে', o.dy, -20, 20, 0.2)}${slider('o_dx_' + k, 'বামে ↔ ডানে', o.dx, -20, 20, 0.2)}${slider('o_s_' + k, 'মাপ', o.s, 0.5, 1.8, 0.02)}</div>`; }).join('')}
         </div>
-        <div data-pane="s" class="pane" hidden><p class="muted" style="margin:0">কার্ডের প্রতিটি রঙিন আকৃতি আলাদাভাবে রং, অবস্থান ও মাপ বদলানো যায়।</p>
+        <div data-pane="s" class="pane" hidden><p class="muted" style="margin:0">কার্ডের প্রতিটি রঙিন আকৃতি আলাদাভাবে রং, অবস্থান ও মাপ বদলানো যায়। রঙের পাশের ঘরে কালার কোড (যেমন #2B2E7C) লিখেও রং বদলানো যায়।</p>
+          <div class="pos-row"><b>মূল তিনটি রং (সব আকৃতিতে একসাথে বদলায়)</b><div class="grid-3" style="gap:10px"><label class="fld"><span>গাঢ় নীল</span><input type="color" id="dNavy" value="${esc(c.navy)}"></label><label class="fld"><span>নীল</span><input type="color" id="dBlue" value="${esc(c.blue)}"></label><label class="fld"><span>হালকা নীল</span><input type="color" id="dTeal" value="${esc(c.teal)}"></label></div></div>
           ${Object.keys(ID.SHAPES).map((k) => { const o = Object.assign({ dx: 0, dy: 0, s: 1, hide: false }, c.shapes[k] || {}); return `<div class="pos-row"><b><input type="color" id="s_c_${k}" value="${esc(colorOf(k))}" aria-label="রং"> ${ID.SHAPES[k].n}</b>${slider('s_dy_' + k, 'উপরে ↕ নিচে', o.dy, -30, 30, 0.2)}${slider('s_dx_' + k, 'বামে ↔ ডানে', o.dx, -30, 30, 0.2)}${slider('s_s_' + k, 'মাপ', o.s, 0.5, 1.8, 0.02)}<label><input type="checkbox" id="s_h_${k}" ${o.hide ? 'checked' : ''}> লুকান</label></div>`; }).join('')}
         </div>
         <label><input type="checkbox" id="dReset"> সব কিছু শুরুর নকশায় ফিরিয়ে আনুন</label></div>
@@ -1057,14 +1080,21 @@
       let result = null;
       const readCfg = (f) => {
         const g = (id) => $('#' + id, f);
-        const o = { schoolLines: g('dLines').value.trim(), schoolSize: Number(g('dSchool').value) || 0, addrSize: Number(g('dAddrSize').value) || 2.35, schoolColor: g('dSchoolColor').value, addrLine: g('dAddr').value.trim(), nameSize: Number(g('dName').value) || 0, nameWeight: Number(g('dWeight').value) || 400, nameFont: g('dFont').value, nameColor: g('dNameColor').value, infoSize: Number(g('dInfo').value) || 2.55, contactSize: Number(g('dContact').value) || 1, footerSize: Number(g('dFooterSize').value) || 2.9, footer: g('dFooter').value, signLabel: g('dSign').value, backPhone: g('dBPhone').value.trim(), backEmail: g('dBEmail').value.trim(), backAddress: g('dBAddr').value.trim(), qr: g('dQr').value, qrCustom: g('dQrText').value, navy: c.navy, blue: c.blue, teal: c.teal, off: {}, shapes: {} };
+        const o = { schoolLines: g('dLines').value.trim(), schoolSize: Number(g('dSchool').value) || 0, addrSize: Number(g('dAddrSize').value) || 2.35, schoolColor: g('dSchoolColor').value, addrLine: g('dAddr').value.trim(), nameSize: Number(g('dName').value) || 0, nameWeight: Number(g('dWeight').value) || 400, nameFont: g('dFont').value, nameColor: g('dNameColor').value, infoSize: Number(g('dInfo').value) || 2.55, contactSize: Number(g('dContact').value) || 1, footerSize: Number(g('dFooterSize').value) || 2.9, footer: g('dFooter').value, signLabel: g('dSign').value, backPhone: g('dBPhone').value.trim(), backEmail: g('dBEmail').value.trim(), backAddress: g('dBAddr').value.trim(), qr: g('dQr').value, qrCustom: g('dQrText').value.trim(), qrImage: c.qrImage || '', navy: g('dNavy').value, blue: g('dBlue').value, teal: g('dTeal').value, off: {}, shapes: {} };
         Object.keys(ID.ITEMS).forEach((k) => { const v2 = { dy: Number(g('o_dy_' + k).value), dx: Number(g('o_dx_' + k).value), s: Number(g('o_s_' + k).value) }; if (v2.dy || v2.dx || v2.s !== 1) o.off[k] = v2; });
-        Object.keys(ID.SHAPES).forEach((k) => { const v2 = { dy: Number(g('s_dy_' + k).value), dx: Number(g('s_dx_' + k).value), s: Number(g('s_s_' + k).value), hide: g('s_h_' + k).checked }; const col = g('s_c_' + k).value; if (col.toLowerCase() !== String(c[ID.SHAPES[k].c]).toLowerCase()) v2.color = col; if (v2.dy || v2.dx || v2.s !== 1 || v2.hide || v2.color) o.shapes[k] = v2; });
+        Object.keys(ID.SHAPES).forEach((k) => { const v2 = { dy: Number(g('s_dy_' + k).value), dx: Number(g('s_dx_' + k).value), s: Number(g('s_s_' + k).value), hide: g('s_h_' + k).checked }; const col = g('s_c_' + k).value; if (col.toLowerCase() !== String(o[ID.SHAPES[k].c]).toLowerCase()) v2.color = col; if (v2.dy || v2.dx || v2.s !== 1 || v2.hide || v2.color) o.shapes[k] = v2; });
         return o;
       };
       const d = await dialog('আইডি কার্ড এডিট (নকশা)', body, 'সংরক্ষণ করুন', false, true, (f) => {
         const paint = () => { $$('.sl', f).forEach((l) => { l.querySelector('output').textContent = l.querySelector('input').value; }); const cfg = $('#dReset', f).checked ? ID.DEF : readCfg(f); result = cfg; $('#dPrev', f).innerHTML = ID.previewSvg(sample, 'front', cfg) + ID.previewSvg(sample, 'back', cfg); };
         $$('[data-seg]', f).forEach((b) => { b.onclick = () => { $$('[data-seg]', f).forEach((x) => { x.className = 'btn btn-sm ' + (x === b ? 'btn-dark' : 'btn-ghost'); }); $$('[data-pane]', f).forEach((pn) => { pn.hidden = pn.dataset.pane !== b.dataset.seg; }); }; });
+        hexInputs(f);
+        // মূল রং বদলালে যে আকৃতিগুলোর আলাদা রং দেওয়া নেই সেগুলোও সাথে বদলায়
+        [['dNavy', 'navy'], ['dBlue', 'blue'], ['dTeal', 'teal']].forEach(([id, key]) => { const el = $('#' + id, f); let old = el.value; el.addEventListener('input', () => { Object.keys(ID.SHAPES).forEach((k) => { if (ID.SHAPES[k].c !== key) return; const sc = $('#s_c_' + k, f); if (sc.value.toLowerCase() === old.toLowerCase()) { sc.value = el.value; if (sc.nextElementSibling && sc.nextElementSibling.classList.contains('hex')) sc.nextElementSibling.value = el.value.toUpperCase(); } }); old = el.value; }); });
+        // QR: কোন ঘর দেখাবে
+        const qrUi = () => { const m = $('#dQr', f).value; $('#dQrTextWrap', f).hidden = m !== 'custom'; $('#dQrImgWrap', f).hidden = m !== 'image'; };
+        $('#dQr', f).addEventListener('change', qrUi); qrUi();
+        $('#dQrFile', f).addEventListener('change', async () => { try { const url = await readImage($('#dQrFile', f).files[0], 600, 'image/png'); if (!url) return; c.qrImage = url; $('#dQrTh', f).style.backgroundImage = `url('${url}')`; paint(); } catch (e) { fail(e); } });
         f.addEventListener('input', paint); f.addEventListener('change', paint); paint();
         const sf = $('#dSignFile', f);
         if (sf) sf.addEventListener('change', async () => { try { const url = await readImage(sf.files[0], 500, 'sign'); if (!url) return; await store.saveImages({ sign: url }); images.sign = url; sample.sign = url; $('#dSignTh', f).style.backgroundImage = `url('${url}')`; paint(); toast('স্বাক্ষর সংরক্ষণ হয়েছে'); } catch (e) { fail(e); } });
@@ -1081,7 +1111,7 @@
       await ID.ensureQR();
       const ph = await store.getPhotos(ss.map((s) => s.id));
       const cfg = cardCfg(); const cname = safeName(classEn(classId));
-      const datas = ss.map((s) => cardData(s, ph[s.id], logo));
+      const datas = []; for (const s of ss) datas.push(cardData(s, ph[s.id] ? await ID.toPng(ph[s.id]) : '', logo));
       const files = [[`${folder}00 - All ID Cards - ${cname} - ${year}.svg`, ID.sheetSvg(datas, `${settings.nameEn} — ${classEn(classId)} ${year} ID Cards`, cfg)]];
       datas.forEach((d) => files.push([`${folder}Roll ${String(d.roll).padStart(2, '0')} - ${safeName(d.name)}.svg`, ID.studentSvg(d, cfg)]));
       return files;
@@ -1090,7 +1120,7 @@
       try {
         await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
         const zip = new window.JSZip(); files.forEach((f) => zip.file(f[0], f[1]));
-        zip.file('README - Illustrator.txt', 'Open any .svg file in Adobe Illustrator (File > Open).\r\nEach student file has Front and Back side by side, each 2.13 x 3.39 in with 0.125 in bleed (red line = bleed, blue line = trim).\r\nTo make 2 artboards: select the two red bleed rectangles, then Object > Artboards > Convert to Artboards.\r\nEvery side is a separate group/layer (Background, Content, Trim), so all text and shapes stay editable.\r\nSave as .ai from File > Save As.\r\n');
+        zip.file('README - Illustrator.txt', 'HOW TO OPEN IN ADOBE ILLUSTRATOR\r\n1. First right-click the ZIP file and choose "Extract All" (do not open files from inside the ZIP).\r\n2. In Illustrator: File > Open, choose any .svg file.\r\n\r\nEach student file: Front and Back side by side. Card size 2.13 x 3.39 in. Colours extend 0.125 in beyond the card edge (bleed); crop marks are outside, nothing is drawn on the cut line.\r\nLayers: Artboard (invisible card-size rectangle), Card (Background + text), Crop_Marks.\r\nTo make 2 artboards: select the two invisible Artboard rectangles in the Layers panel, then Object > Artboards > Convert to Artboards. Set File > Document Setup > Bleed to 0.125 in.\r\nAll text and shapes are editable. Save as .ai from File > Save As.\r\n00 - All ID Cards file: A4 pages, 9 cards per page, each front page followed by its back page.\r\n');
         download(name, await zip.generateAsync({ type: 'blob' }));
       } catch (e) { files.forEach((f, i) => setTimeout(() => download(f[0].split('/').pop(), f[1], 'image/svg+xml'), i * 600)); }
     }
@@ -1107,9 +1137,23 @@
         await zipDownload(files, `ID Cards - All Classes - ${ui.iYear}.zip`); toast('সব শ্রেণির কার্ড ডাউনলোড হচ্ছে');
       } catch (e) { fail(e); } finally { b.disabled = false; }
     };
-    $('#iPrint').onclick = () => {
-      const cfg = cardCfg();
-      printHtml(`<div class="id-print">${list.map((s) => { const d = cardData(s, photos[s.id], logo0()); return `<div class="id-print-card">${ID.previewSvg(d, 'front', cfg)}</div><div class="id-print-card">${ID.previewSvg(d, 'back', cfg)}</div>`; }).join('')}</div>`);
+    // প্রিন্ট: A4 পাতায় 9টি করে, bleed ও কাটার দাগসহ; প্রতিটি সামনের পাতার পরে পেছনের পাতা
+    async function printCards(ss) {
+      if (!ss.length) return toast('এই শ্রেণিতে কোনো শিক্ষার্থী নেই।', true);
+      await ID.ensureQR();
+      const pages = ID.sheetPages(ss.map((s) => cardData(s, photos[s.id], logo0())), cardCfg());
+      printHtml(pages.map((pg) => `<div class="id-sheet">${pg}</div>`).join(''));
+    }
+    $('#iPrint').onclick = () => printCards(list);
+    $('#iSvg').onclick = async () => {
+      const b = $('#iSvg'); b.disabled = true;
+      try {
+        if (!list.length) return toast('এই শ্রেণিতে কোনো শিক্ষার্থী নেই।', true);
+        await ID.ensureQR(); const logo = await logoPng();
+        const datas = []; for (const s of list) datas.push(cardData(s, photos[s.id] ? await ID.toPng(photos[s.id]) : '', logo));
+        download(`ID Cards - ${safeName(classEn(ui.iClass))} - ${ui.iYear}.svg`, ID.sheetSvg(datas, `${settings.nameEn || settings.name} — ${classEn(ui.iClass)} ${ui.iYear} ID Cards`, cardCfg()), 'image/svg+xml');
+        toast(`${list.length} জনের কার্ড ডাউনলোড হচ্ছে`);
+      } catch (e) { fail(e); } finally { b.disabled = false; }
     };
     if ($('#iDesign')) $('#iDesign').onclick = design;
     $('#iClass').onchange = load; $('#iYear').onchange = load; $('#iFind').oninput = draw;
@@ -1180,30 +1224,52 @@
   VIEWS.applications = async (v) => {
     v.innerHTML = `<section class="card"><div class="toolbar">
       <label class="fld grow"><span>আবেদন কোড / নাম / মোবাইল দিয়ে খুঁজুন</span><input id="apFind" placeholder="যেমন KJ27-7Q4M9C"></label>
+      <label class="fld w-md"><span>ধরন</span><select id="apType">${opt([{ v: '', t: 'সব' }, { v: 'new', t: 'নতুন ভর্তি' }, { v: 'renew', t: 'ভর্তি নবায়ন' }], ui.apType || '')}</select></label>
       <label class="fld w-md"><span>অবস্থা</span><select id="apFilter">${opt([{ v: '', t: 'সব' }, { v: 'new', t: 'নতুন' }, { v: 'confirmed', t: 'কনফার্ম' }, { v: 'admitted', t: 'ভর্তি সম্পন্ন' }], ui.apFilter || '')}</select></label>
-      <button class="btn btn-ghost" id="apXls" type="button">${ic('down')}Excel</button></div>
-      <p class="muted" style="margin:10px 0 0">অভিভাবকরা হোম পেজ থেকে অনলাইনে ভর্তির আবেদন জমা দেন। "কনফার্ম" চাপলে আবেদন কনফার্ম হয় ও ফরমের PDF ডাউনলোড হয় (প্রিন্ট করে রাখার জন্য)। "শিক্ষার্থী তালিকায় যোগ" চাপলে নতুন রেজিস্ট্রেশন নম্বরসহ শিক্ষার্থী হিসেবে যোগ হয়।</p></section>
+      <button class="btn btn-gold" id="apFees" type="button">${ic('edit')}শ্রেণিভিত্তিক ভর্তি ফি</button><button class="btn btn-ghost" id="apXls" type="button">${ic('down')}Excel</button></div>
+      <p class="muted" style="margin:10px 0 0">অভিভাবকরা হোম পেজ থেকে অনলাইনে নতুন ভর্তি বা ভর্তি নবায়নের আবেদন জমা দেন। "ফি / রোল" চেপে ফি ও নতুন রোল লিখলে তা ফরমে ছাপা হয়। "কনফার্ম" চাপলে আবেদন কনফার্ম হয় ও ফরমের PDF ডাউনলোড হয় (প্রিন্ট করে রাখার জন্য)। "শিক্ষার্থী তালিকায় যোগ" চাপলে নতুন রেজিস্ট্রেশন নম্বরসহ শিক্ষার্থী হিসেবে যোগ হয়।</p></section>
       <section class="stats" id="apStats"></section>
-      <section class="card"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>কোড</th><th class="left">নাম</th><th class="left">পিতার নাম</th><th>শ্রেণি</th><th>মোবাইল</th><th>তারিখ</th><th>অবস্থা</th><th>অ্যাকশন</th></tr></thead><tbody id="apBody"></tbody></table></div></section>`;
+      <section class="card"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>কোড</th><th>ধরন</th><th class="left">নাম</th><th class="left">পিতার নাম</th><th>শ্রেণি</th><th>মোবাইল</th><th>তারিখ</th><th>অবস্থা</th><th>অ্যাকশন</th></tr></thead><tbody id="apBody"></tbody></table></div></section>`;
     let list = [];
     const chip = (st) => st === 'new' ? '<span class="chip chip-red">নতুন</span>' : st === 'confirmed' ? '<span class="chip chip-gold">কনফার্ম</span>' : '<span class="chip chip-green">ভর্তি সম্পন্ন</span>';
     const draw = () => {
-      const q = C.toEn($('#apFind').value).trim().toLowerCase(); ui.apFilter = $('#apFilter').value;
-      const rows = list.filter((a) => (!ui.apFilter || a.status === ui.apFilter) && (!q || a.code.toLowerCase().includes(q) || (a.nameBn || '').toLowerCase().includes(q) || (a.nameEn || '').toLowerCase().includes(q) || (a.guardianMobile || '').includes(q)));
+      const q = C.toEn($('#apFind').value).trim().toLowerCase(); ui.apFilter = $('#apFilter').value; ui.apType = $('#apType').value;
+      const rows = list.filter((a) => (!ui.apFilter || a.status === ui.apFilter) && (!ui.apType || a.type === ui.apType) && (!q || a.code.toLowerCase().includes(q) || (a.nameBn || '').toLowerCase().includes(q) || (a.nameEn || '').toLowerCase().includes(q) || (a.guardianMobile || '').includes(q) || String(a.reg || '') === q));
       const cnt = (st) => list.filter((a) => a.status === st).length;
       $('#apStats').innerHTML = `<div class="stat s4">${ic('apply')}<div><span>নতুন আবেদন</span><b>${cnt('new')}</b></div></div><div class="stat s2">${ic('apply')}<div><span>কনফার্ম</span><b>${cnt('confirmed')}</b></div></div><div class="stat s1">${ic('students')}<div><span>ভর্তি সম্পন্ন</span><b>${cnt('admitted')}</b></div></div><div class="stat s3">${ic('apply')}<div><span>মোট আবেদন</span><b>${list.length}</b></div></div>`;
-      $('#apBody').innerHTML = rows.length ? rows.map((a) => `<tr><td><b>${esc(a.code)}</b></td><td class="left">${esc(a.nameBn)}${a.nameEn ? `<span class="th-sub">${esc(a.nameEn)}</span>` : ''}</td><td class="left">${esc(a.father || '')}</td><td>${esc(a.applyClass || '')}</td><td>${esc(a.guardianMobile || '')}</td><td>${new Date(a.submittedAt).toLocaleDateString('en-GB')}</td><td>${chip(a.status)}</td><td><div class="row-actions"><button class="btn btn-sm btn-ghost" data-view="${a.code}">দেখুন</button>${a.status === 'new' ? `<button class="btn btn-sm btn-green" data-conf="${a.code}">কনফার্ম + PDF</button>` : `<button class="btn btn-sm btn-ghost" data-pdf="${a.code}">PDF</button>`}${a.status !== 'admitted' ? `<button class="btn btn-sm btn-dark" data-admit="${a.code}">শিক্ষার্থী তালিকায় যোগ</button>` : ''}<button class="btn btn-sm btn-red" data-del="${a.code}" aria-label="মুছুন">✕</button></div></td></tr>`).join('') : '<tr><td colspan="8" class="empty">কোনো আবেদন পাওয়া যায়নি।</td></tr>';
+      $('#apBody').innerHTML = rows.length ? rows.map((a) => `<tr><td><b>${esc(a.code)}</b></td><td>${a.type === 'renew' ? `<span class="chip chip-gray">নবায়ন</span>${a.reg ? `<span class="th-sub">রেজি. ${esc(a.reg)}</span>` : ''}` : '<span class="chip chip-green">নতুন</span>'}</td><td class="left">${esc(a.nameBn)}${a.nameEn ? `<span class="th-sub">${esc(a.nameEn)}</span>` : ''}</td><td class="left">${esc(a.father || '')}</td><td>${esc(a.applyClass || '')}</td><td>${esc(a.guardianMobile || '')}</td><td>${new Date(a.submittedAt).toLocaleDateString('en-GB')}</td><td>${chip(a.status)}</td><td><div class="row-actions"><button class="btn btn-sm btn-ghost" data-view="${a.code}">দেখুন</button><button class="btn btn-sm btn-ghost" data-fee="${a.code}">ফি / রোল</button>${a.status === 'new' ? `<button class="btn btn-sm btn-green" data-conf="${a.code}">কনফার্ম + PDF</button>` : `<button class="btn btn-sm btn-ghost" data-pdf="${a.code}">PDF</button>`}${a.status !== 'admitted' ? `<button class="btn btn-sm btn-dark" data-admit="${a.code}">শিক্ষার্থী তালিকায় যোগ</button>` : ''}<button class="btn btn-sm btn-red" data-del="${a.code}" aria-label="মুছুন">✕</button></div></td></tr>`).join('') : '<tr><td colspan="8" class="empty">কোনো আবেদন পাওয়া যায়নি।</td></tr>';
       const find = (c) => list.find((a) => a.code === c);
       $$('[data-view]', v).forEach((b) => { b.onclick = async () => { const a = find(b.dataset.view); const dd = await dialog(`ভর্তি ফরম — ${a.code}`, `<div class="af-scale">${AF.render(a, settings, images)}</div>`, 'প্রিন্ট', false, true); if (dd) printHtml(AF.render(a, settings, images)); }; });
       $$('[data-conf]', v).forEach((b) => { b.onclick = async () => { const a = find(b.dataset.conf); try { await store.updateApplication(a.code, { status: 'confirmed', confirmedAt: Date.now() }); a.status = 'confirmed'; draw(); refreshAppBadge(); toast('কনফার্ম হয়েছে। PDF তৈরি হচ্ছে…'); await pdfOf(a); } catch (e) { fail(e); } }; });
       $$('[data-pdf]', v).forEach((b) => { b.onclick = () => pdfOf(find(b.dataset.pdf)); });
+      $$('[data-fee]', v).forEach((b) => { b.onclick = () => feeEdit(find(b.dataset.fee)); });
       $$('[data-admit]', v).forEach((b) => { b.onclick = () => admit(find(b.dataset.admit)); });
       $$('[data-del]', v).forEach((b) => { b.onclick = async () => { const a = find(b.dataset.del); if (!(await confirmBox('আবেদন মুছবেন?', `${esc(a.code)} — ${esc(a.nameBn)} এর আবেদন মুছে যাবে।`, 'মুছে ফেলুন'))) return; try { await store.deleteApplication(a.code); list = list.filter((x) => x !== a); draw(); refreshAppBadge(); } catch (e) { fail(e); } }; });
     };
-    const pdfOf = (a) => AF.pdf(AF.render(a, settings, images), `Admission-Form-${a.code}.pdf`).catch(() => { toast('PDF তৈরি করা গেল না, প্রিন্টের পাতা খুলছে।', true); printHtml(AF.render(a, settings, images)); });
+    // অফিস: ফি ও (নবায়নে) নতুন ভর্তি রোল — ফরমে ছাপা হয়
+    async function feeEdit(a) {
+      const f = AF.hasFees(a.fees) ? a.fees : AF.feesFor(settings, a.type, a.applyClassId);
+      const d = await dialog(`ফি ও রোল — ${a.code}`, `<p class="muted">${esc(a.nameBn)} · ${a.type === 'renew' ? 'ভর্তি নবায়ন' : 'নতুন ভর্তি'} · ${esc(a.applyClass || '')}</p>
+        <div class="grid-3" style="gap:12px">${AF.FEE_KEYS.map((k) => `<label class="fld"><span>${k[1]} (৳)</span><input id="fe_${k[0]}" inputmode="numeric" value="${esc(f[k[0]] || '')}"></label>`).join('')}
+        ${a.type === 'renew' ? `<label class="fld"><span>নতুন ভর্তি রোল</span><input id="fe_roll" inputmode="numeric" value="${esc(a.newRoll || '')}"></label>` : ''}</div>
+        <p class="muted" id="feTot"></p>`, 'সংরক্ষণ করুন', false, false, (fm) => {
+        const tot = () => { const t = AF.FEE_KEYS.reduce((x, k) => x + (Number(C.toEn($('#fe_' + k[0], fm).value)) || 0), 0); $('#feTot', fm).textContent = `মোট টাকা: ৳ ${t}`; };
+        fm.addEventListener('input', tot); tot();
+      });
+      if (!d) return;
+      const fees = {}; AF.FEE_KEYS.forEach((k) => { const n = C.toEn(d['fe_' + k[0]] || '').trim(); if (n) fees[k[0]] = n; });
+      const upd = { fees }; if (a.type === 'renew') upd.newRoll = C.toEn(d.fe_roll || '').trim();
+      try { await store.updateApplication(a.code, upd); Object.assign(a, upd); draw(); toast('ফি ও রোল সংরক্ষণ হয়েছে'); } catch (e) { fail(e); }
+    }
+    const pdfOf = (a) => AF.pdf(AF.render(a, settings, images), `${a.type === 'renew' ? 'Renewal' : 'Admission'}-Form-${a.code}.pdf`).catch(() => { toast('PDF তৈরি করা গেল না, প্রিন্টের পাতা খুলছে।', true); printHtml(AF.render(a, settings, images)); });
     // আবেদন থেকে শিক্ষার্থী: নতুন রেজিস্ট্রেশন নম্বর, শ্রেণির পরের রোল
     async function admit(a) {
       const y = String(Number(a.year) || settings.activeYear);
+      if (a.type === 'renew') {
+        if (!(await confirmBox('ভর্তি নবায়ন সম্পন্ন?', `${esc(a.nameBn)} (রেজিস্ট্রেশন ${esc(a.reg || '—')}) এর ভর্তি নবায়ন সম্পন্ন হিসেবে চিহ্নিত হবে। নতুন শ্রেণি ও রোলে তোলা হয় বার্ষিক "আর্কাইভ" থেকে, অথবা শিক্ষার্থী তালিকা থেকে।`, 'সম্পন্ন'))) return;
+        try { await store.updateApplication(a.code, { status: 'admitted' }); a.status = 'admitted'; draw(); refreshAppBadge(); toast('ভর্তি নবায়ন সম্পন্ন'); } catch (e) { fail(e); }
+        return;
+      }
       const d = await dialog('শিক্ষার্থী তালিকায় যোগ', `<p>${esc(a.nameBn)} (${esc(a.code)})</p><div class="grid-2" style="gap:12px"><label class="fld"><span>শ্রেণি</span><select id="cl">${classOpts(a.applyClassId || catalog.classes[0].id, catalog.classes)}</select></label><label class="fld"><span>সাল</span><select id="yr">${yearOpts(y)}</select></label></div><p class="muted">নতুন রেজিস্ট্রেশন নম্বর নিজে থেকে তৈরি হবে, রোল হবে ওই শ্রেণির শেষ রোলের পরেরটি।</p>`, 'যোগ করুন');
       if (!d) return;
       try {
@@ -1216,9 +1282,28 @@
         toast(`ভর্তি সম্পন্ন: ${className(d.cl)}, রোল ${roll}, রেজিস্ট্রেশন ${reg}`);
       } catch (e) { fail(e); }
     }
-    $('#apFind').oninput = draw; $('#apFilter').onchange = draw;
-    $('#apXls').onclick = () => excel('Admission Applications', [{ name: 'Applications', rows: [['Code', 'Status', 'Date', 'নাম', 'Name (English)', 'শ্রেণি', 'জন্মতারিখ', 'লিঙ্গ', 'পিতার নাম', 'পিতার পেশা', 'মাতার নাম', 'মাতার পেশা', 'অভিভাবকের মোবাইল', 'মোবাইল', 'ঠিকানা', 'পূর্ববর্তী প্রতিষ্ঠান', 'বর্তমান শ্রেণি', 'শারীরিক সমস্যা', 'অন্যান্য'], ...list.map((a) => [a.code, a.status, new Date(a.submittedAt).toLocaleDateString('en-GB'), a.nameBn, a.nameEn, a.applyClass, a.dob, a.gender, a.father, a.fatherJob, a.mother, a.motherJob, a.guardianMobile, a.mobile, a.address, a.prevSchool, a.currentClass, a.health, a.other])] }]);
-    list = await store.listApplications(); draw();
+    // শ্রেণিভিত্তিক ফি: অনলাইন ফরমে শ্রেণি বাছাই করলে এই ফি দেখায় ও ফরমে ছাপা হয়
+    async function classFees() {
+      const all = JSON.parse(JSON.stringify(settings.admFees || {}));
+      const tbl = (t) => `<div class="tbl-wrap"><table class="tbl fee-set"><thead><tr><th class="left">শ্রেণি</th>${AF.FEE_KEYS.map((k) => `<th>${k[1]}</th>`).join('')}<th>মোট</th></tr></thead><tbody>${catalog.classes.map((c) => { const f = (all[t] || {})[c.id] || {}; return `<tr data-row="${t}"><td class="left"><b>${esc(c.name)}</b></td>${AF.FEE_KEYS.map((k) => `<td><input class="cell-in" id="af_${t}_${c.id}_${k[0]}" inputmode="numeric" value="${esc(f[k[0]] || '')}" placeholder="0"></td>`).join('')}<td class="fee-tot" data-tot="${t}_${c.id}"></td></tr>`; }).join('')}</tbody></table></div>`;
+      const body = `<div class="seg" role="tablist"><button type="button" class="btn btn-sm btn-dark" data-fseg="new">নতুন ভর্তি</button><button type="button" class="btn btn-sm btn-ghost" data-fseg="renew">ভর্তি নবায়ন (পুরাতন)</button></div>
+        <p class="muted">প্রতিটি শ্রেণির ফি লিখুন (টাকা)। অভিভাবক অনলাইন ফরমে শ্রেণি বাছাই করলে সেই শ্রেণির ফি দেখবেন, আর ফরমের PDF-এ ছাপা হবে। কোনো ঘর খালি রাখলে সেটি দেখাবে না।</p>
+        <div data-fpane="new">${tbl('new')}</div><div data-fpane="renew" hidden>${tbl('renew')}</div>
+        <label style="display:block;margin-top:8px"><input type="checkbox" id="afCopy"> নবায়নের ফি নতুন ভর্তির মতোই (নতুন ভর্তির ঘরগুলো নবায়নে কপি হবে)</label>`;
+      const d = await dialog('শ্রেণিভিত্তিক ভর্তি ফি', body, 'সংরক্ষণ করুন', false, true, (fm) => {
+        const sum = () => $$('[data-tot]', fm).forEach((td) => { const [t, c] = td.dataset.tot.split(/_(.+)/); td.textContent = '৳ ' + AF.FEE_KEYS.reduce((x, k) => x + (Number(C.toEn($('#af_' + t + '_' + c + '_' + k[0], fm).value)) || 0), 0); });
+        fm.addEventListener('input', sum); sum();
+        $$('[data-fseg]', fm).forEach((b) => { b.onclick = () => { $$('[data-fseg]', fm).forEach((x) => { x.className = 'btn btn-sm ' + (x === b ? 'btn-dark' : 'btn-ghost'); }); $$('[data-fpane]', fm).forEach((pn) => { pn.hidden = pn.dataset.fpane !== b.dataset.fseg; }); }; });
+      });
+      if (!d) return;
+      const out = { new: {}, renew: {} };
+      ['new', 'renew'].forEach((t) => catalog.classes.forEach((c) => { const row = {}; AF.FEE_KEYS.forEach((k) => { row[k[0]] = C.toEn(d[`af_${d.afCopy && t === 'renew' ? 'new' : t}_${c.id}_${k[0]}`] || '').trim(); }); out[t][c.id] = row; }));
+      try { await store.saveSettings({ admFees: out }); settings.admFees = out; toast('শ্রেণিভিত্তিক ফি সংরক্ষণ হয়েছে'); } catch (e) { fail(e); }
+    }
+    $('#apFees').onclick = classFees;
+    $('#apFind').oninput = draw; $('#apFilter').onchange = draw; $('#apType').onchange = draw;
+    $('#apXls').onclick = () => excel('Admission Applications', [{ name: 'Applications', rows: [['Code', 'Type', 'Status', 'Date', 'শিক্ষাবর্ষ', 'রেজিস্ট্রেশন', 'নতুন রোল', 'নাম', 'Name (English)', 'শ্রেণি (ভর্তি/নতুন)', 'বর্তমান শ্রেণি', 'জন্মতারিখ', 'লিঙ্গ', 'পিতার নাম', 'মাতার নাম', 'অভিভাবকের নাম', 'সম্পর্ক', 'মোবাইল (১)', 'মোবাইল (২)', 'ই-মেইল', 'ঠিকানা', ...AF.FEE_KEYS.map((k) => k[1]), 'মোট টাকা'], ...list.map((a) => [a.code, a.type === 'renew' ? 'Renewal' : 'New', a.status, new Date(a.submittedAt).toLocaleDateString('en-GB'), a.year, a.reg || '', a.newRoll || '', a.nameBn, a.nameEn, a.applyClass, a.currentClass || '', a.dob, a.gender, a.father, a.mother, a.guardian || '', a.relation === 'অন্যান্য' ? (a.relationOther || 'অন্যান্য') : (a.relation || ''), a.guardianMobile, a.mobile2 || a.mobile || '', a.email || '', a.address, ...AF.FEE_KEYS.map((k) => (a.fees || {})[k[0]] || ''), AF.feeTotal(a.fees) || ''])] }]);
+    list = (await store.listApplications()).map((a) => AF.norm(a)); draw();
   };
 
   // ---------- সেটিংস ----------

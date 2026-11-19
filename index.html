@@ -79,7 +79,7 @@
         </div>
         <p id="formMsg" class="form-msg" role="alert" hidden></p>
         <button class="btn-search" id="searchBtn" type="submit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3a7 7 0 0 1 5.6 11.2l5.6 5.6-1.4 1.4-5.6-5.6A7 7 0 1 1 10 3zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/></svg>ফলাফল দেখুন</button>
-        <a class="rc-apply" href="#apply" data-open-apply>নতুন ভর্তি? অনলাইনে আবেদন করুন →</a>
+        <a class="rc-apply" href="#apply" data-open-apply>ভর্তি বা ভর্তি নবায়ন? অনলাইনে আবেদন করুন →</a>
       </form>
     </div>
   </section>
@@ -122,40 +122,48 @@
 
   <section id="apply" class="wrap block" hidden>
     <h2 class="sec-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h9l5 5v15H6zm8 1.5V8h4.5zM9 12h8v1.6H9zm0 3.5h8v1.6H9z"/></svg>অনলাইনে ভর্তির আবেদন</h2>
-    <form id="applyForm" class="apply-card" novalidate>
+    <div id="applyChoose" class="apply-card apply-choose">
+      <p class="muted" style="margin:0 0 12px">কোন ধরনের আবেদন করবেন, বেছে নিন:</p>
+      <div class="apply-types">
+        <button type="button" class="apply-type" data-type="new"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 1 9l11 6 9-4.9V17h2V9zM5 13.2v4L12 21l7-3.8v-4L12 17z"/></svg><b>নতুন ভর্তি</b><span>নতুন শিক্ষার্থীদের জন্য — অনলাইন ভর্তি ফরম</span></button>
+        <button type="button" class="apply-type" data-type="renew"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4V1L8 5l4 4V6a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/></svg><b>পুরাতন শিক্ষার্থী</b><span>ভর্তি নবায়ন — যারা আগে থেকেই এই মাদ্রাসায় পড়ে</span></button>
+      </div>
+      <div style="margin-top:14px"><button class="btn btn-ghost" id="apCancel0" type="button">বন্ধ করুন</button></div>
+    </div>
+    <form id="applyForm" class="apply-card" novalidate hidden>
+      <div class="apply-head"><b id="apTitle">নতুন ভর্তি</b><button class="btn btn-sm btn-ghost" id="apBack" type="button">← ধরন বদলান</button></div>
       <p class="muted" style="margin:0">ফর্মটি পূরণ করে জমা দিন। জমা দেওয়ার পর একটি আবেদন কোড পাবেন এবং ফর্মটি PDF হিসেবে আপনার মোবাইলে ডাউনলোড হবে। <span class="req">*</span> চিহ্নিত ঘর পূরণ করা জরুরি।</p>
+      <div class="apply-grid" data-only="renew" style="margin-top:12px">
+        <label class="apply-fld"><span>রেজিস্ট্রেশন নম্বর <b class="req">*</b></span><input id="apReg" inputmode="numeric" autocomplete="off" placeholder="আইডি কার্ডে লেখা আইডি নম্বর"></label>
+      </div>
       <h3>শিক্ষার্থীর তথ্য</h3>
       <div class="apply-grid">
-        <label class="apply-fld"><span>যে শ্রেণিতে ভর্তি হতে চায় <b class="req">*</b></span><select id="apClass" required></select></label>
-        <div class="apply-photo"><div class="ph" id="apPh">শিক্ষার্থীর ছবি</div><label class="apply-fld"><span>ছবি (ঐচ্ছিক)</span><input type="file" id="apPhoto" accept="image/*"></label></div>
-        <label class="apply-fld"><span>নাম (বাংলায়) <b class="req">*</b></span><input id="apNameBn" required autocomplete="off"></label>
+        <label class="apply-fld"><span id="apClassLbl">যে শ্রেণিতে ভর্তি হতে চায় <b class="req">*</b></span><select id="apClass" required></select></label>
+        <label class="apply-fld" data-only="new"><span>বর্তমান / পূর্বের শ্রেণি</span><input id="apCur" autocomplete="off"></label>
+        <div class="apply-fee full" id="apFeeBox" hidden></div>
+        <label class="apply-fld"><span>শিক্ষার্থীর নাম (বাংলায়) <b class="req">*</b></span><input id="apNameBn" required autocomplete="off"></label>
         <label class="apply-fld"><span>নাম (ইংরেজিতে)</span><input id="apNameEn" lang="en" autocomplete="off" placeholder="বাংলা নাম লিখলে নিজে থেকে বসবে"></label>
-        <label class="apply-fld"><span>জন্মতারিখ</span><input id="apDob" type="date"></label>
-        <label class="apply-fld"><span>জাতীয়তা</span><input id="apNat" value="বাংলাদেশী"></label>
-        <label class="apply-fld"><span>ধর্ম</span><input id="apRel" value="ইসলাম"></label>
+        <label class="apply-fld"><span>জন্ম তারিখ</span><input id="apDob" type="date"></label>
         <div class="apply-fld"><span>লিঙ্গ <b class="req">*</b></span><div class="apply-radio"><label><input type="radio" name="apGender" value="ছেলে"> ছেলে</label><label><input type="radio" name="apGender" value="মেয়ে"> মেয়ে</label></div></div>
-        <label class="apply-fld"><span>মোবাইল নম্বর</span><input id="apMobile" inputmode="tel"></label>
-        <label class="apply-fld full"><span>সম্পূর্ণ ঠিকানা <b class="req">*</b></span><textarea id="apAddr" required></textarea></label>
+        <label class="apply-fld"><span>পিতার নাম <b class="req">*</b></span><input id="apFather" required></label>
+        <label class="apply-fld"><span>মাতার নাম</span><input id="apMother"></label>
+        <div class="apply-photo full"><div class="ph" id="apPh">শিক্ষার্থীর ছবি</div><label class="apply-fld"><span>ছবি (ঐচ্ছিক)</span><input type="file" id="apPhoto" accept="image/*"></label></div>
       </div>
       <h3>অভিভাবকের তথ্য</h3>
       <div class="apply-grid">
-        <label class="apply-fld"><span>পিতার নাম <b class="req">*</b></span><input id="apFather" required></label>
-        <label class="apply-fld"><span>পিতার পেশা</span><input id="apFatherJob"></label>
-        <label class="apply-fld"><span>মাতার নাম</span><input id="apMother"></label>
-        <label class="apply-fld"><span>মাতার পেশা</span><input id="apMotherJob"></label>
-        <label class="apply-fld"><span>অভিভাবকের মোবাইল নম্বর <b class="req">*</b></span><input id="apGMobile" inputmode="tel" required></label>
+        <label class="apply-fld"><span>অভিভাবকের নাম</span><input id="apGuardian"></label>
+        <div class="apply-fld"><span>শিক্ষার্থীর সাথে সম্পর্ক</span><div class="apply-radio"><label><input type="radio" name="apRel" value="পিতা"> পিতা</label><label><input type="radio" name="apRel" value="মাতা"> মাতা</label><label><input type="radio" name="apRel" value="অন্যান্য"> অন্যান্য</label></div></div>
+        <label class="apply-fld" id="apRelOtherWrap" hidden><span>সম্পর্ক লিখুন (যেমন চাচা, মামা)</span><input id="apRelOther"></label>
       </div>
-      <h3>শিক্ষার্থীর পূর্বের তথ্য</h3>
+      <h3>যোগাযোগের তথ্য</h3>
       <div class="apply-grid">
-        <label class="apply-fld"><span>পূর্ববর্তী প্রতিষ্ঠানের নাম</span><input id="apPrev"></label>
-        <label class="apply-fld"><span>বর্তমান শ্রেণি</span><input id="apCur"></label>
+        <label class="apply-fld full"><span>বর্তমান ঠিকানা <b class="req">*</b></span><textarea id="apAddr" required></textarea></label>
+        <label class="apply-fld"><span>মোবাইল নম্বর (১) <b class="req">*</b></span><input id="apGMobile" inputmode="tel" required placeholder="01XXXXXXXXX"></label>
+        <label class="apply-fld"><span>মোবাইল নম্বর (২)</span><input id="apMobile2" inputmode="tel" placeholder="01XXXXXXXXX"></label>
+        <label class="apply-fld full"><span>ই-মেইল (যদি থাকে)</span><input id="apEmail" type="email" lang="en" autocomplete="email"></label>
       </div>
-      <h3>বিশেষ তথ্য</h3>
-      <div class="apply-grid">
-        <label class="apply-fld"><span>শারীরিক সমস্যা (যদি থাকে)</span><input id="apHealth"></label>
-        <label class="apply-fld"><span>অন্যান্য তথ্য</span><input id="apOther"></label>
-      </div>
-      <label style="display:flex;gap:8px;margin-top:16px;font-weight:600"><input type="checkbox" id="apDecl"> আমি উপরোক্ত তথ্যসমূহ সঠিক ও সত্য বলে ঘোষণা করছি।</label>
+      <p class="muted" style="margin:12px 0 0">শ্রেণি বাছাই করলে ওই শ্রেণির ফি উপরে দেখাবে (আনুমানিক)। চূড়ান্ত ফি মাদ্রাসা অফিস নিশ্চিত করবে।</p>
+      <label style="display:flex;gap:8px;margin-top:12px;font-weight:600"><input type="checkbox" id="apDecl"> আমি উপরোক্ত তথ্যসমূহ সঠিক ও সত্য বলে ঘোষণা করছি।</label>
       <p id="apMsg" class="form-msg" role="alert" hidden></p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn btn-green" id="apSubmit" type="submit">আবেদন জমা দিন</button><button class="btn btn-ghost" id="apCancel" type="button">বন্ধ করুন</button></div>
     </form>

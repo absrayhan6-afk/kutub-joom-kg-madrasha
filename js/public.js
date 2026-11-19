@@ -79,18 +79,48 @@
     $('#noticeList').innerHTML = '<p class="muted">নোটিশ লোড করা যায়নি। ইন্টারনেট সংযোগ দেখে পেজটি আবার খুলুন।</p>';
   }
 
-  // ===== অনলাইন ভর্তি আবেদন =====
+  // ===== অনলাইন ভর্তি আবেদন: নতুন ভর্তি ও পুরাতন শিক্ষার্থীর ভর্তি নবায়ন (একই লিংক) =====
   const AF = window.AdmissionForm;
   const apMsg = (t) => { const el = $('#apMsg'); el.textContent = t || ''; el.hidden = !t; };
-  let apPhoto = '';
+  let apPhoto = '', apType = 'new';
+  const nextYear = () => String(Number(settings.activeYear) + (new Date().getMonth() >= 9 ? 1 : 0));
   function openApply() {
-    $('#apply').hidden = false; $('#applyForm').hidden = false; $('#applyDone').hidden = true;
-    $('#apClass').innerHTML = '<option value="">শ্রেণি নির্বাচন করুন</option>' + catalog.classes.map((c) => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
+    $('#apply').hidden = false; $('#applyChoose').hidden = false; $('#applyForm').hidden = true; $('#applyDone').hidden = true;
     setTimeout(() => $('#apply').scrollIntoView({ behavior: 'smooth' }), 30);
   }
+  function chooseType(t) {
+    apType = t === 'renew' ? 'renew' : 'new';
+    $('#applyChoose').hidden = true; $('#applyForm').hidden = false; apMsg('');
+    $('#apTitle').textContent = apType === 'renew' ? `ভর্তি নবায়ন ফরম (পুরাতন শিক্ষার্থী) · শিক্ষাবর্ষ ${nextYear()}` : 'অনলাইন ভর্তি ফরম (নতুন শিক্ষার্থী)';
+    $('#apClassLbl').innerHTML = (apType === 'renew' ? 'নতুন শিক্ষাবর্ষে যে শ্রেণিতে পড়বে' : 'যে শ্রেণিতে ভর্তি হতে চায়') + ' <b class="req">*</b>';
+    $$('[data-only]', $('#applyForm')).forEach((el) => { el.hidden = el.dataset.only !== apType; });
+    $('#apClass').innerHTML = '<option value="">শ্রেণি নির্বাচন করুন</option>' + catalog.classes.map((c) => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
+    showFees();
+    $('#applyForm').scrollIntoView({ behavior: 'smooth' });
+  }
+  // বাছাই করা শ্রেণির ফি (এডমিন প্যানেলে ঠিক করা)
+  function showFees() {
+    const box = $('#apFeeBox'); const f = AF.feesFor(settings, apType, $('#apClass').value);
+    if (!$('#apClass').value || !AF.hasFees(f)) { box.hidden = true; return; }
+    const cls = (catalog.classes.find((c) => c.id === $('#apClass').value) || {}).name || '';
+    box.hidden = false;
+    box.innerHTML = `<b>${esc(cls)} — ${apType === 'renew' ? 'ভর্তি নবায়নের' : 'ভর্তির'} ফি</b><div class="apply-fee-grid">${AF.FEE_KEYS.filter((k) => String(f[k[0]] || '').trim()).map((k) => `<span>${k[1]}<b>৳ ${esc(C.toEn(f[k[0]]))}</b></span>`).join('')}<span class="tot">মোট টাকা<b>৳ ${AF.feeTotal(f)}</b></span></div>`;
+  }
+  $('#apClass').addEventListener('change', showFees);
   $$('#applyOpen, [data-open-apply]').forEach((a) => a.addEventListener('click', (ev) => { ev.preventDefault(); nav.classList.remove('open'); openApply(); }));
+  $$('.apply-type').forEach((b) => { b.onclick = () => chooseType(b.dataset.type); });
   if (location.hash === '#apply') openApply();
-  $('#apCancel').onclick = () => { $('#apply').hidden = true; $('#admission').scrollIntoView({ behavior: 'smooth' }); };
+  const closeApply = () => { $('#apply').hidden = true; $('#admission').scrollIntoView({ behavior: 'smooth' }); };
+  $('#apCancel').onclick = closeApply; $('#apCancel0').onclick = closeApply;
+  $('#apBack').onclick = () => { $('#applyForm').hidden = true; $('#applyChoose').hidden = false; };
+  $$('input[name=apRel]').forEach((r) => r.addEventListener('change', () => { $('#apRelOtherWrap').hidden = r.value !== 'অন্যান্য' || !r.checked; }));
+  // অভিভাবক পিতা বা মাতা হলে নাম নিজে থেকে বসে
+  $$('input[name=apRel]').forEach((r) => r.addEventListener('change', () => {
+    const g = $('#apGuardian'); if (g.value.trim() && !g.dataset.auto) return;
+    const v = r.value === 'পিতা' ? $('#apFather').value.trim() : r.value === 'মাতা' ? $('#apMother').value.trim() : '';
+    if (v) { g.value = v; g.dataset.auto = '1'; }
+  }));
+  $('#apGuardian').addEventListener('input', () => { delete $('#apGuardian').dataset.auto; });
   $('#apNameBn').addEventListener('input', () => { const en = $('#apNameEn'); if (!en.dataset.touched) en.value = window.Translit.name($('#apNameBn').value); });
   $('#apNameEn').addEventListener('input', () => { $('#apNameEn').dataset.touched = '1'; });
   $('#apPhoto').addEventListener('change', async () => {
@@ -106,30 +136,42 @@
   $('#applyForm').addEventListener('submit', async (ev) => {
     ev.preventDefault(); apMsg('');
     const v = (id) => $(id).value.trim();
+    const renew = apType === 'renew';
     const cls = catalog.classes.find((c) => c.id === v('#apClass'));
     const g = ($('input[name=apGender]:checked') || {}).value || '';
-    const a = { nameBn: v('#apNameBn'), nameEn: v('#apNameEn'), dob: v('#apDob'), nationality: v('#apNat'), religion: v('#apRel'), gender: g, mobile: C.toEn(v('#apMobile')), address: v('#apAddr'), father: v('#apFather'), fatherJob: v('#apFatherJob'), mother: v('#apMother'), motherJob: v('#apMotherJob'), guardianMobile: C.toEn(v('#apGMobile')), prevSchool: v('#apPrev'), currentClass: v('#apCur'), applyClassId: cls ? cls.id : '', applyClass: cls ? cls.name : '', health: v('#apHealth'), other: v('#apOther'), year: String(Number(settings.activeYear) + (new Date().getMonth() >= 9 ? 1 : 0)) };
+    const rel = ($('input[name=apRel]:checked') || {}).value || '';
+    const a = { type: apType, nameBn: v('#apNameBn'), nameEn: v('#apNameEn'), dob: v('#apDob'), gender: g, father: v('#apFather'), mother: v('#apMother'), guardian: v('#apGuardian'), relation: rel, relationOther: rel === 'অন্যান্য' ? v('#apRelOther') : '', address: v('#apAddr'), guardianMobile: C.toEn(v('#apGMobile')), mobile2: C.toEn(v('#apMobile2')), email: v('#apEmail'), currentClass: renew ? '' : v('#apCur'), applyClassId: cls ? cls.id : '', applyClass: cls ? cls.name : '', year: nextYear(), reg: renew ? C.toEn(v('#apReg')) : '' };
     if (apPhoto) a.photo = apPhoto;
-    if (!cls) return apMsg('যে শ্রেণিতে ভর্তি হতে চায় তা নির্বাচন করুন।');
+    if (renew && !/^\d{1,8}$/.test(a.reg)) return apMsg('সঠিক রেজিস্ট্রেশন নম্বর লিখুন (শুধু সংখ্যা)।');
+    if (!cls) return apMsg(renew ? 'নতুন শিক্ষাবর্ষে যে শ্রেণিতে পড়বে তা নির্বাচন করুন।' : 'যে শ্রেণিতে ভর্তি হতে চায় তা নির্বাচন করুন।');
     if (!a.nameBn) return apMsg('শিক্ষার্থীর নাম (বাংলায়) লিখুন।');
     if (!g) return apMsg('লিঙ্গ নির্বাচন করুন।');
-    if (!a.address) return apMsg('সম্পূর্ণ ঠিকানা লিখুন।');
     if (!a.father) return apMsg('পিতার নাম লিখুন।');
-    if (!/^01\d{9}$/.test(a.guardianMobile)) return apMsg('অভিভাবকের সঠিক মোবাইল নম্বর দিন (11 সংখ্যা, 01 দিয়ে শুরু)।');
+    if (!a.address) return apMsg('বর্তমান ঠিকানা লিখুন।');
+    if (!/^01\d{9}$/.test(a.guardianMobile)) return apMsg('সঠিক মোবাইল নম্বর (১) দিন (11 সংখ্যা, 01 দিয়ে শুরু)।');
+    if (a.mobile2 && !/^01\d{9}$/.test(a.mobile2)) return apMsg('মোবাইল নম্বর (২) সঠিক নয় (11 সংখ্যা, 01 দিয়ে শুরু), অথবা ঘরটি খালি রাখুন।');
+    if (a.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a.email)) return apMsg('ই-মেইল ঠিকানা সঠিক নয়, অথবা ঘরটি খালি রাখুন।');
     if (!$('#apDecl').checked) return apMsg('ঘোষণার ঘরে টিক দিন।');
+    Object.keys(a).forEach((k) => { if (a[k] === '') delete a[k]; });
     const btn = $('#apSubmit'); btn.disabled = true;
     try {
       if (!store) store = await window.getStore();
-      const code = await store.submitApplication(a);
+      let code;
+      try { code = await store.submitApplication(a); }
+      catch (e) {
+        // ডাটাবেসের নিয়ম এখনো পুরনো থাকলে: নতুন ঘরগুলো একটি ঘরে রেখে জমা (কোনো তথ্য হারায় না)
+        if (!/অনুমতি/.test(e.message || '')) throw e;
+        code = await store.submitApplication(AF.legacy(a));
+      }
       const full = Object.assign({ code, submittedAt: Date.now(), status: 'new' }, a);
       const done = $('#applyDone');
-      done.innerHTML = `<div class="tick"><svg viewBox="0 0 24 24"><path d="M9.5 16.2 5.3 12l-1.4 1.4 5.6 5.6 12-12-1.4-1.4z"/></svg></div><h3 style="justify-content:center">আবেদন সফলভাবে জমা হয়েছে</h3><p>আপনার আবেদন কোড:</p><div class="apply-code">${esc(code)}</div><p class="muted">কোডটি লিখে রাখুন। মাদ্রাসায় এলে এই কোড বললেই আপনার ফর্ম খুঁজে পাওয়া যাবে। ফর্মের PDF আপনার মোবাইলে ডাউনলোড হচ্ছে।</p><div class="result-actions"><button class="btn btn-green" type="button" id="apPdf">PDF আবার ডাউনলোড</button><button class="btn btn-ghost" type="button" id="apPrint">প্রিন্ট</button></div><div class="af-scale" style="margin-top:16px">${AF.render(full, settings, images)}</div>`;
+      done.innerHTML = `<div class="tick"><svg viewBox="0 0 24 24"><path d="M9.5 16.2 5.3 12l-1.4 1.4 5.6 5.6 12-12-1.4-1.4z"/></svg></div><h3 style="justify-content:center">${renew ? 'ভর্তি নবায়নের' : 'ভর্তির'} আবেদন সফলভাবে জমা হয়েছে</h3><p>আপনার আবেদন কোড:</p><div class="apply-code">${esc(code)}</div><p class="muted">কোডটি লিখে রাখুন। মাদ্রাসায় এলে এই কোড বললেই আপনার ফর্ম খুঁজে পাওয়া যাবে। ফর্মের PDF আপনার মোবাইলে ডাউনলোড হচ্ছে।</p><div class="result-actions"><button class="btn btn-green" type="button" id="apPdf">PDF আবার ডাউনলোড</button><button class="btn btn-ghost" type="button" id="apPrint">প্রিন্ট</button></div><div class="af-scale" style="margin-top:16px">${AF.render(full, settings, images)}</div>`;
       $('#applyForm').hidden = true; done.hidden = false; done.scrollIntoView({ behavior: 'smooth' });
-      const getPdf = () => AF.pdf(AF.render(full, settings, images), `Admission-Form-${code}.pdf`).catch(() => apMsg('PDF তৈরি করা যায়নি। "প্রিন্ট" চেপে Save as PDF করুন।'));
+      const getPdf = () => AF.pdf(AF.render(full, settings, images), `${renew ? 'Renewal' : 'Admission'}-Form-${code}.pdf`).catch(() => apMsg('PDF তৈরি করা যায়নি। "প্রিন্ট" চেপে Save as PDF করুন।'));
       $('#apPdf').onclick = getPdf;
       $('#apPrint').onclick = () => { $('#resultArea').hidden = false; $('#resultArea').innerHTML = AF.render(full, settings, images); window.print(); };
       getPdf();
-      $('#applyForm').reset(); apPhoto = ''; $('#apPh').style.backgroundImage = ''; $('#apPh').textContent = 'শিক্ষার্থীর ছবি'; delete $('#apNameEn').dataset.touched;
+      $('#applyForm').reset(); apPhoto = ''; $('#apPh').style.backgroundImage = ''; $('#apPh').textContent = 'শিক্ষার্থীর ছবি'; delete $('#apNameEn').dataset.touched; $('#apRelOtherWrap').hidden = true;
     } catch (e) { apMsg(e.message || 'আবেদন জমা দেওয়া যায়নি। আবার চেষ্টা করুন।'); } finally { btn.disabled = false; }
   });
 

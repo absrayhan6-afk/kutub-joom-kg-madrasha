@@ -7,7 +7,7 @@
   const BW = 54, BH = 85.6;
   const W = 2.13 * 25.4, H = 3.39 * 25.4, BLEED = 0.125 * 25.4;
   const SX = W / BW, SY = H / BH;
-  const DEF = { navy: '#2b2e7c', blue: '#3f88c9', teal: '#7fcfdb', ink: '#111111', schoolSize: 0, addrLine: '', nameSize: 0, infoSize: 2.75, footer: 'STUDENT', signLabel: 'Headmaster Signature', qr: 'student', qrCustom: '', schoolLines: '', nameWeight: 400, nameFont: 'impact', addrSize: 2.4, footerSize: 2.6, contactSize: 1, schoolColor: '#ffffff', nameColor: '#111111', shapes: {}, off: {}, backPhone: '', backAddress: '', backEmail: '' };
+  const DEF = { navy: '#2b2e7c', blue: '#3f88c9', teal: '#7fcfdb', ink: '#111111', schoolSize: 0, addrLine: '', nameSize: 0, infoSize: 2.75, footer: 'STUDENT', signLabel: 'Headmaster Signature', qr: 'student', qrCustom: '', qrImage: '', schoolLines: '', nameWeight: 400, nameFont: 'impact', addrSize: 2.4, footerSize: 2.6, contactSize: 1, schoolColor: '#ffffff', nameColor: '#111111', shapes: {}, off: {}, backPhone: '', backAddress: '', backEmail: '' };
   let NAVY, BLUE, TEAL, INK, CFG = DEF;
   function useCfg(c) { CFG = Object.assign({}, DEF, c || {}); NAVY = CFG.navy; BLUE = CFG.blue; TEAL = CFG.teal; INK = CFG.ink; }
   useCfg();
@@ -72,6 +72,7 @@
   const shapeColor = (k) => sh(k).color || CFG[SHAPES[k].c];
   function shape(k) {
     const o = sh(k); if (o.hide) return '';
+    if (BLEED_MODE && !/A/.test(SHAPES[k].d)) return `<path id="Shape_${k}" d="${bleedPath(SHAPES[k].d, o)}" fill="${shapeColor(k)}"/>`;
     const s = Number(o.s) || 1, cx = 27, cy = 42.8;
     const t = (o.dx || o.dy || s !== 1) ? ` transform="translate(${n2(Number(o.dx || 0) + cx * (1 - s))} ${n2(Number(o.dy || 0) + cy * (1 - s))}) scale(${n2(s)})"` : '';
     return `<path id="Shape_${k}" d="${SHAPES[k].d}" fill="${shapeColor(k)}"${t}/>`;
@@ -83,11 +84,59 @@
     if (!dx && !dy && s === 1) return `<g id="${k}">${inner}</g>`;
     return `<g id="${k}" transform="translate(${n2(dx + cx * (1 - s))} ${n2(dy + cy * (1 - s))}) scale(${n2(s)})">${inner}</g>`;
   }
+  // ===== Bleed: কার্ডের কিনারা ছোঁয়া রঙিন আকৃতিগুলো কাটার দাগের বাইরে 0.125 in পর্যন্ত বাড়ানো =====
+  // কার্ডের ভেতরের অংশ হুবহু একই থাকে; শুধু কিনারার বাইরে রং বাড়ে, তাই কাটতে একটু এদিক-ওদিক হলেও সাদা দাগ পড়ে না।
+  const BX = BLEED / SX, BY = BLEED / SY;
+  function bleedPath(d, o) {
+    const s = Number(o.s) || 1, tx = Number(o.dx || 0) + 27 * (1 - s), ty = Number(o.dy || 0) + 42.8 * (1 - s);
+    const T = (px, py) => ({ x: tx + s * px, y: ty + s * py });
+    const tk = d.match(/[MLHVCZ]|-?\d*\.?\d+/g); let i = 0, cur = null; const segs = [];
+    const nx = () => Number(tk[i++]);
+    while (i < tk.length) {
+      const c = tk[i++];
+      if (c === 'M') { cur = { x: nx(), y: nx() }; segs.push({ t: 'M', p: T(cur.x, cur.y) }); }
+      else if (c === 'L') { cur = { x: nx(), y: nx() }; segs.push({ t: 'L', p: T(cur.x, cur.y) }); }
+      else if (c === 'H') { cur = { x: nx(), y: cur.y }; segs.push({ t: 'L', p: T(cur.x, cur.y) }); }
+      else if (c === 'V') { cur = { x: cur.x, y: nx() }; segs.push({ t: 'L', p: T(cur.x, cur.y) }); }
+      else if (c === 'C') { const a = T(nx(), nx()), b = T(nx(), nx()); cur = { x: nx(), y: nx() }; segs.push({ t: 'C', a, b, p: T(cur.x, cur.y) }); }
+    }
+    const n = segs.length, E = 0.02;
+    const edges = (p) => ({ L: p.x <= E, R: p.x >= BW - E, T: p.y <= E, B: p.y >= BH - E });
+    const cnt = (e) => (e.L || e.R ? 1 : 0) + (e.T || e.B ? 1 : 0);
+    const same = (a, b) => { const ea = edges(a), eb = edges(b); return (ea.L && eb.L) || (ea.R && eb.R) || (ea.T && eb.T) || (ea.B && eb.B); };
+    const outward = (p) => { const e = edges(p); return { x: e.L ? -BX : e.R ? BW + BX : p.x, y: e.T ? -BY : e.B ? BH + BY : p.y }; };
+    // q থেকে p এর দিকে রেখা বাড়িয়ে bleed-এর দাগ পর্যন্ত
+    const extend = (p, q) => {
+      const e = edges(p), dx = p.x - q.x, dy = p.y - q.y;
+      let t = null;
+      if (e.L && dx < -1e-6) t = (-BX - p.x) / dx; else if (e.R && dx > 1e-6) t = (BW + BX - p.x) / dx;
+      else if (e.T && dy < -1e-6) t = (-BY - p.y) / dy; else if (e.B && dy > 1e-6) t = (BH + BY - p.y) / dy;
+      const r = t == null ? null : { x: p.x + dx * t, y: p.y + dy * t };
+      if (!r || Math.hypot(r.x - p.x, r.y - p.y) > 4 * Math.max(BX, BY)) return outward(p);
+      return r;
+    };
+    const P = (p) => `${n2(p.x)} ${n2(p.y)}`;
+    const prev = (k) => segs[(k - 1 + n) % n].p, next = (k) => segs[(k + 1) % n];
+    let out = '';
+    for (let k = 0; k < n; k++) {
+      const sg = segs[k], p = sg.p, e = edges(p);
+      const draw = k === 0 ? `M` : sg.t === 'C' ? `C${P(sg.a)} ${P(sg.b)} ` : 'L';
+      if (!cnt(e)) { out += `${draw}${P(p)}`; continue; }
+      if (cnt(e) === 2) { out += `${draw}${P(outward(p))}`; continue; }
+      const inLine = k === 0 ? true : sg.t !== 'C';
+      const inAlong = inLine && same(prev(k), p);
+      const nx2 = next(k); const outAlong = nx2.t !== 'C' && same(p, nx2.p);
+      if (!inAlong && outAlong) { const q = k === 0 ? prev(k) : sg.t === 'C' ? sg.b : prev(k); out += `${draw}${P(p)}L${P(extend(p, q))}`; }
+      else if (inAlong && !outAlong) { const q = nx2.t === 'C' ? nx2.a : nx2.p; out += `${draw}${P(extend(p, q))}L${P(p)}`; }
+      else out += `${draw}${P(p)}`;
+    }
+    return out + 'Z';
+  }
   const bottomShapes = () => shape('bNavy') + shape('bTeal') + shape('bBlue');
-  // পটভূমি: স্ক্রিনে গোল কোনা; প্রিন্ট ফাইলে bleed পর্যন্ত বিস্তৃত
+  // পটভূমি: স্ক্রিনে গোল কোনা; প্রিন্ট ফাইলে bleed পর্যন্ত বিস্তৃত (ভেতরের নকশা একটুও সরে না)
   let BLEED_MODE = false;
   const frame = (cid, inner) => BLEED_MODE
-    ? `<g id="Background" transform="translate(${n2(-BLEED / SX)} ${n2(-BLEED / SY)}) scale(${n2((BW + 2 * BLEED / SX) / BW)} ${n2((BH + 2 * BLEED / SY) / BH)})"><rect width="${BW}" height="${BH}" fill="#ffffff"/>${inner}</g>`
+    ? `<g id="Background"><rect id="Bleed_White" x="${n2(-BX)}" y="${n2(-BY)}" width="${n2(BW + 2 * BX)}" height="${n2(BH + 2 * BY)}" fill="#ffffff"/>${inner}</g>`
     : `<defs><clipPath id="${cid}k"><rect width="${BW}" height="${BH}" rx="2.6"/></clipPath></defs><g id="Background" clip-path="url(#${cid}k)"><rect width="${BW}" height="${BH}" fill="#ffffff"/>${inner}</g>`;
 
   // ===== সামনের দিক =====
@@ -128,6 +177,27 @@
     pin: (cx, cy) => `<path d="M${cx} ${n2(cy + 2.1)}c-.2-.5-1.75-2.1-1.75-3.3a1.75 1.75 0 0 1 3.5 0c0 1.2-1.55 2.8-1.75 3.3z" fill="#e5484d"/><circle cx="${cx}" cy="${n2(cy - 1.2)}" r="0.62" fill="#ffffff"/>`,
     mail: (cx, cy) => `<circle cx="${cx}" cy="${cy}" r="1.6" fill="#3d8fd6"/><rect x="${n2(cx - 0.95)}" y="${n2(cy - 0.62)}" width="1.9" height="1.28" rx="0.15" fill="none" stroke="#ffffff" stroke-width="0.2"/><path d="M${n2(cx - 0.95)} ${n2(cy - 0.57)}l.95.72.95-.72" fill="none" stroke="#ffffff" stroke-width="0.2"/>`
   };
+  // QR কোডে কী থাকবে
+  const QR_OPTS = [
+    { v: 'student', t: 'শিক্ষার্থীর তথ্য (নাম, আইডি, শ্রেণি, রোল, মোবাইল)' },
+    { v: 'website', t: 'মাদ্রাসার ওয়েবসাইট' },
+    { v: 'result', t: 'ফলাফল দেখার পেজ' },
+    { v: 'facebook', t: 'মাদ্রাসার ফেসবুক পেজ' },
+    { v: 'custom', t: 'নিজের লেখা বা লিংক' },
+    { v: 'image', t: 'নিজের QR কোডের ছবি আপলোড' },
+    { v: 'none', t: 'QR কোড দেখাবে না' }
+  ];
+  function qrText(d) {
+    const site = d.website || 'https://kutubjoomkgmadrasha.web.app';
+    switch (CFG.qr) {
+      case 'website': return site;
+      case 'result': return site.replace(/\/$/, '') + '/#result';
+      case 'facebook': return d.facebook || site;
+      case 'custom': return CFG.qrCustom || site;
+      case 'image': return site;
+      default: return d.qr || '';
+    }
+  }
   function back(d) {
     const cid = 'b' + (++seq);
     const phone = CFG.backPhone || d.schoolPhone;
@@ -147,7 +217,9 @@
     return frame(cid, `${shape('kBlue')}${shape('kNavy')}${shape('kTeal')}${bottomShapes()}`) + `
   ${place('logo', 27, 24.6, `${shape('kRing')}<circle cx="27" cy="24.6" r="12.4" fill="#ffffff"/>${d.logo ? `<image xlink:href="${x(d.logo)}" x="16.2" y="14.6" width="21.6" height="20" preserveAspectRatio="xMidYMid meet"/>` : ''}`)}
   ${place('contact', 27, (lineTop + lineBot) / 2, `<line x1="16.3" y1="${n2(lineTop)}" x2="16.3" y2="${n2(lineBot)}" stroke="${shapeColor('kNavy')}" stroke-width="0.5"/><g font-family="${F_BODY}">${rows}</g>`)}
-  ${CFG.qr === 'none' ? '' : place('qr', 27, 62.9, qrSvg(CFG.qr === 'custom' ? (CFG.qrCustom || '') : CFG.qr === 'website' ? (d.website || '') : (d.qr || ''), 21.4, 57.3, 11.2))}
+  ${CFG.qr === 'none' ? '' : place('qr', 27, 62.9, CFG.qr === 'image' && CFG.qrImage
+    ? `<rect x="20.8" y="56.7" width="12.4" height="12.4" fill="#ffffff"/><image xlink:href="${x(CFG.qrImage)}" x="21.4" y="57.3" width="11.2" height="11.2" preserveAspectRatio="xMidYMid meet"/>`
+    : qrSvg(qrText(d), 21.4, 57.3, 11.2))}
   ${place('sign', 42.6, 72, `${d.sign ? `<image xlink:href="${x(d.sign)}" x="35.9" y="68.3" width="13.4" height="4.1" preserveAspectRatio="xMidYMid meet"/>` : ''}<line x1="34.8" y1="72.8" x2="50.3" y2="72.8" stroke="#111111" stroke-width="0.3"/><text x="42.6" y="74.9" font-family="${F_BODY}" font-size="1.95" fill="#111111" text-anchor="middle">${x(CFG.signLabel)}</text>`)}`;
   }
 
@@ -159,43 +231,65 @@
     return svgOpen('id-svg', (which === 'back' ? 'Back of ID card: ' : 'ID card: ') + d.name) + side(d, which) + '</svg>';
   }
 
-  // একজন শিক্ষার্থীর প্রিন্ট ফাইল: সামনে ও পেছন পাশাপাশি, প্রতিটি 2.13 × 3.39 in + 0.125 in bleed।
-  // প্রতিটি দিক আলাদা লেয়ার/গ্রুপ (Front, Back → Background, Content, Trim)।
+  // কাটার দাগ (crop marks): কার্ডের কোনা থেকে bleed-এর বাইরে, কার্ডের ওপর কোনো দাগ পড়ে না
+  function cropMarks(x0, y0, w, h, sides) {
+    const gap = BLEED + 1, len = 5; let d = '';
+    const v = (x, y1, y2) => { d += `M${n2(x)} ${n2(y1)}V${n2(y2)}`; }, hz = (y, x1, x2) => { d += `M${n2(x1)} ${n2(y)}H${n2(x2)}`; };
+    sides = sides || { t: true, b: true, l: true, r: true };
+    [x0, x0 + w].forEach((x) => { if (sides.t) v(x, y0 - gap - len, y0 - gap); if (sides.b) v(x, y0 + h + gap, y0 + h + gap + len); });
+    [y0, y0 + h].forEach((y) => { if (sides.l) hz(y, x0 - gap - len, x0 - gap); if (sides.r) hz(y, x0 + w + gap, x0 + w + gap + len); });
+    return `<path d="${d}" fill="none" stroke="#000000" stroke-width="0.15"/>`;
+  }
+
+  // একজন শিক্ষার্থীর প্রিন্ট/Illustrator ফাইল: সামনে ও পেছন পাশাপাশি।
+  // প্রতিটি দিক: কার্ড 2.13 × 3.39 in, রং চারপাশে 0.125 in bleed পর্যন্ত, কাটার দাগ তার বাইরে।
+  // লেয়ার: Artboard (কার্ডের মাপের অদৃশ্য আয়তক্ষেত্র), Card (Background + লেখা), Crop_Marks।
   function studentSvg(d, cfg) {
     useCfg(cfg); BLEED_MODE = true;
-    const bw = W + 2 * BLEED, bh = H + 2 * BLEED, gap = 12.7;
-    const one = (which, ox) => `<g id="${which === 'back' ? 'Back' : 'Front'}" transform="translate(${n2(ox + BLEED)} ${n2(BLEED)})">
-  <g id="Artboard_${which === 'back' ? 2 : 1}_Bleed"><rect x="${n2(-BLEED)}" y="${n2(-BLEED)}" width="${n2(bw)}" height="${n2(bh)}" fill="none" stroke="#ff0000" stroke-width="0.1"/></g>
-  <g id="Content">${side(d, which)}</g>
-  <g id="Trim"><rect x="0" y="0" width="${n2(W)}" height="${n2(H)}" fill="none" stroke="#00b7eb" stroke-width="0.12"/></g></g>`;
-    const out = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${n2(bw * 2 + gap)}mm" height="${n2(bh)}mm" viewBox="0 0 ${n2(bw * 2 + gap)} ${n2(bh)}">\n<title>${x(d.name + ' — ID ' + d.id)}</title>\n${one('front', 0)}\n${one('back', bw + gap)}\n</svg>`;
+    const S = BLEED + 7, cw = W + 2 * S, gap = 10;
+    const one = (which, k) => { const ox = k * (cw + gap) + S, oy = S, nm = which === 'back' ? 'Back' : 'Front';
+      return `<g id="${nm}">
+  <g id="${nm}_Artboard_${k + 1}"><rect x="${n2(ox)}" y="${n2(oy)}" width="${n2(W)}" height="${n2(H)}" fill="none" stroke="none"/></g>
+  <g id="${nm}_Card" transform="translate(${n2(ox)} ${n2(oy)})">${side(d, which)}</g>
+  <g id="${nm}_Crop_Marks">${cropMarks(ox, oy, W, H)}</g></g>`; };
+    const tw = cw * 2 + gap, th = H + 2 * S;
+    const out = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${n2(tw)}mm" height="${n2(th)}mm" viewBox="0 0 ${n2(tw)} ${n2(th)}">\n<title>${x(d.name + ' — ID ' + d.id)}</title>\n${one('front', 0)}\n${one('back', 1)}\n</svg>`;
     BLEED_MODE = false;
     return out;
   }
 
-  // A4 পাতায় সাজানো (প্রতি পাতায় 9টি কার্ড)। প্রতিটি সামনের পাতার পরে তার পেছনের পাতা,
-  // কলাম উল্টো ক্রমে — দুই পিঠে প্রিন্ট করলে সামনে-পেছন মিলে যায়। সব পাতা একটি ফাইলে।
-  function sheetSvg(list, title, cfg) {
-    useCfg(cfg); BLEED_MODE = false;
-    const PW = 210, PH = 297, cols = 3, rowsN = 3, gx = 8, gy = 6, PG = 12;
-    const mx = (PW - (cols * W + (cols - 1) * gx)) / 2, my = (PH - (rowsN * H + (rowsN - 1) * gy)) / 2;
+  // A4 পাতা (প্রতি পাতায় 9টি কার্ড): প্রতিটি কার্ডের চারপাশে bleed, পাশের কার্ডের bleed ছুঁয়ে থাকে,
+  // কাটার দাগ পাতার কিনারায়। প্রতিটি সামনের পাতার পরে তার পেছনের পাতা, কলাম উল্টো ক্রমে —
+  // দুই পিঠে প্রিন্ট করলে সামনে-পেছন মিলে যায়। ফেরত দেয় প্রতিটি পাতার আলাদা SVG।
+  function sheetPages(list, cfg) {
+    useCfg(cfg); BLEED_MODE = true;
+    const PW = 210, PH = 297, cols = 3, rowsN = 3, px = W + 2 * BLEED, py = H + 2 * BLEED;
+    const mx = (PW - cols * px) / 2 + BLEED, my = (PH - rowsN * py) / 2 + BLEED;
     const per = cols * rowsN, sheets = Math.max(1, Math.ceil(list.length / per));
-    const pages = sheets * 2, totalH = pages * PH + (pages - 1) * PG;
-    const id = (d, s) => x((s + '_Roll_' + d.roll + '_' + d.name).replace(/[^A-Za-z0-9_]+/g, '_'));
-    let body = '';
+    const nm = (d, sd) => x((sd + '_Roll_' + d.roll + '_' + d.name).replace(/[^A-Za-z0-9_]+/g, '_'));
+    const pages = [];
     for (let p = 0; p < sheets; p++) {
       const chunk = list.slice(p * per, (p + 1) * per);
       ['Front', 'Back'].forEach((sd, k) => {
-        const oy = (p * 2 + k) * (PH + PG);
-        body += `<g id="Page_${p + 1}_${sd}"><rect x="0" y="${oy}" width="${PW}" height="${PH}" fill="#ffffff" stroke="#cccccc" stroke-width="0.2"/>`;
+        let body = '', marks = '';
         chunk.forEach((d, i) => {
-          const col = k ? cols - 1 - (i % cols) : i % cols;
-          const cx = mx + col * (W + gx), cy = oy + my + Math.floor(i / cols) * (H + gy);
-          body += `<g id="${id(d, sd)}" transform="translate(${n2(cx)} ${n2(cy)})">${side(d, k ? 'back' : 'front')}</g>`;
+          const col = k ? cols - 1 - (i % cols) : i % cols, row = Math.floor(i / cols);
+          const cx = mx + col * px, cy = my + row * py;
+          body += `<g id="${nm(d, sd)}" transform="translate(${n2(cx)} ${n2(cy)})">${side(d, k ? 'back' : 'front')}</g>`;
+          marks += cropMarks(cx, cy, W, H, { t: row === 0, b: row === rowsN - 1 || i + cols >= chunk.length, l: col === 0, r: col === cols - 1 });
         });
-        body += '</g>';
+        pages.push({ name: `Page_${p + 1}_${sd}`, body: `<g id="Cards">${body}</g><g id="Crop_Marks">${marks}</g>` });
       });
     }
+    BLEED_MODE = false;
+    return pages.map((pg) => `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${PW}mm" height="${PH}mm" viewBox="0 0 ${PW} ${PH}"><g id="${pg.name}"><rect width="${PW}" height="${PH}" fill="#ffffff"/>${pg.body}</g></svg>`);
+  }
+  // সব পাতা একটি SVG ফাইলে (Illustrator-এ খুলে প্রতিটি পাতা আলাদা artboard বানানো যায়)
+  function sheetSvg(list, title, cfg) {
+    const PW = 210, PH = 297, PG = 12;
+    const pages = sheetPages(list, cfg);
+    const totalH = pages.length * PH + (pages.length - 1) * PG;
+    const body = pages.map((pg, i) => `<g transform="translate(0 ${i * (PH + PG)})">${pg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '')}</g>`).join('\n');
     return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${PW}mm" height="${totalH}mm" viewBox="0 0 ${PW} ${totalH}">\n<title>${x(title)}</title>\n${body}\n</svg>`;
   }
 
@@ -256,5 +350,5 @@
     return cv.toDataURL('image/jpeg', 0.88);
   }
 
-  global.IdCard = { W, H, DEF, SHAPES, ITEMS, previewSvg, sheetSvg, studentSvg, portrait, toPng, whiteBackground, fileToUrl, ensureQR };
+  global.IdCard = { W, H, DEF, SHAPES, ITEMS, QR_OPTS, previewSvg, sheetSvg, sheetPages, studentSvg, portrait, toPng, whiteBackground, fileToUrl, ensureQR };
 })(window);

@@ -302,3 +302,12 @@
 .sl { display: grid; grid-template-columns: 110px minmax(0, 1fr) 44px; gap: 8px; align-items: center; font-size: 14px; }
 .sl output { font-variant-numeric: tabular-nums; text-align: right; }
 .design-fields { max-height: 70vh; overflow-y: auto; padding-right: 4px; }
+/* আইডি কার্ড: A4 পাতা (bleed ও কাটার দাগসহ) ও কালার কোড */
+@page idsheet { size: A4; margin: 0; }
+.id-sheet svg { display: block; width: 210mm; height: 297mm; }
+@media print { .print-area .id-sheet { page: idsheet; break-after: page; } }
+.hex { width: 92px; padding: 5px 8px; border: 1.5px solid #cfdcd3; border-radius: 8px; font: 600 14px/1.2 ui-monospace, Consolas, monospace; text-transform: uppercase; }
+.fld .hex { width: 100%; margin-top: 4px; }
+.fld input[type=color] { width: 100%; height: 36px; padding: 2px; }
+.fee-set .cell-in { width: 84px; padding: 6px 8px; border: 1.5px solid #cfdcd3; border-radius: 8px; font: inherit; text-align: right; }
+.fee-set .fee-tot { font-weight: 700; white-space: nowrap; }

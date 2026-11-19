@@ -1,41 +1,78 @@
-/* ভর্তি ফরম (A4) ও ভর্তি ব্যানার */
+/* ভর্তি ফরম (A4) — মাদ্রাসার দেওয়া নমুনা অনুযায়ী: নতুন ভর্তি ও ভর্তি নবায়ন */
 .pdf-host { position: fixed; left: -12000px; top: 0; width: 794px; background: #fff; }
 .adm-form {
-  --af-g: #0b5d2e; --af-g2: #138a43; --af-blue: #1c2f9a; --af-gold: #e6b422;
-  position: relative; width: 794px; min-height: 1123px; box-sizing: border-box; margin: 0 auto; background: #fff; color: #111;
-  padding: 26px 40px 70px; overflow: hidden; text-align: left; font-family: 'SutonnyOMJ', 'Noto Serif Bengali', 'Hind Siliguri', serif; font-size: 17px;
-  border: 3px solid var(--af-g2); border-radius: 22px;
+  --af-g: #0b5d2e; --af-g2: #138a43; --af-gold: #e6b422; --af-line: #1f7a43;
+  position: relative; width: 794px; height: 1123px; box-sizing: border-box; margin: 0 auto; background: #fff; color: #111;
+  padding: 18px 26px 0; overflow: hidden; text-align: left; font-family: 'SutonnyOMJ', 'Noto Serif Bengali', 'Hind Siliguri', serif; font-size: 18px;
+  border: 3px solid var(--af-g); border-radius: 22px; display: flex; flex-direction: column;
 }
-.adm-form::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 26px; background: linear-gradient(90deg, var(--af-g), var(--af-g2), var(--af-g)); }
-.af-leaf { display: none; }
-.af-head { position: relative; display: grid; grid-template-columns: 120px 1fr 120px; gap: 10px; align-items: center; padding-top: 18px; }
-.af-logo { width: 118px; height: auto; }
-.af-title { text-align: center; }
-.af-tag { display: inline-block; margin: 0; background: #e9f6ea; border: 2px solid var(--af-g2); color: var(--af-g); border-radius: 99px; padding: 2px 16px; font-weight: 700; font-size: 15px; }
-.af-title h1 { margin: 4px 0 0; color: var(--af-g); font-size: 44px; line-height: 1.05; font-weight: 800; }
-.af-title h2 { margin: 2px 0 6px; color: var(--af-blue); font-size: 28px; line-height: 1.1; font-weight: 800; }
-.af-pill { display: inline-block; background: linear-gradient(180deg, var(--af-g2), var(--af-g)); color: #fff; border: 3px solid var(--af-gold); border-radius: 99px; padding: 2px 46px; font-size: 34px; font-weight: 800; }
-.af-photo { width: 116px; height: 140px; border: 2px solid var(--af-g2); border-radius: 12px; display: grid; place-items: center; text-align: center; color: var(--af-g); font-weight: 700; overflow: hidden; background: #fff; }
-.af-photo img { width: 100%; height: 100%; object-fit: cover; }
-.af-meta { display: flex; justify-content: space-between; gap: 10px; margin: 10px 0 4px; font-size: 15px; border-bottom: 1px dashed #9bc9a4; padding-bottom: 6px; }
-.af-water { position: absolute; left: 50%; top: 52%; width: 380px; transform: translate(-50%, -50%); opacity: .07; pointer-events: none; }
-.af-sec { display: inline-flex; align-items: center; gap: 8px; margin: 14px 0 6px; background: linear-gradient(180deg, var(--af-g2), var(--af-g)); color: #fff; border-radius: 99px; padding: 3px 18px 3px 10px; font-weight: 800; font-size: 19px; }
-.af-sec svg { width: 22px; height: 22px; fill: #fff; }
-.af-row { position: relative; display: flex; align-items: flex-end; gap: 6px; padding: 5px 0 2px 8px; }
-.af-l { flex: none; min-width: 190px; }
-.af-c { flex: none; }
-.af-v { text-align: left; flex: 1; min-width: 0; border-bottom: 1.5px dotted #333; padding: 0 6px 1px; font-weight: 600; color: #0d2a6b; min-height: 1.4em; }
-.af-tall .af-v { min-height: 2.6em; }
-.af-short { flex: 0 1 260px; }
-.af-gender { margin-left: auto; padding-left: 16px; white-space: nowrap; }
-.af-box { display: inline-grid; place-items: center; width: 20px; height: 20px; border: 1.5px solid #333; border-radius: 4px; vertical-align: middle; font-weight: 800; color: var(--af-g); margin: 0 10px 0 4px; }
-.af-decl { margin: 6px 0 0 40px; font-weight: 600; }
-.af-foot-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-top: 18px; padding-left: 40px; }
-.af-sign { display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 700; }
-.af-sign-box { width: 220px; height: 54px; border: 2px solid var(--af-g2); border-radius: 10px; }
-.af-principal img { height: 54px; max-width: 200px; object-fit: contain; }
-.af-principal .af-sign-box { width: 160px; }
-.af-footer { position: absolute; left: 0; right: 0; bottom: 0; height: 52px; display: grid; place-items: center; color: #fff; font-style: italic; font-weight: 700; font-size: 22px; background: linear-gradient(180deg, var(--af-g2), var(--af-g)); box-shadow: 0 -5px 0 var(--af-gold); }
+.adm-form > * { position: relative; }
+.af-swoosh { position: absolute !important; left: 0; top: 0; width: 100%; height: 330px; pointer-events: none; }
+.af-mosque { position: absolute !important; right: 14px; top: 92px; width: 150px; height: auto; opacity: .95; }
+.af-head { display: grid; grid-template-columns: 140px minmax(0, 1fr); align-items: center; gap: 0; margin-right: 120px; }
+.af-logo { width: 128px; height: auto; padding-right: 12px; border-right: 2px solid #333; }
+.af-name { text-align: center; padding-left: 10px; }
+.af-name h1 { margin: 0; color: var(--af-g); font-size: 48px; line-height: 1.05; font-weight: 800; }
+.af-name h2 { margin: 0; color: var(--af-g); font-size: 34px; line-height: 1.1; font-weight: 800; }
+.af-name p { margin: 4px 0 0; display: flex; justify-content: center; align-items: center; gap: 4px; font-size: 19px; font-weight: 600; }
+.af-name p svg { width: 18px; height: 18px; fill: #d0312d; flex: none; }
+.af-title { display: flex; flex-direction: column; align-items: center; margin-top: 8px; }
+.af-pill { background: linear-gradient(180deg, var(--af-g2), var(--af-g)); color: #fff; font-weight: 800; font-size: 40px; line-height: 1.22; padding: 0 54px 32px; border-radius: 60px; border: 4px solid var(--af-gold); box-shadow: 0 3px 8px rgba(0,0,0,.2); }
+.af-sub { margin-top: -38px; background: linear-gradient(180deg, #fff6c9, #ffe27a); color: #10301c; font-weight: 800; font-size: 21px; padding: 0 22px; border-radius: 30px; border: 2px solid var(--af-gold); }
+.af-code { align-self: center; background: #fff; border-radius: 20px; padding: 0 12px; font-size: 15px; margin-top: 8px; color: #333; z-index: 1; }
+.af-code b { font-family: 'Hind Siliguri', Arial, sans-serif; letter-spacing: .04em; }
+.af-card { border: 2px solid var(--af-line); border-radius: 16px; margin-top: 20px; padding: 14px 14px 4px; }
+.af-tab { position: absolute; left: -2px; top: -20px; display: flex; align-items: center; gap: 10px; background: linear-gradient(180deg, var(--af-g2), var(--af-g)); color: #fff; font-weight: 800; font-size: 22px; padding: 2px 46px 2px 18px; border-radius: 14px 0 0 0; clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 100%, 0 100%); }
+.af-tab svg { width: 26px; height: 26px; fill: #fff; }
+.af-body { display: grid; gap: 1px; }
+.af-line { display: flex; align-items: flex-end; gap: 8px; min-height: 31px; padding: 1px 6px; }
+.af-l { flex: none; min-width: 140px; font-weight: 600; }
+.af-ls { min-width: 82px; }
+.af-c { flex: none; font-weight: 700; }
+.af-v { flex: 1; min-width: 0; border-bottom: 2px dotted #444; padding: 0 6px 1px; font-weight: 600; color: #0d2a6b; min-height: 1.3em; }
+.af-wide .af-l { min-width: 200px; }
+.af-line label { display: inline-flex; align-items: center; gap: 6px; margin-right: 16px; font-weight: 600; white-space: nowrap; }
+.af-two { display: grid; grid-template-columns: minmax(0, 1fr) 340px; }
+.af-side { border-left: 2px solid #555; padding-left: 8px; display: grid; }
+.af-side em { font-style: normal; font-weight: 700; padding: 0 2px; }
+.af-tick { display: inline-grid; place-items: center; width: 22px; height: 22px; border: 2px solid #333; border-radius: 5px; font-weight: 800; color: var(--af-g); background: #fff; line-height: 1; }
+.af-boxes { display: inline-flex; border: 2px solid #333; border-radius: 4px; background: #fff; }
+.af-boxes i { width: 21px; height: 25px; display: grid; place-items: center; font-style: normal; font-weight: 700; font-family: 'Hind Siliguri', Arial, sans-serif; font-size: 16px; color: #0d2a6b; }
+.af-boxes i + i { border-left: 1.5px solid #555; }
+.af-mob { flex-wrap: nowrap; gap: 5px; padding-top: 4px; }
+.af-mob .af-boxes i { width: 17px; }
+.af-mob .af-l { min-width: 0; }
+.af-bar { width: 2px; align-self: stretch; background: #555; margin: 0 6px; }
+.af-addr { align-items: flex-start; }
+.af-addr .af-v { position: relative; min-height: 2.6em; }
+.af-addr .af-v::before { content: ""; position: absolute; left: 0; right: 0; top: calc(50% - 1px); border-bottom: 2px dotted #444; }
+.af-yearbar { margin-top: 14px; display: flex; justify-content: space-around; align-items: center; border: 2px solid #9cc8aa; border-radius: 14px; background: #f2f9f4; padding: 6px 16px; font-size: 22px; font-weight: 700; }
+.af-yearbar span { display: flex; align-items: center; gap: 10px; }
+.af-yearbar svg { width: 30px; height: 30px; fill: var(--af-g); }
+.af-yearbar i { width: 2px; height: 32px; background: #555; }
+.af-regrow { display: grid; grid-template-columns: 1.1fr 1fr; gap: 14px; margin-top: 12px; }
+.af-regbox { display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 2px solid #9cc8aa; border-radius: 14px; background: #f2f9f4; padding: 10px 12px; }
+.af-regbox.af-gold { border-color: var(--af-gold); background: #fffaea; }
+.af-regbox .af-boxes i { width: 24px; height: 34px; font-size: 19px; }
+.af-chip { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(180deg, var(--af-g2), var(--af-g)); color: #fff; font-weight: 800; font-size: 19px; padding: 4px 14px; border-radius: 10px; white-space: nowrap; }
+.af-chip svg { width: 22px; height: 22px; fill: #fff; }
+.af-classbox { margin-top: 14px; border: 2px solid #9cc8aa; border-radius: 16px; background: #f4faf5; padding: 9px 14px; display: grid; gap: 8px; }
+.af-crow { display: flex; align-items: center; gap: 16px; }
+.af-chip.af-big { font-size: 26px; padding: 4px 34px 4px 20px; border-radius: 40px; border: 3px solid var(--af-gold); clip-path: none; }
+.af-chip.af-big svg { width: 34px; height: 34px; }
+.af-cval { flex: 1; min-height: 44px; border: 2.5px solid #222; border-radius: 12px; background: #fff; display: flex; align-items: center; padding: 0 16px; font-weight: 700; font-size: 22px; color: #0d2a6b; }
+.af-chip.af-note { background: #fff6c9; color: var(--af-g); border: 2px solid var(--af-gold); font-size: 20px; border-radius: 30px; }
+.af-crow p { margin: 0; font-weight: 600; font-size: 17px; line-height: 1.3; }
+.af-fees { table-layout: fixed; width: 100%; border-collapse: separate; border-spacing: 0; border: 1.5px solid #bfe0c8; border-radius: 10px; overflow: hidden; }
+.af-fees th { background: #b9e5c1; color: #0b3d1d; font-weight: 800; font-size: 19px; padding: 6px 4px; border-right: 1.5px solid #fff; }
+.af-fees td { background: #eef8f0; padding: 7px 5px; border-right: 1.5px solid #fff; }
+.af-money { display: flex; align-items: center; gap: 6px; border: 2px solid #333; border-radius: 9px; background: #fff; height: 34px; padding: 0 10px; font-weight: 700; font-family: 'Hind Siliguri', Arial, sans-serif; color: #0d2a6b; }
+.af-money b { color: #111; font-size: 18px; }
+.af-tot .af-money { background: #fffbe6; }
+.af-total { display: flex; align-items: stretch; align-self: center; width: 70%; margin-top: 10px; border: 3px solid var(--af-gold); border-radius: 40px; overflow: hidden; box-shadow: 0 3px 6px rgba(0,0,0,.15); }
+.af-total span { background: linear-gradient(180deg, var(--af-g2), var(--af-g)); color: #fff; font-weight: 800; font-size: 25px; padding: 2px 26px; }
+.af-total b { flex: 1; background: #fff; display: flex; align-items: center; padding: 0 18px; font-size: 26px; font-family: 'Hind Siliguri', Arial, sans-serif; }
+.af-wave { display: block; width: calc(100% + 52px); height: 56px; margin: auto -26px 0; flex: none; }
 .af-scale { width: 100%; overflow-x: auto; }
 
 /* ===== ভর্তি ব্যানার (হোম পেজ) ===== */
@@ -96,3 +133,21 @@
   .adm-form { page: admform; width: 210mm; height: 297mm; min-height: 0; border-radius: 0; border-width: 2px; margin: 0; break-after: page; break-inside: avoid; }
   .af-scale { overflow: visible; }
 }
+.apply-types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.apply-type { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding: 22px 16px; border: 2px solid #9cc8aa; border-radius: 18px; background: linear-gradient(180deg, #f6fbf7, #e9f6ec); cursor: pointer; font: inherit; color: #0b3d1d; transition: transform .15s, box-shadow .15s; }
+.apply-type:hover, .apply-type:focus-visible { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(11,93,46,.18); border-color: #138a43; outline: none; }
+.apply-type svg { width: 46px; height: 46px; fill: #0b5d2e; }
+.apply-type b { font-size: 24px; }
+.apply-type span { font-size: 15px; color: #3d5a49; }
+.apply-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px; }
+.apply-head b { font-size: 22px; color: #0b5d2e; }
+@media (max-width: 640px) { .apply-types { grid-template-columns: minmax(0, 1fr); } }
+.af-num { flex: 1 1 auto; letter-spacing: .04em; font-family: 'Hind Siliguri', Arial, sans-serif; }
+.af-side .af-num { flex: 1; }
+.af-regbox .af-num { flex: 1; min-height: 1.6em; font-size: 20px; }
+.apply-fee { border: 2px solid #9cc8aa; background: #f2f9f4; border-radius: 14px; padding: 10px 14px; }
+.apply-fee > b { color: #0b5d2e; font-size: 17px; }
+.apply-fee-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-top: 8px; }
+.apply-fee-grid span { display: flex; flex-direction: column; background: #fff; border: 1px solid #cfe5d6; border-radius: 10px; padding: 6px 10px; font-size: 14px; color: #3d5a49; }
+.apply-fee-grid span b { font-size: 18px; color: #12301f; }
+.apply-fee-grid .tot { background: #fff6d8; border-color: #e6b422; }
