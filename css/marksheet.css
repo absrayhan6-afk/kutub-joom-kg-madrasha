@@ -118,3 +118,42 @@
   .ms-sign { min-width: 55mm; } .ms-sign > span { font-size: 11pt; } .sign-img { height: 10mm; max-width: 45mm; }
   .ms-wave { width: calc(100% + 12mm); height: 10mm; margin: 2mm -6mm 0; }
 }
+
+/* PDF ডাউনলোড (মোবাইলেও): প্রিন্টের মতো একই A4 মাপ */
+.ms-a4 { margin: 0; width: 210mm; height: 297mm; padding: 8mm; box-sizing: border-box; background: #fff; }
+.ms-a4 .marksheet { box-shadow: none; max-width: none; width: 194mm; height: 280mm; margin: 0 auto; padding: 6mm 6mm 0; border-width: 0.7mm; border-radius: 6mm; break-inside: avoid; break-after: page; font-size: 10pt; }
+.ms-a4 .ms-logo { width: 34mm; padding-right: 4mm; border-right-width: 0.5mm; }
+.ms-a4 .ms-water { height: min(88%, 78mm); }
+.ms-a4 .ms-head { gap: 5mm; }
+.ms-a4 .ms-name h2 { font-size: 21pt; -webkit-text-stroke: 0.25mm var(--ms-g); }
+.ms-a4 .ms-addr { font-size: 11pt; margin-top: 1.5mm; } .ms-a4 .ms-addr svg { width: 4mm; height: 4mm; }
+.ms-a4 .ms-est { font-size: 10.5pt; margin-top: 1mm; }
+.ms-a4 .ms-meta { margin-top: 3mm; padding: 1.6mm 4mm; font-size: 10pt; border-radius: 3.5mm; gap: 0.6mm; }
+.ms-a4 .ms-ribbon { margin: 3mm 0; } .ms-a4 .ms-ribbon span { font-size: 15pt; padding: 0.6mm 9mm; }
+.ms-a4 .ms-info { gap: 4mm; }
+.ms-a4 .ms-grid { font-size: 10.5pt; padding: 2.5mm 4mm 2.5mm 12mm; border-radius: 3.5mm; gap: 0.3mm 1.5mm; }
+.ms-a4 .ms-grade { padding: 2mm; border-radius: 3.5mm; } .ms-a4 .ms-grade > span { font-size: 16pt; } .ms-a4 .ms-grade b { font-size: 40pt; } .ms-a4 .laurel { width: 7mm; height: 16mm; }
+.ms-a4 .ms-tiles { margin-top: 3mm; gap: 2.5mm; }
+.ms-a4 .ms-tile { padding: 1mm 1.5mm; border-radius: 3mm; } .ms-a4 .ms-tile span { font-size: 9pt; } .ms-a4 .ms-tile b { font-size: 17pt; } .ms-a4 .ms-tile small { font-size: 9pt; } .ms-a4 .ms-tile.t-special b { font-size: 12pt; }
+.ms-a4 .ms-table-wrap { overflow: visible; margin-top: 3mm; border-radius: 3mm; }
+.ms-a4 .ms-table { min-width: 0; font-size: var(--ms-fs, 10.5pt); }
+.ms-a4 .ms-table th { padding: 0 1.5mm; height: calc(var(--ms-rh, 7mm) + 0.6mm); }
+.ms-a4 .ms-table td { padding: 0 1.5mm; height: var(--ms-rh, 7mm); line-height: 1.05; }
+.ms-a4 .ms-table td.ms-sub { padding-left: 4mm; }
+.ms-a4 .ms-msg { margin-top: 3mm; padding: 2mm 5mm 2mm 18mm; border-radius: 4mm; }
+.ms-a4 .ms-msg-ico { left: 5mm; width: 10mm; height: 10mm; font-size: 16pt; } .ms-a4 .ms-msg-ico svg { width: 7mm; height: 7mm; }
+.ms-a4 .ms-msg-text { margin-left: 4mm; padding-left: 5mm; }
+.ms-a4 .ms-msg h3 { font-size: 19pt; } .ms-a4 .ms-msg p { font-size: 10pt; }
+.ms-a4 .ms-space { min-height: 1mm; }
+.ms-a4 .ms-foot { margin-top: 2mm; } .ms-a4 .ms-foot::before { height: 7mm; bottom: 1mm; }
+.ms-a4 .ms-pub { font-size: 11pt; padding-bottom: 1mm; }
+.ms-a4 .ms-sign { min-width: 55mm; } .ms-a4 .ms-sign > span { font-size: 11pt; } .ms-a4 .sign-img { height: 10mm; max-width: 45mm; }
+.ms-a4 .ms-wave { width: calc(100% + 12mm); height: 10mm; margin: 2mm -6mm 0; }
+/* PDF ছবিতে লেখা যেন নিচে সরে কেটে না যায় */
+.ms-a4 .ms-table td, .ms-a4 .ms-table th { line-height: 1.3; vertical-align: middle; }
+.ms-a4 .ms-tile b, .ms-a4 .ms-tile span { line-height: 1.3; }
+.ms-a4 .ms-ribbon span { line-height: 1.4; }
+.ms-a4 .ms-name h2 { line-height: 1.2; }
+.ms-a4 .ms-grade b { line-height: 1.15; }
+.ms-a4 .ms-msg h3 { line-height: 1.3; }
+.ms-a4 .ms-meta-row, .ms-a4 .ms-grid, .ms-a4 .ms-addr, .ms-a4 .ms-est { line-height: 1.35; }

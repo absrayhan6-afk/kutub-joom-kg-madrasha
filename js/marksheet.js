@@ -67,5 +67,54 @@
   ${WAVE}
 </article>`;
   }
-  global.Marksheet = { render, esc };
+  // মার্কশিটের PDF সরাসরি ডাউনলোড — মোবাইলে প্রিন্ট কাজ না করলেও চলে।
+  // আলাদা A4 মাপের ফ্রেমে প্রিন্টের মতো সাজিয়ে ছবি তুলে PDF বানানো হয় (বাংলা/ইংরেজি সব ঠিক থাকে)।
+  const loaded = {};
+  const load = (src) => loaded[src] || (loaded[src] = new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => { delete loaded[src]; rej(new Error('PDF তৈরির জন্য ইন্টারনেট সংযোগ দরকার।')); }; document.head.appendChild(el); }));
+  // ক্যানভাস প্রায় পুরো সাদা হলে (কিছু ব্রাউজারে foreignObject কাজ করে না) সাধারণ পদ্ধতিতে আবার
+  function blankCanvas(cv) {
+    try { const g = cv.getContext('2d'); const d = g.getImageData(0, 0, cv.width, cv.height).data; let dark = 0; for (let i = 0; i < d.length; i += 4 * 97) if (d[i] < 200 || d[i + 1] < 200 || d[i + 2] < 200) dark++; return dark < 50; } catch (e) { return true; }
+  }
+  async function pdf(htmlList, filename) {
+    const list = Array.isArray(htmlList) ? htmlList : [htmlList];
+    await load('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    await load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+    const fr = document.createElement('iframe');
+    fr.setAttribute('aria-hidden', 'true');
+    fr.style.cssText = 'position:fixed;left:-12000px;top:0;width:794px;height:1123px;border:0;background:#fff';
+    document.body.appendChild(fr);
+    try {
+      const css = new URL('css/marksheet.css', location.href).href;
+      const fonts = Array.from(document.querySelectorAll('link[rel=stylesheet]')).filter((l) => /fonts\.googleapis/.test(l.href)).map((l) => `<link rel="stylesheet" href="${esc(l.href)}">`).join('');
+      const doc = fr.contentDocument;
+      doc.open();
+      doc.write(`<!doctype html><html><head><meta charset="utf-8"><base href="${esc(location.href)}">${fonts}<link rel="stylesheet" href="${esc(css)}"></head><body style="margin:0;background:#fff"></body></html>`);
+      doc.close();
+      await new Promise((r) => { if (doc.readyState === 'complete') r(); else fr.onload = r; setTimeout(r, 4000); });
+      const jsPDF = global.jspdf.jsPDF; const out = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      for (let i = 0; i < list.length; i++) {
+        doc.body.innerHTML = `<div class="ms-a4">${list[i]}</div>`;
+        try { await doc.fonts.ready; } catch (e) { /* পুরনো ব্রাউজার */ }
+        // ছবিগুলো ফাইলের ভেতরে বসানো (তাহলে PDF-এ লোগো ও স্বাক্ষর আসে)
+        await Promise.all(Array.from(doc.images).map(async (im) => {
+          if (/^data:/.test(im.getAttribute('src') || '')) return;
+          try { const bl = await (await fetch(im.src)).blob(); const url = await new Promise((r, j) => { const fr2 = new FileReader(); fr2.onload = () => r(fr2.result); fr2.onerror = j; fr2.readAsDataURL(bl); }); im.src = url; } catch (e) { /* না পেলে যেমন আছে */ }
+        }));
+        await Promise.all(Array.from(doc.images).map((im) => im.complete ? 0 : new Promise((r) => { im.onload = im.onerror = r; setTimeout(r, 4000); })));
+        // ব্রাউজারের নিজের রেন্ডারিং (লেখা হুবহু থাকে); না হলে সাধারণ পদ্ধতি
+        const el = doc.body.firstElementChild, opt = { scale: 2, backgroundColor: '#ffffff', useCORS: true, windowWidth: 794, windowHeight: 1123 };
+        let canvas = null;
+        try { canvas = await global.html2canvas(el, Object.assign({ foreignObjectRendering: true }, opt)); canvas.toDataURL('image/jpeg', 0.5); if (blankCanvas(canvas)) canvas = null; } catch (e) { canvas = null; }
+        if (!canvas) canvas = await global.html2canvas(el, opt);
+        if (i) out.addPage();
+        out.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 210, 297);
+      }
+      const blob = out.output('blob');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      return url;
+    } finally { fr.remove(); }
+  }
+  global.Marksheet = { render, esc, pdf };
 })(window);

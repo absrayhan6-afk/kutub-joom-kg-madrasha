@@ -192,8 +192,14 @@
       const r = await store.findResult(q);
       area.hidden = false;
       if (r) {
-        area.innerHTML = M.render(r, settings, images) + '<div class="result-actions"><button class="btn btn-green" type="button" id="printBtn">প্রিন্ট / PDF ডাউনলোড</button><button class="btn btn-ghost" type="button" id="againBtn">আরেকটি ফলাফল দেখুন</button></div>';
+        area.innerHTML = M.render(r, settings, images) + '<div class="result-actions"><button class="btn btn-green" type="button" id="pdfBtn">PDF ডাউনলোড</button><button class="btn btn-ghost" type="button" id="printBtn">প্রিন্ট</button><button class="btn btn-ghost" type="button" id="againBtn">আরেকটি ফলাফল দেখুন</button></div>';
         $('#printBtn').onclick = () => window.print();
+        $('#pdfBtn').onclick = async () => {
+          const b = $('#pdfBtn'); b.disabled = true; const t = b.textContent; b.textContent = 'PDF তৈরি হচ্ছে…';
+          try { await M.pdf(M.render(r, settings, images), `Marksheet-${C.toEn(r.roll)}-${C.toEn(r.reg)}-${r.year}.pdf`); b.textContent = '✓ PDF ডাউনলোড হয়েছে'; setTimeout(() => { b.textContent = t; }, 4000); }
+          catch (e) { console.error(e); b.textContent = t; alert('PDF তৈরি করা যায়নি। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন, অথবা Chrome ব্রাউজারে খুলে "প্রিন্ট" চেপে Save as PDF করুন।'); }
+          finally { b.disabled = false; }
+        };
       } else {
         const cls = (catalog.classes.find((c) => c.id === q.classId) || {}).name || '';
         const published = catalog.published && catalog.published[key];
