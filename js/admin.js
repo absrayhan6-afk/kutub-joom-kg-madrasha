@@ -950,7 +950,7 @@
       <label style="align-self:center"><input type="checkbox" id="iBg" ${ui.iBg === false ? '' : 'checked'}> ছবির ব্যাকগ্রাউন্ড সাদা করুন</label>
     </div>
     <div class="toolbar" style="margin-top:12px"><button class="btn btn-green" id="iSvg" type="button">${ic('down')}Illustrator ফাইল (এই শ্রেণির সব কার্ড)</button><button class="btn btn-ghost" id="iZip" type="button">${ic('down')}ZIP (প্রতি শিক্ষার্থী আলাদা ফাইল)</button><button class="btn btn-dark" id="iZipAll" type="button">${ic('down')}সব শ্রেণির কার্ড (ZIP)</button><button class="btn btn-ghost" id="iPrint" type="button">${ic('print')}প্রিন্ট / PDF</button>${isP() ? `<button class="btn btn-gold" id="iDesign" type="button">${ic('edit')}কার্ড এডিট</button>` : ''}</div>
-    <p class="muted" style="margin:10px 0 0">কার্ডের মাপ 2.13 × 3.39 ইঞ্চি। রং চারপাশে 0.125 ইঞ্চি বাড়তি (bleed) থাকে আর কাটার দাগ থাকে কার্ডের বাইরে, তাই কাটার সময় লেখা বা নকশা কাটা যাবে না। Illustrator-এ খুলতে: ফাইল ডাউনলোড করে Illustrator-এ <b>File → Open</b> দিয়ে .svg ফাইলটি খুলুন। ZIP হলে আগে ফাইলে রাইট-ক্লিক করে <b>Extract All</b> করুন, তারপর ভেতরের .svg খুলুন। প্রতিটি কার্ডের পাশে "AI" বাটনে একজনের ফাইল সরাসরি নামবে।</p></section>
+    <p class="muted" style="margin:10px 0 0">কার্ডের মাপ 2.13 × 3.39 ইঞ্চি। রং চারপাশে 0.125 ইঞ্চি বাড়তি (bleed) থাকে আর কাটার দাগ থাকে কার্ডের বাইরে, তাই কাটার সময় লেখা বা নকশা কাটা যাবে না। Illustrator-এ খুলতে: ফাইল ডাউনলোড করে Illustrator-এ <b>File → Open</b> দিয়ে .svg ফাইলটি খুলুন। ZIP হলে আগে ফাইলে রাইট-ক্লিক করে <b>Extract All</b> করুন, তারপর ভেতরের .svg খুলুন। "Illustrator ফাইল" বোতামে শ্রেণির সব কার্ড একটি পাতায় আসে; ZIP-এ প্রতিটি শিক্ষার্থীর আলাদা ফাইল থাকে।</p></section>
     <section class="card"><div id="iStat" class="muted"></div><div class="id-grid" id="iGrid"></div></section>`;
     let list = [], photos = {};
     const logo0 = () => images.logo || 'assets/logo.webp';
@@ -962,12 +962,11 @@
       const cfg = cardCfg();
       $('#iGrid').innerHTML = rows.length ? rows.map((s) => { const d = cardData(s, photos[s.id], logo0()); return `<div class="id-item"><div class="id-pair">${ID.previewSvg(d, 'front', cfg)}${ID.previewSvg(d, 'back', cfg)}</div>
         <div class="id-meta">${photos[s.id] ? '' : '<span class="chip chip-red">ছবি নেই</span>'}${s.nameEn ? '' : '<span class="chip chip-gold">ইংরেজি নাম নেই</span>'}${s.card && Object.keys(s.card).length ? '<span class="chip chip-gray">কার্ডে আলাদা তথ্য</span>' : ''}</div>
-        <div class="row-actions"><button class="btn btn-sm btn-green" data-cam="${s.id}">${ic('camera')}ছবি তুলুন</button><label class="btn btn-sm ${photos[s.id] ? 'btn-done' : 'btn-ghost'} file-btn">${photos[s.id] ? '✓ ছবি আপলোড হয়েছে' : ic('upload') + 'আপলোড'}<input type="file" accept="image/*" data-up="${s.id}" hidden></label><button class="btn btn-sm btn-ghost" data-info="${s.id}">${ic('edit')}তথ্য</button><button class="btn btn-sm btn-ghost" data-pr="${s.id}">${ic('print')}প্রিন্ট</button><button class="btn btn-sm btn-ghost" data-ai="${s.id}" title="Illustrator ফাইল (সামনে + পেছন, bleed সহ)">${ic('down')}AI</button>${photos[s.id] ? `<button class="btn btn-sm btn-ghost" data-rm="${s.id}" aria-label="ছবি মুছুন">✕</button>` : ''}</div></div>`; }).join('') : `<p class="empty">${esc(className($('#iClass').value))} এ ${esc($('#iYear').value)} সালের কোনো শিক্ষার্থী নেই।</p>`;
+        <div class="row-actions"><button class="btn btn-sm btn-green" data-cam="${s.id}">${ic('camera')}ছবি তুলুন</button><label class="btn btn-sm ${photos[s.id] ? 'btn-done' : 'btn-ghost'} file-btn">${photos[s.id] ? '✓ ছবি আপলোড হয়েছে' : ic('upload') + 'আপলোড'}<input type="file" accept="image/*" data-up="${s.id}" hidden></label><button class="btn btn-sm btn-ghost" data-info="${s.id}">${ic('edit')}তথ্য</button><button class="btn btn-sm btn-ghost" data-pr="${s.id}">${ic('print')}প্রিন্ট</button>${photos[s.id] ? `<button class="btn btn-sm btn-ghost" data-rm="${s.id}" aria-label="ছবি মুছুন">✕</button>` : ''}</div></div>`; }).join('') : `<p class="empty">${esc(className($('#iClass').value))} এ ${esc($('#iYear').value)} সালের কোনো শিক্ষার্থী নেই।</p>`;
       $$('[data-cam]', v).forEach((b) => { b.onclick = () => camera(list.find((s) => s.id === b.dataset.cam)); });
       $$('[data-up]', v).forEach((inp) => { inp.onchange = async () => { const f = inp.files[0]; if (!f) return; try { await setPhoto(list.find((s) => s.id === inp.dataset.up), await ID.fileToUrl(f)); } catch (e) { fail(e); } }; });
       $$('[data-info]', v).forEach((b) => { b.onclick = () => info(list.find((s) => s.id === b.dataset.info)); });
       $$('[data-pr]', v).forEach((b) => { b.onclick = async () => { const s = list.find((x) => x.id === b.dataset.pr); await printCards([s]); }; });
-      $$('[data-ai]', v).forEach((b) => { b.onclick = async () => { const s = list.find((x) => x.id === b.dataset.ai); try { await ID.ensureQR(); const d = cardData(s, photos[s.id] ? await ID.toPng(photos[s.id]) : '', await logoPng()); download(`ID Card - Roll ${String(d.roll).padStart(2, '0')} - ${safeName(d.name)}.svg`, ID.studentSvg(d, cardCfg()), 'image/svg+xml'); } catch (e) { fail(e); } }; });
       $$('[data-rm]', v).forEach((b) => { b.onclick = async () => { if (!(await confirmBox('ছবি মুছবেন?', 'এই শিক্ষার্থীর কার্ডের ছবি মুছে যাবে।', 'মুছে ফেলুন'))) return; try { await store.savePhoto(b.dataset.rm, ''); delete photos[b.dataset.rm]; draw(); } catch (e) { fail(e); } }; });
     };
     const load = async () => {
@@ -1066,6 +1065,7 @@
           <p style="margin:6px 0 0;font-weight:700">QR কোড</p>
           <label class="fld"><span>QR কোডে কী থাকবে</span><select id="dQr">${opt(ID.QR_OPTS, c.qr)}</select></label>
           <label class="fld" id="dQrTextWrap"><span>নিজের লেখা বা লিংক (QR কোডে যাবে)</span><input id="dQrText" value="${esc(c.qrCustom)}" placeholder="যেমন https://www.facebook.com/..."></label>
+          <label class="fld" id="dQrLocWrap"><span>মাদ্রাসার লোকেশনের লিংক (Google Maps থেকে "Share" → "Copy link")</span><input id="dQrLoc" value="${esc(c.qrLocation || '')}" placeholder="https://maps.app.goo.gl/..."></label>
           <div class="img-row" id="dQrImgWrap"><div class="img-thumb" id="dQrTh" style="background-image:url('${esc(c.qrImage || '')}');background-size:contain;background-repeat:no-repeat;background-position:center"></div><label class="fld grow"><span>QR কোডের ছবি (PNG / JPG)</span><input type="file" accept="image/*" id="dQrFile"></label></div>
         </div>
         <div data-pane="p" class="pane" hidden><p class="muted" style="margin:0">উপরে-নিচে / ডানে-বামে সরান (mm) আর বড়-ছোট করুন। প্রিভিউ সাথে সাথে বদলাবে।</p>
@@ -1080,7 +1080,7 @@
       let result = null;
       const readCfg = (f) => {
         const g = (id) => $('#' + id, f);
-        const o = { schoolLines: g('dLines').value.trim(), schoolSize: Number(g('dSchool').value) || 0, addrSize: Number(g('dAddrSize').value) || 2.35, schoolColor: g('dSchoolColor').value, addrLine: g('dAddr').value.trim(), nameSize: Number(g('dName').value) || 0, nameWeight: Number(g('dWeight').value) || 400, nameFont: g('dFont').value, nameColor: g('dNameColor').value, infoSize: Number(g('dInfo').value) || 2.55, contactSize: Number(g('dContact').value) || 1, footerSize: Number(g('dFooterSize').value) || 2.9, footer: g('dFooter').value, signLabel: g('dSign').value, backPhone: g('dBPhone').value.trim(), backEmail: g('dBEmail').value.trim(), backAddress: g('dBAddr').value.trim(), qr: g('dQr').value, qrCustom: g('dQrText').value.trim(), qrImage: c.qrImage || '', navy: g('dNavy').value, blue: g('dBlue').value, teal: g('dTeal').value, off: {}, shapes: {} };
+        const o = { schoolLines: g('dLines').value.trim(), schoolSize: Number(g('dSchool').value) || 0, addrSize: Number(g('dAddrSize').value) || 2.35, schoolColor: g('dSchoolColor').value, addrLine: g('dAddr').value.trim(), nameSize: Number(g('dName').value) || 0, nameWeight: Number(g('dWeight').value) || 400, nameFont: g('dFont').value, nameColor: g('dNameColor').value, infoSize: Number(g('dInfo').value) || 2.55, contactSize: Number(g('dContact').value) || 1, footerSize: Number(g('dFooterSize').value) || 2.9, footer: g('dFooter').value, signLabel: g('dSign').value, backPhone: g('dBPhone').value.trim(), backEmail: g('dBEmail').value.trim(), backAddress: g('dBAddr').value.trim(), qr: g('dQr').value, qrCustom: g('dQrText').value.trim(), qrLocation: g('dQrLoc').value.trim(), qrImage: c.qrImage || '', navy: g('dNavy').value, blue: g('dBlue').value, teal: g('dTeal').value, off: {}, shapes: {} };
         Object.keys(ID.ITEMS).forEach((k) => { const v2 = { dy: Number(g('o_dy_' + k).value), dx: Number(g('o_dx_' + k).value), s: Number(g('o_s_' + k).value) }; if (v2.dy || v2.dx || v2.s !== 1) o.off[k] = v2; });
         Object.keys(ID.SHAPES).forEach((k) => { const v2 = { dy: Number(g('s_dy_' + k).value), dx: Number(g('s_dx_' + k).value), s: Number(g('s_s_' + k).value), hide: g('s_h_' + k).checked }; const col = g('s_c_' + k).value; if (col.toLowerCase() !== String(o[ID.SHAPES[k].c]).toLowerCase()) v2.color = col; if (v2.dy || v2.dx || v2.s !== 1 || v2.hide || v2.color) o.shapes[k] = v2; });
         return o;
@@ -1092,7 +1092,7 @@
         // মূল রং বদলালে যে আকৃতিগুলোর আলাদা রং দেওয়া নেই সেগুলোও সাথে বদলায়
         [['dNavy', 'navy'], ['dBlue', 'blue'], ['dTeal', 'teal']].forEach(([id, key]) => { const el = $('#' + id, f); let old = el.value; el.addEventListener('input', () => { Object.keys(ID.SHAPES).forEach((k) => { if (ID.SHAPES[k].c !== key) return; const sc = $('#s_c_' + k, f); if (sc.value.toLowerCase() === old.toLowerCase()) { sc.value = el.value; if (sc.nextElementSibling && sc.nextElementSibling.classList.contains('hex')) sc.nextElementSibling.value = el.value.toUpperCase(); } }); old = el.value; }); });
         // QR: কোন ঘর দেখাবে
-        const qrUi = () => { const m = $('#dQr', f).value; $('#dQrTextWrap', f).hidden = m !== 'custom'; $('#dQrImgWrap', f).hidden = m !== 'image'; };
+        const qrUi = () => { const m = $('#dQr', f).value; $('#dQrTextWrap', f).hidden = m !== 'custom'; $('#dQrLocWrap', f).hidden = m !== 'location'; $('#dQrImgWrap', f).hidden = m !== 'image'; };
         $('#dQr', f).addEventListener('change', qrUi); qrUi();
         $('#dQrFile', f).addEventListener('change', async () => { try { const url = await readImage($('#dQrFile', f).files[0], 600, 'image/png'); if (!url) return; c.qrImage = url; $('#dQrTh', f).style.backgroundImage = `url('${url}')`; paint(); } catch (e) { fail(e); } });
         f.addEventListener('input', paint); f.addEventListener('change', paint); paint();
@@ -1248,16 +1248,16 @@
     };
     // অফিস: ফি ও (নবায়নে) নতুন ভর্তি রোল — ফরমে ছাপা হয়
     async function feeEdit(a) {
-      const f = AF.hasFees(a.fees) ? a.fees : AF.feesFor(settings, a.type, a.applyClassId);
+      const f = AF.hasFees(a.fees, settings) ? a.fees : AF.feesFor(settings, a.type, a.applyClassId);
       const d = await dialog(`ফি ও রোল — ${a.code}`, `<p class="muted">${esc(a.nameBn)} · ${a.type === 'renew' ? 'ভর্তি নবায়ন' : 'নতুন ভর্তি'} · ${esc(a.applyClass || '')}</p>
-        <div class="grid-3" style="gap:12px">${AF.FEE_KEYS.map((k) => `<label class="fld"><span>${k[1]} (৳)</span><input id="fe_${k[0]}" inputmode="numeric" value="${esc(f[k[0]] || '')}"></label>`).join('')}
+        <div class="grid-3" style="gap:12px">${AF.feeItems(settings).map((k) => `<label class="fld"><span>${k[1]} (৳)</span><input id="fe_${k[0]}" inputmode="numeric" value="${esc(f[k[0]] || '')}"></label>`).join('')}
         ${a.type === 'renew' ? `<label class="fld"><span>নতুন ভর্তি রোল</span><input id="fe_roll" inputmode="numeric" value="${esc(a.newRoll || '')}"></label>` : ''}</div>
         <p class="muted" id="feTot"></p>`, 'সংরক্ষণ করুন', false, false, (fm) => {
-        const tot = () => { const t = AF.FEE_KEYS.reduce((x, k) => x + (Number(C.toEn($('#fe_' + k[0], fm).value)) || 0), 0); $('#feTot', fm).textContent = `মোট টাকা: ৳ ${t}`; };
+        const tot = () => { const t = AF.feeItems(settings).reduce((x, k) => x + (Number(C.toEn($('#fe_' + k[0], fm).value)) || 0), 0); $('#feTot', fm).textContent = `মোট টাকা: ৳ ${t}`; };
         fm.addEventListener('input', tot); tot();
       });
       if (!d) return;
-      const fees = {}; AF.FEE_KEYS.forEach((k) => { const n = C.toEn(d['fe_' + k[0]] || '').trim(); if (n) fees[k[0]] = n; });
+      const fees = {}; AF.feeItems(settings).forEach((k) => { const n = C.toEn(d['fe_' + k[0]] || '').trim(); if (n) fees[k[0]] = n; });
       const upd = { fees }; if (a.type === 'renew') upd.newRoll = C.toEn(d.fe_roll || '').trim();
       try { await store.updateApplication(a.code, upd); Object.assign(a, upd); draw(); toast('ফি ও রোল সংরক্ষণ হয়েছে'); } catch (e) { fail(e); }
     }
@@ -1285,24 +1285,45 @@
     // শ্রেণিভিত্তিক ফি: অনলাইন ফরমে শ্রেণি বাছাই করলে এই ফি দেখায় ও ফরমে ছাপা হয়
     async function classFees() {
       const all = JSON.parse(JSON.stringify(settings.admFees || {}));
-      const tbl = (t) => `<div class="tbl-wrap"><table class="tbl fee-set"><thead><tr><th class="left">শ্রেণি</th>${AF.FEE_KEYS.map((k) => `<th>${k[1]}</th>`).join('')}<th>মোট</th></tr></thead><tbody>${catalog.classes.map((c) => { const f = (all[t] || {})[c.id] || {}; return `<tr data-row="${t}"><td class="left"><b>${esc(c.name)}</b></td>${AF.FEE_KEYS.map((k) => `<td><input class="cell-in" id="af_${t}_${c.id}_${k[0]}" inputmode="numeric" value="${esc(f[k[0]] || '')}" placeholder="0"></td>`).join('')}<td class="fee-tot" data-tot="${t}_${c.id}"></td></tr>`; }).join('')}</tbody></table></div>`;
-      const body = `<div class="seg" role="tablist"><button type="button" class="btn btn-sm btn-dark" data-fseg="new">নতুন ভর্তি</button><button type="button" class="btn btn-sm btn-ghost" data-fseg="renew">ভর্তি নবায়ন (পুরাতন)</button></div>
-        <p class="muted">প্রতিটি শ্রেণির ফি লিখুন (টাকা)। অভিভাবক অনলাইন ফরমে শ্রেণি বাছাই করলে সেই শ্রেণির ফি দেখবেন, আর ফরমের PDF-এ ছাপা হবে। কোনো ঘর খালি রাখলে সেটি দেখাবে না।</p>
-        <div data-fpane="new">${tbl('new')}</div><div data-fpane="renew" hidden>${tbl('renew')}</div>
+      let items = AF.feeItems(settings).map((k) => ({ k: k[0], t: k[1] }));
+      let tab = 'new';
+      const newKey = () => 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+      const tbl = (t) => `<div class="tbl-wrap"><table class="tbl fee-set"><thead><tr><th class="left">শ্রেণি</th>${items.map((k) => `<th>${esc(k.t)}</th>`).join('')}<th>মোট</th></tr></thead><tbody>${catalog.classes.map((c) => { const f = (all[t] || {})[c.id] || {}; return `<tr><td class="left"><b>${esc(c.name)}</b></td>${items.map((k) => `<td><input class="cell-in" data-fv="${t}|${c.id}|${k.k}" inputmode="numeric" value="${esc(f[k.k] || '')}" placeholder="0"></td>`).join('')}<td class="fee-tot" data-tot="${t}|${c.id}"></td></tr>`; }).join('')}</tbody></table></div>`;
+      const body = `<div class="fee-items"><b>ফির খাত</b><div id="afItems"></div><button type="button" class="btn btn-sm btn-green" id="afAdd">+ নতুন ফি যোগ করুন</button></div>
+        <div class="seg" role="tablist" style="margin-top:12px"><button type="button" class="btn btn-sm btn-dark" data-fseg="new">নতুন ভর্তি</button><button type="button" class="btn btn-sm btn-ghost" data-fseg="renew">ভর্তি নবায়ন (পুরাতন)</button></div>
+        <p class="muted">প্রতিটি শ্রেণির ফি লিখুন (টাকা)। অভিভাবক অনলাইন ফরমে শ্রেণি বাছাই করলে সেই শ্রেণির ফি দেখবেন, আর ফরমের নিচের ফি বক্সে ছাপা হবে। কোনো ঘর খালি রাখলে সেটি দেখাবে না।</p>
+        <div id="afTable"></div>
+        <label class="fld" style="margin-top:10px"><span>ফরমের ফি অংশের উপরের ছোট লেখা</span><input id="afNote" value="${esc(settings.feeNote || 'বিঃদ্রঃ উল্লেখিত সকল ফি মাদ্রাসায় এসে অফিসে পরিশোধ করতে হবে।')}"></label>
         <label style="display:block;margin-top:8px"><input type="checkbox" id="afCopy"> নবায়নের ফি নতুন ভর্তির মতোই (নতুন ভর্তির ঘরগুলো নবায়নে কপি হবে)</label>`;
       const d = await dialog('শ্রেণিভিত্তিক ভর্তি ফি', body, 'সংরক্ষণ করুন', false, true, (fm) => {
-        const sum = () => $$('[data-tot]', fm).forEach((td) => { const [t, c] = td.dataset.tot.split(/_(.+)/); td.textContent = '৳ ' + AF.FEE_KEYS.reduce((x, k) => x + (Number(C.toEn($('#af_' + t + '_' + c + '_' + k[0], fm).value)) || 0), 0); });
-        fm.addEventListener('input', sum); sum();
-        $$('[data-fseg]', fm).forEach((b) => { b.onclick = () => { $$('[data-fseg]', fm).forEach((x) => { x.className = 'btn btn-sm ' + (x === b ? 'btn-dark' : 'btn-ghost'); }); $$('[data-fpane]', fm).forEach((pn) => { pn.hidden = pn.dataset.fpane !== b.dataset.fseg; }); }; });
+        // লেখা ঘরগুলোর মান মনে রাখা (খাত বদলালে টেবিল আবার আঁকা হয়)
+        const keep = () => {
+          $$('[data-fv]', fm).forEach((el) => { const [t, c, k] = el.dataset.fv.split('|'); ((all[t] = all[t] || {})[c] = all[t][c] || {})[k] = C.toEn(el.value).trim(); });
+          $$('[data-it]', fm).forEach((el) => { const it = items.find((x) => x.k === el.dataset.it); if (it) it.t = el.value; });
+        };
+        const sum = () => $$('[data-tot]', fm).forEach((td) => { const [t, c] = td.dataset.tot.split('|'); td.textContent = '৳ ' + items.reduce((x, k) => { const el = fm.querySelector(`[data-fv="${t}|${c}|${k.k}"]`); return x + (Number(C.toEn(el ? el.value : '')) || 0); }, 0); });
+        const drawItems = () => {
+          $('#afItems', fm).innerHTML = items.map((k) => `<span class="fee-item"><input data-it="${k.k}" value="${esc(k.t)}" aria-label="ফির নাম"><button type="button" class="btn btn-sm btn-ghost" data-rmit="${k.k}" aria-label="মুছুন">✕</button></span>`).join('');
+          $$('[data-rmit]', fm).forEach((b) => { b.onclick = () => { keep(); if (items.length <= 1) return toast('অন্তত একটি ফি থাকতে হবে।', true); items = items.filter((x) => x.k !== b.dataset.rmit); drawAll(); }; });
+          $$('[data-it]', fm).forEach((el) => { el.oninput = () => { keep(); drawTable(); }; });
+        };
+        const drawTable = () => { $('#afTable', fm).innerHTML = `<div data-fpane="new" ${tab === 'new' ? '' : 'hidden'}>${tbl('new')}</div><div data-fpane="renew" ${tab === 'renew' ? '' : 'hidden'}>${tbl('renew')}</div>`; sum(); };
+        const drawAll = () => { drawItems(); drawTable(); };
+        $('#afAdd', fm).onclick = () => { keep(); if (items.length >= 9) return toast('সর্বোচ্চ ৯টি ফি রাখা যায়।', true); items.push({ k: newKey(), t: 'নতুন ফি' }); drawAll(); const last = $$('[data-it]', fm).pop(); if (last) { last.focus(); last.select(); } };
+        fm.addEventListener('input', (ev) => { if (ev.target.dataset.fv) sum(); });
+        $$('[data-fseg]', fm).forEach((b) => { b.onclick = () => { keep(); tab = b.dataset.fseg; $$('[data-fseg]', fm).forEach((x) => { x.className = 'btn btn-sm ' + (x === b ? 'btn-dark' : 'btn-ghost'); }); drawTable(); }; });
+        fm.addEventListener('submit', keep, true);
+        drawAll();
       });
       if (!d) return;
+      items = items.map((k) => ({ k: k.k, t: (k.t || '').trim() || 'ফি' }));
       const out = { new: {}, renew: {} };
-      ['new', 'renew'].forEach((t) => catalog.classes.forEach((c) => { const row = {}; AF.FEE_KEYS.forEach((k) => { row[k[0]] = C.toEn(d[`af_${d.afCopy && t === 'renew' ? 'new' : t}_${c.id}_${k[0]}`] || '').trim(); }); out[t][c.id] = row; }));
-      try { await store.saveSettings({ admFees: out }); settings.admFees = out; toast('শ্রেণিভিত্তিক ফি সংরক্ষণ হয়েছে'); } catch (e) { fail(e); }
+      ['new', 'renew'].forEach((t) => catalog.classes.forEach((c) => { const src = ((all[d.afCopy ? 'new' : t] || {})[c.id]) || {}; const row = {}; items.forEach((k) => { row[k.k] = src[k.k] || ''; }); out[t][c.id] = row; }));
+      try { await store.saveSettings({ admFees: out, admFeeItems: items, feeNote: (d.afNote || '').trim() }); settings.admFees = out; settings.admFeeItems = items; settings.feeNote = (d.afNote || '').trim(); toast('শ্রেণিভিত্তিক ফি সংরক্ষণ হয়েছে'); } catch (e) { fail(e); }
     }
     $('#apFees').onclick = classFees;
     $('#apFind').oninput = draw; $('#apFilter').onchange = draw; $('#apType').onchange = draw;
-    $('#apXls').onclick = () => excel('Admission Applications', [{ name: 'Applications', rows: [['Code', 'Type', 'Status', 'Date', 'শিক্ষাবর্ষ', 'রেজিস্ট্রেশন', 'নতুন রোল', 'নাম', 'Name (English)', 'শ্রেণি (ভর্তি/নতুন)', 'বর্তমান শ্রেণি', 'জন্মতারিখ', 'লিঙ্গ', 'পিতার নাম', 'মাতার নাম', 'অভিভাবকের নাম', 'সম্পর্ক', 'মোবাইল (১)', 'মোবাইল (২)', 'ই-মেইল', 'ঠিকানা', ...AF.FEE_KEYS.map((k) => k[1]), 'মোট টাকা'], ...list.map((a) => [a.code, a.type === 'renew' ? 'Renewal' : 'New', a.status, new Date(a.submittedAt).toLocaleDateString('en-GB'), a.year, a.reg || '', a.newRoll || '', a.nameBn, a.nameEn, a.applyClass, a.currentClass || '', a.dob, a.gender, a.father, a.mother, a.guardian || '', a.relation === 'অন্যান্য' ? (a.relationOther || 'অন্যান্য') : (a.relation || ''), a.guardianMobile, a.mobile2 || a.mobile || '', a.email || '', a.address, ...AF.FEE_KEYS.map((k) => (a.fees || {})[k[0]] || ''), AF.feeTotal(a.fees) || ''])] }]);
+    $('#apXls').onclick = () => excel('Admission Applications', [{ name: 'Applications', rows: [['Code', 'Type', 'Status', 'Date', 'শিক্ষাবর্ষ', 'রেজিস্ট্রেশন', 'নতুন রোল', 'নাম', 'Name (English)', 'শ্রেণি (ভর্তি/নতুন)', 'বর্তমান শ্রেণি', 'জন্মতারিখ', 'লিঙ্গ', 'পিতার নাম', 'মাতার নাম', 'অভিভাবকের নাম', 'সম্পর্ক', 'মোবাইল (১)', 'মোবাইল (২)', 'ই-মেইল', 'ঠিকানা', ...AF.feeItems(settings).map((k) => k[1]), 'মোট টাকা'], ...list.map((a) => [a.code, a.type === 'renew' ? 'Renewal' : 'New', a.status, new Date(a.submittedAt).toLocaleDateString('en-GB'), a.year, a.reg || '', a.newRoll || '', a.nameBn, a.nameEn, a.applyClass, a.currentClass || '', a.dob, a.gender, a.father, a.mother, a.guardian || '', a.relation === 'অন্যান্য' ? (a.relationOther || 'অন্যান্য') : (a.relation || ''), a.guardianMobile, a.mobile2 || a.mobile || '', a.email || '', a.address, ...AF.feeItems(settings).map((k) => (a.fees || {})[k[0]] || ''), AF.feeTotal(a.fees, settings) || ''])] }]);
     list = (await store.listApplications()).map((a) => AF.norm(a)); draw();
   };
 

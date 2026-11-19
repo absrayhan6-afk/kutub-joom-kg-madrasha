@@ -27,9 +27,11 @@
   const card = (icon, title, body, cls) => `<section class="af-card ${cls || ''}"><div class="af-tab">${ico(icon)}<span>${title}</span></div><div class="af-body">${body}</div></section>`;
   const FEE_KEYS = [['admission', 'ভর্তি ফি'], ['books', 'বইয়ের টাকা'], ['diary', 'ডায়েরির টাকা'], ['monthly', 'মাসিক ফি'], ['card', 'কার্ড ফি']];
   // শ্রেণিভিত্তিক ফি (এডমিন প্যানেল থেকে ঠিক করা): settings.admFees[new|renew][classId]
+  // ফির খাত: শুরুতে ৫টি, এডমিন প্যানেল থেকে নতুন খাত যোগ/নাম বদল/মুছা যায় (settings.admFeeItems)
+  const feeItems = (s) => { const it = (s || {}).admFeeItems; return Array.isArray(it) && it.length ? it.map((i) => [i.k, i.t]) : FEE_KEYS; };
   const feesFor = (s, type, classId) => { const t = ((s || {}).admFees || {})[type === 'renew' ? 'renew' : 'new'] || {}; return Object.assign({}, t[classId] || {}); };
-  const hasFees = (f) => !!f && FEE_KEYS.some((k) => String(f[k[0]] || '').trim());
-  const feeTotal = (f) => FEE_KEYS.reduce((t, k) => t + (Number(dig((f || {})[k[0]])) || 0), 0);
+  const hasFees = (f, s) => !!f && feeItems(s).some((k) => String(f[k[0]] || '').trim());
+  const feeTotal = (f, s) => feeItems(s).reduce((t, k) => t + (Number(dig((f || {})[k[0]])) || 0), 0);
   const MOSQUE = `<svg class="af-mosque" viewBox="0 0 200 130" aria-hidden="true"><defs><linearGradient id="afmq" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c9a4c"/><stop offset="1" stop-color="#0b5d2e"/></linearGradient></defs><g fill="url(#afmq)"><path d="M100 22c-26 8-38 28-38 46h76c0-18-12-38-38-46z"/><rect x="60" y="66" width="80" height="60"/><path d="M98 8h4v14h-4z"/><circle cx="100" cy="6" r="4"/><rect x="28" y="40" width="10" height="86"/><path d="M26 40l7-16 7 16z"/><rect x="162" y="40" width="10" height="86"/><path d="M160 40l7-16 7 16z"/><rect x="8" y="70" width="8" height="56"/><path d="M6 70l6-12 6 12z"/><rect x="184" y="70" width="8" height="56"/><path d="M182 70l6-12 6 12z"/><path d="M40 92c-8 3-12 9-12 14h24c0-5-4-11-12-14zM160 92c-8 3-12 9-12 14h24c0-5-4-11-12-14z"/><rect x="40" y="104" width="22" height="22"/><rect x="138" y="104" width="22" height="22"/></g><path d="M150 30a10 10 0 1 0 8 16 8 8 0 1 1-8-16z" fill="#1c9a4c"/></svg>`;
   const SWOOSH = `<svg class="af-swoosh" viewBox="0 0 794 330" preserveAspectRatio="none" aria-hidden="true"><path d="M0 150C70 205 170 235 300 240L300 254C160 252 70 225 0 190Z" fill="#0b5d2e"/><path d="M0 196C80 232 170 252 300 256L300 262C165 262 75 244 0 210Z" fill="#e6b422"/><path d="M794 150C724 205 624 235 494 240L494 254C634 252 724 225 794 190Z" fill="#0b5d2e"/><path d="M794 196C714 232 624 252 494 256L494 262C629 262 719 244 794 210Z" fill="#e6b422"/><path d="M0 0H794V18C600 40 200 40 0 18Z" fill="#eaf6ee"/></svg>`;
   const WAVE = `<svg class="af-wave" viewBox="0 0 794 80" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30C250 0 550 0 794 26V80H0Z" fill="#e6b422"/><path d="M0 42C250 14 550 14 794 38V80H0Z" fill="#138a43"/><path d="M0 56C250 32 550 32 794 52V80H0Z" fill="#0b5d2e"/></svg>`;
@@ -57,7 +59,8 @@
     const addr = s.formAddress || s.address || 'নয়াপাড়া কুতুবজোম, মহেশখালী, কক্সবাজার';
     const dob = /^\d{4}-\d{2}-\d{2}$/.test(a.dob || '') ? a.dob.split('-') : ['', '', ''];
     const rel = a.relation || '';
-    const fees = hasFees(a.fees) ? a.fees : feesFor(s, a.type, a.applyClassId); const tot = feeTotal(fees);
+    const items = feeItems(s);
+    const fees = hasFees(a.fees, s) ? a.fees : feesFor(s, a.type, a.applyClassId); const tot = feeTotal(fees, s);
     const money = (v) => `<span class="af-money"><b>৳</b>${esc(dig(v || ''))}</span>`;
     const student = `<div class="af-two"><div>${dotted('শিক্ষার্থীর নাম', a.nameBn)}${dotted('শ্রেণি', renew ? a.applyClass : a.currentClass)}</div>
       <div class="af-side"><div class="af-line"><span class="af-l af-ls">জন্ম তারিখ</span><span class="af-c">:</span>${boxes(dob[0] ? `${dob[2]}/${dob[1]}/${dob[0]}` : '')}</div>
@@ -68,9 +71,9 @@
     const contact = `<div class="af-line af-addr"><span class="af-l">বর্তমান ঠিকানা</span><span class="af-c">:</span><span class="af-v af-v2">${esc(a.address) || ''}</span></div>
       <div class="af-line af-mob"><span class="af-l">মোবাইল নম্বর (১)</span><span class="af-c">:</span>${boxes(a.guardianMobile || a.mobile)}<span class="af-bar"></span><span class="af-l">মোবাইল নম্বর (২)</span><span class="af-c">:</span>${boxes(a.mobile2 || (a.guardianMobile && a.mobile !== a.guardianMobile ? a.mobile : ''))}</div>
       ${dotted('ই-মেইল (যদি থাকে)', a.email, 'af-wide')}`;
-    const feeRow = `<table class="af-fees"><thead><tr>${FEE_KEYS.map((k) => `<th>${k[1]}</th>`).join('')}<th>মোট টাকা</th></tr></thead><tbody><tr>${FEE_KEYS.map((k) => `<td>${money(fees[k[0]])}</td>`).join('')}<td class="af-tot">${money(tot || '')}</td></tr></tbody></table>`;
+    const feeRow = `<p class="af-feenote">${esc(s.feeNote || 'বিঃদ্রঃ উল্লেখিত সকল ফি মাদ্রাসায় এসে অফিসে পরিশোধ করতে হবে।')}</p><table class="af-fees af-n${Math.min(items.length + 1, 10)}"><thead><tr>${items.map((k) => `<th>${esc(k[1])}</th>`).join('')}<th>মোট টাকা</th></tr></thead><tbody><tr>${items.map((k) => `<td>${money(fees[k[0]])}</td>`).join('')}<td class="af-tot">${money(tot || '')}</td></tr></tbody></table>`;
     return `<article class="adm-form ${renew ? 'is-renew' : 'is-new'}" lang="bn">
-  ${SWOOSH}${MOSQUE}
+  ${SWOOSH}${MOSQUE}<img class="af-water" src="${esc(logo)}" alt="" aria-hidden="true">
   <header class="af-head">
     <img class="af-logo" src="${esc(logo)}" alt="লোগো">
     <div class="af-name"><h1>${esc(name1)}</h1><h2>${esc(name2)}</h2><p>${ico('pin')}${esc(addr)}</p></div>
@@ -114,5 +117,5 @@
     } finally { host.remove(); }
   }
 
-  global.AdmissionForm = { render, pdf, esc, FEE_KEYS, feeTotal, feesFor, hasFees, legacy, norm };
+  global.AdmissionForm = { render, pdf, esc, FEE_KEYS, feeItems, feeTotal, feesFor, hasFees, legacy, norm };
 })(window);

@@ -55,7 +55,7 @@
     <div class="ms-grade ${passed ? '' : special ? 'is-special' : 'is-fail'}"><span>Overall Grade</span><div class="ms-grade-row">${laurel(false)}<b>${esc(r.grade)}</b>${laurel(true)}</div></div>
   </section>
   <section class="ms-tiles">${tiles}</section>
-  <div class="ms-table-wrap"><table class="ms-table"><thead><tr><th>SL</th><th>Subject</th><th>Full Marks</th><th>Obtained Marks</th><th>Grade</th><th>GP</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="ms-table-wrap"><table class="ms-table"><thead><tr><th>SL</th><th>Subject</th><th>Full Marks</th><th>Obtained Marks</th><th>Grade</th><th>GP</th></tr></thead><tbody>${rows}</tbody></table><img class="ms-water" src="${esc(logo)}" alt="" aria-hidden="true"></div>
   <section class="ms-msg ${passed ? '' : special ? 'is-special' : 'is-fail'}">
     <span class="ms-msg-ico" aria-hidden="true">${passed ? '<svg viewBox="0 0 24 24"><path d="M9.5 16.2 5.3 12l-1.4 1.4 5.6 5.6 12-12-1.4-1.4z"/></svg>' : '!'}</span>
     <div class="ms-msg-text">${passed ? '<h3>Congratulations!</h3><p>You have passed the examination. May Allah grant you more success.</p>'

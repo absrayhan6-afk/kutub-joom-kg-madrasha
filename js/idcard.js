@@ -7,7 +7,7 @@
   const BW = 54, BH = 85.6;
   const W = 2.13 * 25.4, H = 3.39 * 25.4, BLEED = 0.125 * 25.4;
   const SX = W / BW, SY = H / BH;
-  const DEF = { navy: '#2b2e7c', blue: '#3f88c9', teal: '#7fcfdb', ink: '#111111', schoolSize: 0, addrLine: '', nameSize: 0, infoSize: 2.75, footer: 'STUDENT', signLabel: 'Headmaster Signature', qr: 'student', qrCustom: '', qrImage: '', schoolLines: '', nameWeight: 400, nameFont: 'impact', addrSize: 2.4, footerSize: 2.6, contactSize: 1, schoolColor: '#ffffff', nameColor: '#111111', shapes: {}, off: {}, backPhone: '', backAddress: '', backEmail: '' };
+  const DEF = { navy: '#2b2e7c', blue: '#3f88c9', teal: '#7fcfdb', ink: '#111111', schoolSize: 0, addrLine: '', nameSize: 0, infoSize: 2.75, footer: 'STUDENT', signLabel: 'Headmaster Signature', qr: 'student', qrCustom: '', qrImage: '', qrLocation: '', schoolLines: '', nameWeight: 400, nameFont: 'impact', addrSize: 2.4, footerSize: 2.6, contactSize: 1, schoolColor: '#ffffff', nameColor: '#111111', shapes: {}, off: {}, backPhone: '', backAddress: '', backEmail: '' };
   let NAVY, BLUE, TEAL, INK, CFG = DEF;
   function useCfg(c) { CFG = Object.assign({}, DEF, c || {}); NAVY = CFG.navy; BLUE = CFG.blue; TEAL = CFG.teal; INK = CFG.ink; }
   useCfg();
@@ -182,6 +182,7 @@
     { v: 'student', t: 'শিক্ষার্থীর তথ্য (নাম, আইডি, শ্রেণি, রোল, মোবাইল)' },
     { v: 'website', t: 'মাদ্রাসার ওয়েবসাইট' },
     { v: 'result', t: 'ফলাফল দেখার পেজ' },
+    { v: 'location', t: 'মাদ্রাসার লোকেশন (Google Maps লিংক)' },
     { v: 'facebook', t: 'মাদ্রাসার ফেসবুক পেজ' },
     { v: 'custom', t: 'নিজের লেখা বা লিংক' },
     { v: 'image', t: 'নিজের QR কোডের ছবি আপলোড' },
@@ -192,6 +193,7 @@
     switch (CFG.qr) {
       case 'website': return site;
       case 'result': return site.replace(/\/$/, '') + '/#result';
+      case 'location': return CFG.qrLocation || site;
       case 'facebook': return d.facebook || site;
       case 'custom': return CFG.qrCustom || site;
       case 'image': return site;
@@ -284,13 +286,24 @@
     BLEED_MODE = false;
     return pages.map((pg) => `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${PW}mm" height="${PH}mm" viewBox="0 0 ${PW} ${PH}"><g id="${pg.name}"><rect width="${PW}" height="${PH}" fill="#ffffff"/>${pg.body}</g></svg>`);
   }
-  // সব পাতা একটি SVG ফাইলে (Illustrator-এ খুলে প্রতিটি পাতা আলাদা artboard বানানো যায়)
+  // একটি শ্রেণির সব কার্ড একটি পাতায় (Illustrator-এর জন্য): একটাই সাদা ব্যাকগ্রাউন্ড, প্রতি সারিতে 4 জন শিক্ষার্থী
+  // (প্রত্যেকের সামনে ও পেছন পাশাপাশি), প্রতিটি কার্ডে bleed ও কাটার দাগ। পাতা A4-এর চেয়ে বড় হতে পারে।
   function sheetSvg(list, title, cfg) {
-    const PW = 210, PH = 297, PG = 12;
-    const pages = sheetPages(list, cfg);
-    const totalH = pages.length * PH + (pages.length - 1) * PG;
-    const body = pages.map((pg, i) => `<g transform="translate(0 ${i * (PH + PG)})">${pg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '')}</g>`).join('\n');
-    return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${PW}mm" height="${totalH}mm" viewBox="0 0 ${PW} ${totalH}">\n<title>${x(title)}</title>\n${body}\n</svg>`;
+    useCfg(cfg); BLEED_MODE = true;
+    const pairs = 4, M = BLEED + 8, gapIn = 2 * BLEED + 12, gapPair = 2 * BLEED + 20, gapRow = 2 * BLEED + 14;
+    const pairW = 2 * W + gapIn, rowsN = Math.max(1, Math.ceil(list.length / pairs));
+    const cols = Math.min(pairs, Math.max(1, list.length));
+    const tw = 2 * M + cols * pairW + (cols - 1) * gapPair, th = 2 * M + rowsN * H + (rowsN - 1) * gapRow;
+    const nm = (d, sd) => x((sd + '_Roll_' + d.roll + '_' + d.name).replace(/[^A-Za-z0-9_]+/g, '_'));
+    let cards = '', marks = '';
+    list.forEach((d, i) => {
+      const r = Math.floor(i / pairs), c = i % pairs;
+      const fx = M + c * (pairW + gapPair), y = M + r * (H + gapRow), bx = fx + W + gapIn;
+      cards += `<g id="${nm(d, 'Student')}"><g id="${nm(d, 'Front')}" transform="translate(${n2(fx)} ${n2(y)})">${side(d, 'front')}</g><g id="${nm(d, 'Back')}" transform="translate(${n2(bx)} ${n2(y)})">${side(d, 'back')}</g></g>`;
+      marks += cropMarks(fx, y, W, H) + cropMarks(bx, y, W, H);
+    });
+    BLEED_MODE = false;
+    return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${n2(tw)}mm" height="${n2(th)}mm" viewBox="0 0 ${n2(tw)} ${n2(th)}">\n<title>${x(title)}</title>\n<g id="Background"><rect width="${n2(tw)}" height="${n2(th)}" fill="#ffffff"/></g>\n<g id="Cards">${cards}</g>\n<g id="Crop_Marks">${marks}</g>\n</svg>`;
   }
 
   // ছবি লোড

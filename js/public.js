@@ -101,10 +101,10 @@
   // বাছাই করা শ্রেণির ফি (এডমিন প্যানেলে ঠিক করা)
   function showFees() {
     const box = $('#apFeeBox'); const f = AF.feesFor(settings, apType, $('#apClass').value);
-    if (!$('#apClass').value || !AF.hasFees(f)) { box.hidden = true; return; }
+    if (!$('#apClass').value || !AF.hasFees(f, settings)) { box.hidden = true; return; }
     const cls = (catalog.classes.find((c) => c.id === $('#apClass').value) || {}).name || '';
     box.hidden = false;
-    box.innerHTML = `<b>${esc(cls)} — ${apType === 'renew' ? 'ভর্তি নবায়নের' : 'ভর্তির'} ফি</b><div class="apply-fee-grid">${AF.FEE_KEYS.filter((k) => String(f[k[0]] || '').trim()).map((k) => `<span>${k[1]}<b>৳ ${esc(C.toEn(f[k[0]]))}</b></span>`).join('')}<span class="tot">মোট টাকা<b>৳ ${AF.feeTotal(f)}</b></span></div>`;
+    box.innerHTML = `<b>${esc(cls)} — ${apType === 'renew' ? 'ভর্তি নবায়নের' : 'ভর্তির'} ফি</b><div class="apply-fee-grid">${AF.feeItems(settings).filter((k) => String(f[k[0]] || '').trim()).map((k) => `<span>${k[1]}<b>৳ ${esc(C.toEn(f[k[0]]))}</b></span>`).join('')}<span class="tot">মোট টাকা<b>৳ ${AF.feeTotal(f, settings)}</b></span></div>`;
   }
   $('#apClass').addEventListener('change', showFees);
   $$('#applyOpen, [data-open-apply]').forEach((a) => a.addEventListener('click', (ev) => { ev.preventDefault(); nav.classList.remove('open'); openApply(); }));

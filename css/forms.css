@@ -12,8 +12,8 @@
 .af-head { display: grid; grid-template-columns: 140px minmax(0, 1fr); align-items: center; gap: 0; margin-right: 120px; }
 .af-logo { width: 128px; height: auto; padding-right: 12px; border-right: 2px solid #333; }
 .af-name { text-align: center; padding-left: 10px; }
-.af-name h1 { margin: 0; color: var(--af-g); font-size: 48px; line-height: 1.05; font-weight: 800; }
-.af-name h2 { margin: 0; color: var(--af-g); font-size: 34px; line-height: 1.1; font-weight: 800; }
+.af-name h1 { margin: 0; color: var(--af-g); font-size: 57px; line-height: 1.05; font-weight: 800; -webkit-text-stroke: 1.2px var(--af-g); white-space: nowrap; }
+.af-name h2 { margin: 2px 0 0; color: var(--af-g); font-size: 27px; line-height: 1.1; font-weight: 800; -webkit-text-stroke: .5px var(--af-g); }
 .af-name p { margin: 4px 0 0; display: flex; justify-content: center; align-items: center; gap: 4px; font-size: 19px; font-weight: 600; }
 .af-name p svg { width: 18px; height: 18px; fill: #d0312d; flex: none; }
 .af-title { display: flex; flex-direction: column; align-items: center; margin-top: 8px; }
@@ -21,11 +21,11 @@
 .af-sub { margin-top: -38px; background: linear-gradient(180deg, #fff6c9, #ffe27a); color: #10301c; font-weight: 800; font-size: 21px; padding: 0 22px; border-radius: 30px; border: 2px solid var(--af-gold); }
 .af-code { align-self: center; background: #fff; border-radius: 20px; padding: 0 12px; font-size: 15px; margin-top: 8px; color: #333; z-index: 1; }
 .af-code b { font-family: 'Hind Siliguri', Arial, sans-serif; letter-spacing: .04em; }
-.af-card { border: 2px solid var(--af-line); border-radius: 16px; margin-top: 20px; padding: 14px 14px 4px; }
+.af-card { border: 2px solid var(--af-line); border-radius: 16px; margin-top: 19px; padding: 13px 14px 3px; background: rgba(255,255,255,.55); }
 .af-tab { position: absolute; left: -2px; top: -20px; display: flex; align-items: center; gap: 10px; background: linear-gradient(180deg, var(--af-g2), var(--af-g)); color: #fff; font-weight: 800; font-size: 22px; padding: 2px 46px 2px 18px; border-radius: 14px 0 0 0; clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 100%, 0 100%); }
 .af-tab svg { width: 26px; height: 26px; fill: #fff; }
 .af-body { display: grid; gap: 1px; }
-.af-line { display: flex; align-items: flex-end; gap: 8px; min-height: 31px; padding: 1px 6px; }
+.af-line { display: flex; align-items: flex-end; gap: 8px; min-height: 30px; padding: 1px 6px; }
 .af-l { flex: none; min-width: 140px; font-weight: 600; }
 .af-ls { min-width: 82px; }
 .af-c { flex: none; font-weight: 700; }
@@ -56,7 +56,7 @@
 .af-regbox .af-boxes i { width: 24px; height: 34px; font-size: 19px; }
 .af-chip { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(180deg, var(--af-g2), var(--af-g)); color: #fff; font-weight: 800; font-size: 19px; padding: 4px 14px; border-radius: 10px; white-space: nowrap; }
 .af-chip svg { width: 22px; height: 22px; fill: #fff; }
-.af-classbox { margin-top: 14px; border: 2px solid #9cc8aa; border-radius: 16px; background: #f4faf5; padding: 9px 14px; display: grid; gap: 8px; }
+.af-classbox { margin-top: 12px; border: 2px solid #9cc8aa; border-radius: 16px; background: #f4faf5; padding: 9px 14px; display: grid; gap: 8px; }
 .af-crow { display: flex; align-items: center; gap: 16px; }
 .af-chip.af-big { font-size: 26px; padding: 4px 34px 4px 20px; border-radius: 40px; border: 3px solid var(--af-gold); clip-path: none; }
 .af-chip.af-big svg { width: 34px; height: 34px; }
@@ -151,3 +151,11 @@
 .apply-fee-grid span { display: flex; flex-direction: column; background: #fff; border: 1px solid #cfe5d6; border-radius: 10px; padding: 6px 10px; font-size: 14px; color: #3d5a49; }
 .apply-fee-grid span b { font-size: 18px; color: #12301f; }
 .apply-fee-grid .tot { background: #fff6d8; border-color: #e6b422; }
+.af-water { position: absolute !important; left: 50%; top: 56%; width: 430px; transform: translate(-50%, -50%); opacity: .07; pointer-events: none; z-index: 0; }
+.af-feenote { position: absolute; right: 14px; top: -12px; margin: 0; background: #fff; padding: 0 8px; font-size: 14px; font-weight: 700; color: #7a4b00; white-space: nowrap; line-height: 1.4; }
+.af-feecard { padding-top: 16px; }
+.af-feecard .af-body { position: static; }
+.af-fees th { line-height: 1.15; }
+.af-fees.af-n7 th, .af-fees.af-n8 th { font-size: 16px; padding: 5px 2px; } .af-fees.af-n7 .af-money, .af-fees.af-n8 .af-money { padding: 0 5px; font-size: 14px; gap: 3px; }
+.af-fees.af-n9 th, .af-fees.af-n10 th { font-size: 14px; padding: 4px 1px; line-height: 1.15; } .af-fees.af-n9 .af-money, .af-fees.af-n10 .af-money { padding: 0 3px; font-size: 13px; gap: 2px; height: 30px; }
+.af-fees.af-n9 td, .af-fees.af-n10 td { padding: 6px 2px; }
