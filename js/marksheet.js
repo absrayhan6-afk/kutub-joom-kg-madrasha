@@ -102,7 +102,10 @@
     stroke(G); doc.setLineWidth(0.5); doc.line(53, 14, 53, 43);
     const cx = 126;
     font(['times', 'bold'], 22); color(G); stroke(G); doc.setLineWidth(0.22);
-    const nameLines = doc.splitTextToSize(en(s.nameEn || s.name).toUpperCase(), 138).slice(0, 2);
+    const nm = en(s.nameEn || s.name).toUpperCase().replace(/\s+/g, ' ').trim();
+    // নমুনার মতো "&" থেকে দ্বিতীয় লাইন
+    const amp = nm.indexOf(' & ');
+    const nameLines = (amp > 0 && W(nm.slice(0, amp)) < 138 && W(nm.slice(amp + 1)) < 138 ? [nm.slice(0, amp), nm.slice(amp + 1)] : doc.splitTextToSize(nm, 138)).slice(0, 2);
     nameLines.forEach((l, i) => text(l, cx, 21 + i * 8.6 - (nameLines.length === 1 ? -4 : 0), { align: 'center', renderingMode: 'fillThenStroke' }));
     font(['helvetica', 'bold'], 10); color(INK);
     const addr = en(s.addressEn || s.address); const aw = W(addr), ay = 21 + nameLines.length * 8.6 + 0.6;
@@ -119,10 +122,10 @@
     const mh = att ? 12.5 : 8; stroke(G); doc.setLineWidth(0.4); doc.roundedRect(14, y, 182, mh, 3.5, 3.5, 'S');
     const seg = (parts, yy) => {
       font(['helvetica', 'bold'], 9.5);
-      const ws = parts.map((p) => { font(['helvetica', 'bold'], 9.5); const a = W(p[0] + ' : '); font(['helvetica', p[2] ? 'bold' : 'normal'], 9.5); return a + W(p[1]); });
+      const ws = parts.map((p) => { font(['helvetica', 'bold'], 9.5); const a = W(p[0] + ' :') + 1.4; font(['helvetica', p[2] ? 'bold' : 'normal'], 9.5); return a + W(p[1]); });
       const gap = 7, tot = ws.reduce((a, b) => a + b, 0) + gap * (parts.length - 1); let xx = 105 - tot / 2;
       parts.forEach((p, i) => {
-        font(['helvetica', 'bold'], 9.5); color(G2); text(p[0] + ' : ', xx, yy); const a = W(p[0] + ' : ');
+        font(['helvetica', 'bold'], 9.5); color(G2); text(p[0] + ' :', xx, yy); const a = W(p[0] + ' :') + 1.4;
         font(['helvetica', p[2] ? 'bold' : 'normal'], 9.5); color(INK); text(p[1], xx + a, yy);
         xx += ws[i] + gap; if (i < parts.length - 1) { stroke('#999999'); doc.setLineWidth(0.3); doc.line(xx - gap / 2, yy - 3, xx - gap / 2, yy + 0.8); }
       });
@@ -146,7 +149,6 @@
     font(['times', 'bold'], 15); color(G); text('Overall Grade', 167, y + 9, { align: 'center' });
     font(['helvetica', 'bold'], 34); color(passed ? '#f07c0f' : special ? '#9a6b00' : '#5b5b5b'); text(en(r.grade), 167, y + 26, { align: 'center' });
     // পাতার মালা (সাধারণ রূপ)
-    fill('#c99a12'); [0, 1, 2, 3, 4].forEach((i) => { doc.ellipse(150 + i * 0.4, y + 14 + i * 3, 1.6, 0.8, 'F'); doc.ellipse(184 - i * 0.4, y + 14 + i * 3, 1.6, 0.8, 'F'); });
     y += ih + 3;
 
     // পাঁচটি ঘর
@@ -168,8 +170,8 @@
     // নম্বরের টেবিল: বিষয় যত বেশি, সারি তত চিকন — সব মিলিয়ে এক পাতা
     const rows = r.rows || [], footTop = 262, msgH = 16;
     const avail = footTop - 6 - msgH - 4 - y;
-    const rh = Math.max(3.4, Math.min(7.6, avail / (rows.length + 1.1)));
-    const fs = Math.max(6.5, Math.min(10.5, rh * 1.45));
+    const rh = Math.max(2.2, Math.min(7.6, avail / (rows.length + 1.1)));
+    const fs = Math.max(5.4, Math.min(10.5, rh * 1.45));
     const cols = [12, 72, 28, 34, 18, 18], heads = ['SL', 'Subject', 'Full Marks', 'Obtained Marks', 'Grade', 'GP'];
     const th = rh + 0.8, tableH = th + rh * rows.length;
     fill(G); doc.roundedRect(14, y, 182, th, 2.5, 2.5, 'F'); doc.rect(14, y + th / 2, 182, th / 2, 'F');
